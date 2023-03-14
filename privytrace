@@ -1,0 +1,73 @@
+#!/bin/bash
+
+# Function to setup Python3 virtual env
+function runvenv {
+    if [ -z $1 ]
+        then
+        echo "Missing arg to VENV (activate, deactivate)"
+        return
+    fi
+
+    if [ $1 == "activate" ] 
+        then
+        echo "Activating VENV"
+        source ./venv/bin/activate
+        echo "VENV activated"
+    elif [ $1 == "deactivate" ]
+        then
+        echo "Deactivating VENV"
+        source ./venv/bin/deactivate
+        echo "VENV deactivated"
+    elif [ $1 == "setup" ]
+        then
+        echo "Creating VENV..."
+        python3 -m venv venv
+        echo "Activating VENV..."
+        source ./venv/bin/activate
+        echo "Installing Requirements"
+        pip install -r requirements.txt
+        echo "Virtual Environment Setup Completed"
+    else
+        echo "Unknown VENV Command"
+    fi
+}
+
+# Function for app specific commands
+function runapp {
+    if [ -z $1 ]
+        then
+        echo "Missing arg to app command (migrate, start)"
+        return
+    fi
+
+    if [ $1 == "migrate" ] 
+        then
+        echo "Running app migrate"
+        python ./app/database/migration.py
+    elif [ $1 == "start" ]
+        then
+        echo "Starting app"
+        flask run
+    else
+        echo "Unknown App Command"
+    fi
+}
+
+# Function for data generation commands
+function runseeder {
+    source ./venv/bin/activate
+    python3 generator/generate.py
+}
+
+if [ $1 == "seed" ] 
+    then
+    runseeder
+elif [ $1 == 'app' ]
+    then
+    runapp $2
+elif [ $1 == 'venv' ]
+    then
+    runvenv $2
+else
+    echo "Unknown command"
+fi
