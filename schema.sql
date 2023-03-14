@@ -1,5 +1,5 @@
--- Dropping routing_records_provider_id_fk constraint on TraceRecords Table if exist:
-ALTER TABLE IF EXISTS TraceRecords DROP CONSTRAINT routing_records_provider_id_fk;
+-- Dropping routing_records_provider_id_fk constraint on cdrs Table if exist:
+ALTER TABLE IF EXISTS cdrs DROP CONSTRAINT routing_records_provider_id_fk;
 
 -- Dropping Providers table if exist:
 DROP TABLE IF EXISTS Providers;
@@ -10,16 +10,15 @@ CREATE TABLE IF NOT EXISTS Providers (
     name VARCHAR NOT NULL
 );
 
--- Dropping tracerecords table if exist:
-DROP TABLE IF EXISTS TraceRecords;
+-- Dropping cdrs table if exist:
+DROP TABLE IF EXISTS cdrs;
 
--- Recreating Tracerecords table if does not exist:
-CREATE TABLE IF NOT EXISTS TraceRecords (
-    traceback VARCHAR NOT NULL,
-    traceforward VARCHAR NOT NULL,
-    provider_id INTEGER NULL DEFAULT NULL,
+-- Recreating cdrs table if does not exist:
+CREATE TABLE IF NOT EXISTS cdrs (
+    cci VARCHAR NOT NULL,
+    tbc VARCHAR NOT NULL,
+    tfc VARCHAR NOT NULL,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (traceback, traceforward),
-    CONSTRAINT routing_records_provider_id_fk FOREIGN KEY (provider_id) REFERENCES Providers(id)
+    PRIMARY KEY (cci, tbc, tfc)
 );
 

@@ -1,7 +1,8 @@
 import os
 from time import sleep
-from json import loads
+from json import loads, dumps
 from redis import Redis
+from threading import Thread
 from dotenv import load_dotenv
 from flask import Flask, request
 from psycopg2 import connect as db_connect
@@ -30,17 +31,18 @@ class Database:
             password=DB_PASS
         )
         
-    def insert_query(self, items):
-        query = "INSERT INTO RoutingRecords"
-        query += "(call_meta,route_meta)"
+    def create_insert_query_string(self, items):
+        query = "INSERT INTO cdrs"
+        query += "(cci,tbc,tfc)"
         query += " VALUES"
 
         for item in items:
             item = loads(item)
-            cm = item.get('call_meta')
-            rm = item.get('route_meta')
+            cci = item.get('cci')
+            tbc = item.get('tbc')
+            tfc = item.get('tfc')
 
-            query += f" ('{cm}','{rm}'),"
+            query += f" ('{cci}', '{tbc}','{tfc}'),"
 
         # remove trailing comma and add a semicolon
         query = query[:-1] + ";"
@@ -60,62 +62,27 @@ class Database:
 
         print('Migrations Completed.')
         
-    def process_daemon(self):
-        batch_size = 1000
-        
-        # Open redis queue
-        queue = Queue()
-        counter = 1
-
-        while True:
-            counter += 1
-            items = queue.retrieve(length=batch_size)
-            items_size = len(items)
-
-            # if there's nothing in redis queue sleep for 5 seconds
-            if items_size == 0:
-                sleep(5)
-                continue
-
-            # create a new insert statement and insert into database
-            query = self.insert_query(items)
-
-            print(query)
-
-            with self.open_db() as connection:
-                with connection.cursor() as cursor:
-                    cursor.execute(query)
-                    connection.commit()
-
-            # if items retrieved was less than the batch size
-            # let's slow down the queue
-            # if items is x then we will slow down by (1000 - x) / 10 milliseconds
-            delay = (batch_size - items_size) / batch_size
-
-            if delay > 0:
-                sleep(delay)
         
 class Queue:
     def __init__(self):
-        self.queue_name = env("DIGEST_QUEUE")
+        self.queue_name = env("QUEUE")
+        self.batch_size = 2
         
         self.connection = Redis(
             host=env("REDIS_HOST"),
             port=env("REDIS_PORT"),
             password=env("REDIS_PASS"),
-            db=env("REDIS_DIGEST_DB")
+            db=env("REDIS_DB")
         )
 
     # Add payload to digest queue
     def enqueue(self, payload):
-        self.connection.rpush(self.queue_name, str(payload))
+        self.connection.rpush(self.queue_name, dumps(payload))
 
     # Get first N items from digest queue using redis pipelines
     def retrieve(self, length=1000):
         counter = 0
-
         pipeline = self.connection.pipeline()
-
         queue_length = self.connection.llen(self.queue_name)
         length = queue_length if length > queue_length else length
 
@@ -124,6 +91,38 @@ class Queue:
             counter = counter + 1
 
         return pipeline.execute()
+    
+    def work(self):
+        counter = 1
+        database = Database()
+        
+        while True:
+            counter += 1
+            items = self.retrieve(length=self.batch_size)
+            items_size = len(items)
+
+            # if there's nothing in redis queue sleep for 5 seconds
+            if items_size == 0:
+                sleep(5)
+                continue
+
+            # create a new insert statement and insert into database
+            query = database.create_insert_query_string(items)
+
+            print(query)
+
+            with database.open_db() as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(query)
+                    connection.commit()
+
+            # if items retrieved was less than the batch size
+            # let's slow down the queue
+            # if items is x then we will slow down by (1000 - x) / 10 milliseconds
+            delay = (self.batch_size - items_size) / self.batch_size
+
+            if delay > 0:
+                sleep(delay)
 
 class Contribution:
     def __init__(self, request):
@@ -185,7 +184,6 @@ class Server:
         self.HTTP_CREATED = 201
         self.HTTP_NOT_FOUND = 404
         self.HTTP_UNPROCESSABLE = 422
-        
         self.queue = Queue()
         
     def create_instance_path(self, app):
@@ -197,7 +195,7 @@ class Server:
         
     def start_insertion_daemon(self):
         print('Starting insertion daemon...')
-        daemon = Thread(target=process_daemon, daemon=True, name='INSERT DIGESTS')
+        daemon = Thread(target=self.queue.work, daemon=True, name='BULK INSERTIONS')
         daemon.start()
         
     def start(self, test_config=None):
