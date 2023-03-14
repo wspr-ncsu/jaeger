@@ -1,6 +1,3 @@
--- Dropping routing_records_provider_id_fk constraint on cdrs Table if exist:
-ALTER TABLE IF EXISTS cdrs DROP CONSTRAINT routing_records_provider_id_fk;
-
 -- Dropping Providers table if exist:
 DROP TABLE IF EXISTS Providers;
 
