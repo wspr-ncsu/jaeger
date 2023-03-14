@@ -4,7 +4,7 @@
 function runvenv {
     if [ -z $1 ]
         then
-        echo "Missing arg to VENV (activate, deactivate)"
+        echo "Missing arg to VENV (activate, deactivate, setup)"
         return
     fi
 
