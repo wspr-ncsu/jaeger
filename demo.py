@@ -124,7 +124,17 @@ class Tracer:
     
     def run(self):
         response = requests.post(tracing_url, self.payload)
-        print(response.content)
+        result = response.json()
+        print("\nResult Set:")
+        
+        path = []
+        
+        for item in result:
+            print(f"\t{item}")
+            parts = item.split('|')
+            path.append(parts[1])
+            
+        print(f"\n{self.payload['type']}\t=\t{' -> '.join(path)}\n")
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
