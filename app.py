@@ -132,7 +132,7 @@ class Contribution:
 
     def verify(self):
         if self.tbc == None or self.tfc == None or self.cci == None:
-            raise ValidationError("Valid values of tbc, tfc and cci are required")
+            raise PanicAttack("Valid values of tbc, tfc and cci are required")
 
     def sanitize(self):
         return {
@@ -150,32 +150,77 @@ class Tracer:
 
     def verify(self):
         if self.type not in ['traceforward', 'traceback', 'lookup']:
-            raise ValidationError('Invalid type parameter')
+            raise PanicAttack('Invalid type parameter')
         
         if self.type == 'traceback' and self.tbc == None:
-            raise ValidationError('tbc is required for traceback requests')
+            raise PanicAttack('tbc is required for traceback requests')
         
         if self.type == 'traceforward' and self.tfc == None:
-            raise ValidationError('tfc is required for traceforward requests')
+            raise PanicAttack('tfc is required for traceforward requests')
         
         if self.type == 'lookup' and self.tfc == None:
-            raise ValidationError('cci is required for full trace requests')
+            raise PanicAttack('cci is required for full trace requests')
 
     def compute(self):
-        return {
-            'tbc': self.tbc,
-            'tfc': self.tfc,
-            'cci': self.cci,
-            'type': self.type
-        }
+        if self.type == 'traceback':
+            return self.traceback()
+        elif self.type == 'traceforward':
+            return self.traceforward()
+        elif self.type == 'lookup':
+            return self.partial_lookup()
+        else:
+            raise PanicAttack("Unrecognized trace action", 400)
+        
+    def traceback(self):
+        db = Database()
+        connection = db.open_db()
+        cursor = connection.cursor()
+        
+        tbc = self.tbc
+        result_set = [tbc]
+        
+        while tbc is not None:
+            query = f"SELECT tbc, tfc FROM cdrs WHERE cdrs.tfc = %s ORDER BY cdrs.created_at ASC"
+            print(query)
+            
+            try:
+                cursor.execute(query, (tbc,))
+                record = cursor.fetchone()
+                print(record)
+                
+                if record is None:
+                    break
+                else:
+                    retrieved_tbc = record[0]
+                    
+                    result_set.insert(0, retrieved_tbc)
+                    tbc = retrieved_tbc
+                    
+                    print(f"\nRetrieved TBC = {retrieved_tbc}\n")
+            except Exception as feeling: 
+                print(feeling.with_traceback())
+                break
+        
+        cursor.close()
+        connection.close()
+        
+        return result_set
     
-class ValidationError(HTTPException):
+    
+    def traceforward(self):
+        pass
+    
+    def partial_lookup(self):
+        pass
+    
+class PanicAttack(HTTPException):
     code = 422
     description = "Unprocessable entity"
 
-    def __init__(self, message):
+    def __init__(self, message, code = 422):
         super().__init__()
         self.description = message
+        self.code = code
         
           
 class Server:
