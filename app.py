@@ -149,13 +149,13 @@ class Tracer:
         self.cci = request.form.get('cci')
 
     def verify(self):
-        if self.type not in ['forward', 'back', 'lookup']:
+        if self.type not in ['traceforward', 'traceback', 'lookup']:
             raise ValidationError('Invalid type parameter')
         
-        if self.type == 'back' and self.tbc == None:
+        if self.type == 'traceback' and self.tbc == None:
             raise ValidationError('tbc is required for traceback requests')
         
-        if self.type == 'forward' and self.tfc == None:
+        if self.type == 'traceforward' and self.tfc == None:
             raise ValidationError('tfc is required for traceforward requests')
         
         if self.type == 'lookup' and self.tfc == None:
