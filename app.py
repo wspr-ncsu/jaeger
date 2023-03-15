@@ -208,7 +208,40 @@ class Tracer:
     
     
     def traceforward(self):
-        pass
+        print("Inside Traceforward========")
+        db = Database()
+        connection = db.open_db()
+        cursor = connection.cursor()
+        
+        tfc = self.tfc
+        result_set = [tfc]
+        
+        while tfc is not None:
+            query = f"SELECT tbc, tfc FROM cdrs WHERE cdrs.tbc = %s ORDER BY cdrs.created_at ASC"
+            print(query)
+            
+            try:
+                cursor.execute(query, (tfc,))
+                record = cursor.fetchone()
+                print(record)
+                
+                if record is None:
+                    break
+                else:
+                    retrieved_tfc = record[1]
+                    
+                    result_set.append(retrieved_tfc)
+                    tfc = retrieved_tfc
+                    
+                    print(f"\nRetrieved TFC = {retrieved_tfc}\n")
+            except Exception as feeling: 
+                print(feeling.with_traceback())
+                break
+        
+        cursor.close()
+        connection.close()
+        
+        return result_set
     
     def partial_lookup(self):
         pass
