@@ -129,12 +129,26 @@ class Tracer:
         
         path = []
         
-        for item in result:
+        last_item_index = len(result) - 1
+        
+        for index, item in enumerate(result):
             print(f"\t{item}")
             parts = item.split('|')
-            path.append(parts[1])
-            
-        print(f"\n{self.payload['type']}\t=\t{' -> '.join(path)}\n")
+            curr = ""
+            if self.payload['type'] == 'traceback':
+                curr = parts[1]
+            elif self.payload['type'] == 'traceforward':
+                curr = parts[0]
+            else:
+                if index == last_item_index:
+                    curr = parts[0]
+                else:
+                    curr = parts[1]
+                
+            path.append(curr)
+        
+        if self.payload['type'] != 'lookup':
+            print(f"\n{self.payload['type']}\t=\t{' -> '.join(path)}\n")
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
