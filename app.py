@@ -11,14 +11,29 @@ from werkzeug.exceptions import HTTPException
 load_dotenv()
 
 def env(envname, default=""):
+    """
+    Gets environment variable from .env
+    
+    Args: 
+        envname: Environment variable name
+        default: The default value for this variable if not set
+        
+    Returns:
+        A string of value of variable from .env
+    """
     value = os.getenv(envname)
     return value or default
+
 
 class Database:
     def __init__(self) -> None:
         pass
     
+    
     def open_db(self):
+        """
+        Establishes a database connection
+        """
         DB_HOST = env("DB_HOST")
         DB_NAME = env("DB_NAME")
         DB_USER = env("DB_USER")
@@ -31,7 +46,17 @@ class Database:
             password=DB_PASS
         )
         
+        
     def create_insert_query_string(self, items):
+        """
+        Creates insert statement query string with multiple values
+        
+        Args: 
+            items: Contributed records to be processed. Each of this record has tbc, tfc and cci
+            
+        Returns:
+            A string of insert statement with multiple values
+        """
         query = "INSERT INTO cdrs"
         query += "(cci,tbc,tfc)"
         query += " VALUES"
@@ -49,7 +74,11 @@ class Database:
 
         return query
     
+    
     def migrate(self):
+        """
+        Drops and recreates the database tables and their integrity constraints
+        """
         print('Starting Database Migrations')
         opened_database = self.open_db()
         SCHEMA_FILE = os.getcwd() + "/schema.sql"
@@ -66,7 +95,7 @@ class Database:
 class Queue:
     def __init__(self):
         self.queue_name = env("QUEUE")
-        self.batch_size = 2
+        self.batch_size = 1000
         
         self.connection = Redis(
             host=env("REDIS_HOST"),
@@ -75,12 +104,27 @@ class Queue:
             db=env("REDIS_DB")
         )
 
-    # Add payload to digest queue
+
     def enqueue(self, payload):
+        """
+        Adds item to the head of queue
+        
+        Args: 
+            payload: data to be added to the queue
+        """
         self.connection.rpush(self.queue_name, dumps(payload))
 
-    # Get first N items from digest queue using redis pipelines
+
     def retrieve(self, length=1000):
+        """
+        Get the first N items from the rear of the queue
+        
+        Args: 
+            length: number of items to be retrieved from the queue
+            
+        Returns:
+            Data items from the queue
+        """
         counter = 0
         pipeline = self.connection.pipeline()
         queue_length = self.connection.llen(self.queue_name)
@@ -92,7 +136,11 @@ class Queue:
 
         return pipeline.execute()
     
+    
     def work(self):
+        """
+        Background thread to process the queue items in batches
+        """
         counter = 1
         database = Database()
         
@@ -109,8 +157,6 @@ class Queue:
             # create a new insert statement and insert into database
             query = database.create_insert_query_string(items)
 
-            print(query)
-
             with database.open_db() as connection:
                 with connection.cursor() as cursor:
                     cursor.execute(query)
@@ -124,15 +170,27 @@ class Queue:
             if delay > 0:
                 sleep(delay)
 
+
 class Contribution:
     def __init__(self, request):
         self.tbc = request.form.get('tbc')
         self.tfc = request.form.get('tfc')
         self.cci = request.form.get('cci')
 
+
     def verify(self):
+        """
+        Validates request data from contributions and verifies the authenticity.
+        Throws an exception if validation fails
+        
+        Args: 
+            self.tfc: trace forward component
+            self.tbc: trace back component
+            self.cci: caller callee information
+        """
         if self.tbc == None or self.tfc == None or self.cci == None:
             raise PanicAttack("Valid values of tbc, tfc and cci are required")
+
 
     def sanitize(self):
         return {
@@ -141,6 +199,7 @@ class Contribution:
             'cci': self.cci
         }
 
+
 class Tracer:
     def __init__(self, request):
         self.type = request.form.get('type')
@@ -148,7 +207,18 @@ class Tracer:
         self.tfc = request.form.get('tfc')
         self.cci = request.form.get('cci')
 
+
     def verify(self):
+        """
+        Validates request data from trace queries and verifies the authenticity.
+        Throws an exception if validation fails
+        
+        Args: 
+            self.type: Type of trace request
+            self.tfc: trace forward component
+            self.tbc: trace back component
+            self.cci: caller callee information
+        """
         if self.type not in ['traceforward', 'traceback', 'lookup']:
             raise PanicAttack('Invalid type parameter')
         
@@ -158,10 +228,17 @@ class Tracer:
         if self.type == 'traceforward' and self.tfc == None:
             raise PanicAttack('tfc is required for traceforward requests')
         
-        if self.type == 'lookup' and self.tfc == None:
+        if self.type == 'lookup' and self.cci == None:
             raise PanicAttack('cci is required for full trace requests')
 
+
     def compute(self):
+        """
+        Computes a traceback, traceforward or a full/partial lookups
+            
+        Returns:
+            Traceback, A set of encrypted records
+        """
         if self.type == 'traceback':
             return self.traceback()
         elif self.type == 'traceforward':
@@ -171,7 +248,17 @@ class Tracer:
         else:
             raise PanicAttack("Unrecognized trace action", 400)
         
+        
     def traceback(self):
+        """
+        Performs a trace back query
+        
+        Args: 
+            self.tfc: trace back component which was submitted during contribution
+            
+        Returns:
+            Traceback, A set of encrypted records
+        """
         db = Database()
         connection = db.open_db()
         cursor = connection.cursor()
@@ -181,12 +268,10 @@ class Tracer:
         
         while tbc is not None:
             query = f"SELECT tbc, tfc FROM cdrs WHERE cdrs.tfc = %s ORDER BY cdrs.created_at ASC"
-            print(query)
             
             try:
                 cursor.execute(query, (tbc,))
                 record = cursor.fetchone()
-                print(record)
                 
                 if record is None:
                     break
@@ -195,8 +280,6 @@ class Tracer:
                     
                     result_set.insert(0, retrieved_tbc)
                     tbc = retrieved_tbc
-                    
-                    print(f"\nRetrieved TBC = {retrieved_tbc}\n")
             except Exception as feeling: 
                 print(feeling.with_traceback())
                 break
@@ -208,7 +291,15 @@ class Tracer:
     
     
     def traceforward(self):
-        print("Inside Traceforward========")
+        """
+        Performs a trace forward query
+        
+        Args: 
+            self.tfc: trace forward component which was submitted during contribution
+            
+        Returns:
+            Traceforward, A set of encrypted records
+        """
         db = Database()
         connection = db.open_db()
         cursor = connection.cursor()
@@ -223,7 +314,6 @@ class Tracer:
             try:
                 cursor.execute(query, (tfc,))
                 record = cursor.fetchone()
-                print(record)
                 
                 if record is None:
                     break
@@ -232,8 +322,6 @@ class Tracer:
                     
                     result_set.append(retrieved_tfc)
                     tfc = retrieved_tfc
-                    
-                    print(f"\nRetrieved TFC = {retrieved_tfc}\n")
             except Exception as feeling: 
                 print(feeling.with_traceback())
                 break
@@ -243,8 +331,37 @@ class Tracer:
         
         return result_set
     
+    
     def partial_lookup(self):
-        pass
+        """
+        Performs full/partial lookups. Usually for cases where there's fragmentation
+        
+        Args:
+            self.cci: caller/callee information
+            
+        Returns:
+            A set of encrypted records
+        """
+        db = Database()
+        connection = db.open_db()
+        cursor = connection.cursor()
+        
+        cipher_set = ','.join([self.cci])
+        
+        query = f"SELECT tfc FROM cdrs WHERE cdrs.cci in (%s)"
+        
+        cursor.execute(query, (cipher_set,))
+        query_result = cursor.fetchall()
+        result_set = []
+        
+        for row in query_result:
+            result_set.append(row[0])
+       
+        cursor.close()
+        connection.close()
+        
+        return result_set
+    
     
 class PanicAttack(HTTPException):
     code = 422
@@ -264,6 +381,7 @@ class Server:
         self.HTTP_UNPROCESSABLE = 422
         self.queue = Queue()
         
+        
     def create_instance_path(self, app):
         # ensure the instance folder exists
         try:
@@ -271,10 +389,12 @@ class Server:
         except OSError:
             pass
         
+        
     def start_insertion_daemon(self):
         print('Starting insertion daemon...')
         daemon = Thread(target=self.queue.work, daemon=True, name='BULK INSERTIONS')
         daemon.start()
+        
         
     def start(self, test_config=None):
         app = Flask(__name__, instance_relative_config=True)
@@ -319,6 +439,7 @@ class Server:
 
 
         return app
+
 
 def create_app(test_config=None):
     return Server().start(test_config)
