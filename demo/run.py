@@ -1,3 +1,4 @@
+import os
 import sys
 from json import loads
 from pathlib import Path
@@ -45,19 +46,21 @@ class Telco:
         response = requests.post(contribution_url, payload)
         
         if response.ok:
-            return f"{self.provider.id}\n\ttbc\t=\t{tbc}\n\ttfc\t=\t{tfc}"
+            return f"\n{self.provider.id}\n\tcci\t=\t{cci}\n\ttbc\t=\t{tbc}\n\ttfc\t=\t{tfc}"
         else:
-            return f"{self.provider.id} failed to submit record"
+            return f"\n{self.provider.id} failed to submit record"
         
 class Demo:
     def __init__(self) -> None:
         pass
     
     def run(self, number_of_calls_to_generate=20):
+        self.clear_prev_logs()
+        
         counter = 1
 
         try:
-            stream = open(f'{Path.cwd()}/data/demo.json')
+            stream = open(f'{Path.cwd()}/demo/demo.json')
             telcos = loads(stream.read())
             
             while counter <= number_of_calls_to_generate:
@@ -100,15 +103,27 @@ class Demo:
                     contribution_log.append(current.contribute())
                     
                 contribution_log = "\n".join(contribution_log)
-                log = f"src_tn\t=\t{src} ({originator.get('id')})\ndst_tn\t=\t{dst} ({terminator.get('id')})\ncall_ts\t=\t{ts}\nhops\t=\t{' -> '.join(call_path)}\n{contribution_log}\n{'=' * 100}"
                 
-                print(log, file=sys.stderr) # stderr will send to demo.log file
-                print('')
+                log = f"src_tn\t=\t{src} ({originator.get('id')})\ndst_tn\t=\t{dst} ({terminator.get('id')})\ncall_ts\t=\t{ts}\nhops\t=\t{' -> '.join(call_path)}\n{contribution_log}\n"
+                
+                file = open(f'{Path.cwd()}/demo/logs/{src}_{dst}.log', 'w+')
+                file.write(log)
+                file.close()
+                # print(log, file=sys.stderr) # stderr will send to demo.log file
+                # print('')
                 
                 counter += 1
         except Exception as ex:
             print(ex.with_traceback())
             
+    def clear_prev_logs(self):
+        folder_path = f'{Path.cwd()}/demo/logs'
+        files = os.listdir(folder_path)
+
+        for file in files:
+            file_path = os.path.join(folder_path, file)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
             
 class Tracer:
     def __init__(self, type, param) -> None:

@@ -70,7 +70,7 @@ elif [ $1 == 'venv' ]
     runvenv $2
 elif [ $1 == 'demo' ]
     then
-    python demo.py run 2> demo.log
+    python demo/run.py run
 elif [ $1 == 'traceback' ]
     then
     python demo.py traceback $2
