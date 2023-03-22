@@ -121,6 +121,9 @@ class Demo:
         files = os.listdir(folder_path)
 
         for file in files:
+            if file == '.gitignore':
+                continue
+            
             file_path = os.path.join(folder_path, file)
             if os.path.isfile(file_path):
                 os.remove(file_path)
