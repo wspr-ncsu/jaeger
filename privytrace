@@ -73,13 +73,13 @@ elif [ $1 == 'demo' ]
     python demo/run.py run
 elif [ $1 == 'traceback' ]
     then
-    python demo.py traceback $2
+    python demo/run.py traceback $2
 elif [ $1 == 'traceforward' ]
     then
-    python demo.py traceforward $2
+    python demo/run.py traceforward $2
 elif [ $1 == 'lookup' ]
     then
-    python demo.py lookup $2
+    python demo/run.py lookup $2
 else
     echo "Unknown command"
 fi
