@@ -43,7 +43,7 @@ function runapp {
     if [ $1 == "migrate" ] 
         then
         echo "Running app migrate"
-        python app.py migrate
+        python3 app.py migrate
     elif [ $1 == "start" ]
         then
         echo "Starting app"
