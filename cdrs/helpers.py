@@ -16,7 +16,7 @@ def assign_fitness(V, n_0):
     fitness = np.zeros(V)
     
     # Assign high fitness to initial nodes
-    fitness[0:n_0] = n_0
+    fitness[0:n_0] = f
     f = decrement(f)
     
     # Divide the new nodes into f groups, assign f and decrease f when group changes
@@ -158,11 +158,11 @@ def custom_power_law_graph(V, n_0, m_0 = 1, apply_fitness = True):
                 # print(f"Gens to select from: {len(gens)}")
                 
                 selected_nodes_in_gen = np.random.choice(gens, p=weights, size=num_nodes_to_select, replace=False)
-                print(f"selected nodes in gen {curr}: {selected_nodes_in_gen}")
+                # print(f"selected nodes in gen {curr}: {selected_nodes_in_gen}")
                 candidates = np.concatenate((candidates, selected_nodes_in_gen))
                 
-            print("Candidates")
-            print(candidates)
+            # print("Candidates")
+            # print(candidates)
             
             weights = []
             
@@ -174,8 +174,8 @@ def custom_power_law_graph(V, n_0, m_0 = 1, apply_fitness = True):
             
             selected_nodes = np.random.choice(candidates, p=weights, size=m_0, replace=False)
             
-            print("Selected Nodes")
-            print(selected_nodes)
+            # print("Selected Nodes")
+            # print(selected_nodes)
             
             for selected_node in selected_nodes:
                 graph[d_index][selected_node] += 1
@@ -206,7 +206,7 @@ def plot_degree_distribution(degrees, title = "Degree distribution"):
     
     # Plot the degree distribution as a line graph
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(x, y, linestyle='-', color='b', linewidth=1)
+    ax.bar(x, y, linestyle='-', color='b', linewidth=1)
 
     ax.set_title(title)
     ax.set_xlabel("Degrees, x")
