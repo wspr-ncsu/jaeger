@@ -17,9 +17,9 @@ genZ = None
 f_index, d_index, p_index = 0, 1, 2
 g_state = None
 
-genY_percent = 0.6
+genY_percent = 0.7
 genY_split = 0.7, 0.3
-genZ_percent = 0.4
+genZ_percent = 0.3
 
 edges = []
 curr_net_size = 0
@@ -30,8 +30,10 @@ def power_law_graph(_V, _n_0, _m_0 = 1, apply_fitness = True):
     
     init_gens()
     init_graph_state(apply_fitness)
+    
     create_net_x()
     create_net_y()
+    create_net_z()
     
     return g_state[d_index][0:curr_net_size], edges
 
@@ -43,6 +45,10 @@ def init_gens():
     last_index = n_0 + math.ceil(genY_percent * (V - n_0))
     genY = np.array(list(range(n_0, last_index)))
     genZ = np.array(list(range(last_index, V)))
+    
+    # print(f"GenX: {genX}")
+    # print(f"GenY: {genY}")
+    # print(f"GenZ: {genZ}")
     
     
 def patch_g_state(start = 0, end = curr_net_size):
@@ -66,15 +72,21 @@ def create_net_x():
     global g_state, edges, curr_net_size
     curr_net_size = n_0
     
-    G = nx.barabasi_albert_graph(n_0, 2)
-    edges = list(G.edges())
+    # G = nx.barabasi_albert_graph(n_0, 2)
+    # edges = list(G.edges())
     
-    for node in G.nodes():
-        g_state[d_index][node] = G.degree(node)
+    # for node in G.nodes():
+    #     g_state[d_index][node] = G.degree(node)
         
-    print(f"GenX degrees: {g_state[d_index][0:n_0]}" )
-    nx.draw(G, with_labels=True, node_color='lightblue', font_weight='bold')
-    plt.show()
+    # # print(f"GenX degrees: {g_state[d_index][0:n_0]}" )
+    # nx.draw(G, with_labels=True, node_color='lightblue', font_weight='bold')
+    # plt.show()
+    
+    for src in range(0, n_0):
+        for dst in range(src + 1, n_0):
+            edges.append((src, dst))
+            g_state[d_index][src] += 1
+            g_state[d_index][dst] += 1
     
 def create_net_y():
     print("Building Network Y...")
@@ -83,9 +95,7 @@ def create_net_y():
     
     part_2 = math.floor(genY_split[0] * len(genY))
     
-    # print(f"start_of_part_2: {genY[part_2]}")
-    
-    for i, node_in_geny in enumerate(genY):
+    for i, node in enumerate(genY):
         if i < part_2:
             start_i = 0
             end_i = n_0
@@ -101,22 +111,35 @@ def create_net_y():
         
         weights = g_state[p_index][start_i:end_i]
         
-        # print(f"Weights: {weights}, sum: {sum(weights)}")
-        # print(f"gen: {gen}")
-        snodes = np.random.choice(gen, p=weights, size=m_0, replace=False)
-        
-        # print(f"selected Nodes for {node_in_geny}: {snodes}")
-        
-        for snode in snodes:
-            g_state[d_index][snode] += 1
-            g_state[d_index][node_in_geny] += 1
-            
-            edges.append((snode, node_in_geny))
-            
-        curr_net_size += len(snodes) # update graph size
+        extend_network(node, gen, weights)
         
         
 def create_net_z():
     print("Building Network Z")
     
     global genY, g_state, edges, curr_net_size
+    
+    start_i, end_i = (0, curr_net_size)
+    
+    for i, node in enumerate(genZ):
+        patch_g_state(start_i, end_i)
+        
+        weights = g_state[p_index][start_i:end_i]
+        
+        gen = list(range(start_i, end_i))
+        
+        extend_network(node, gen, weights)
+        
+        
+def extend_network(node, gen, weights):
+    global curr_net_size, g_state, edges
+    
+    snodes = np.random.choice(gen, p=weights, size=m_0, replace=False)
+        
+    for snode in snodes:
+        g_state[d_index][snode] += 1
+        g_state[d_index][node] += 1
+        
+        edges.append((snode, node))
+        
+    curr_net_size += len(snodes) # update graph size

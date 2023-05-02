@@ -17,7 +17,7 @@ def assign_fitness(V, n_0):
     
     # Assign high fitness to initial nodes
     fitness[0:n_0] = f
-    f = decrement(f)
+    f = decrement(f, 100)
     
     # Divide the new nodes into f groups, assign f and decrease f when group changes
     group_size = (V - n_0) // f
@@ -26,7 +26,7 @@ def assign_fitness(V, n_0):
         fitness[i] = f
         
         if (i - n_0 + 1) % group_size == 0 and f > 1:
-            f = decrement(f)
+            f = decrement(f, 10)
 
     return fitness
 
@@ -188,13 +188,43 @@ def custom_power_law_graph(V, n_0, m_0 = 1, apply_fitness = True):
         
     return graph[d_index], edges
 
+def distribution(degrees):
+    x, freqs = np.unique(degrees, return_counts=True)
+    
+    leaf = 'leaf_nodes'
+    heavy = 'heavy hitters (500+)'
+    _5_to_10 = '5 - 10 edges'
+    _2_to_3 = '2 - 3 edges'
+    others = 'others'
+    data = {}
+    data[heavy] = 0
+    data[leaf] = 0
+    data[_2_to_3] = 0
+    data[_5_to_10] = 0
+    data[others] = 0
+    
+    for i in range(0, len(x)):
+        if (x[i] > 500):
+            data[heavy] += freqs[i]
+        elif x[i] <= 10 and x[i] >= 5:
+            data[_5_to_10] += freqs[i]
+        elif x[i] == 1:
+            data[leaf] = freqs[i]
+        else:
+            data[others] += freqs[i]
+        
+    for key in data.keys():
+        print(f"{key}: {data[key]}")
+        
+    print("\n\n")
+
 def plot_degree_distribution(degrees, title = "Degree distribution"):
     x, freqs = np.unique(degrees, return_counts=True)
     
     data = {}
     # total_freq = sum(freqs)
     for i in range(0, len(x)):
-        data['deg ' + str(int(x[i]))] = freqs[i]
+        data[int(x[i])] = freqs[i]
         
     print(data)
     
@@ -206,7 +236,7 @@ def plot_degree_distribution(degrees, title = "Degree distribution"):
     
     # Plot the degree distribution as a line graph
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.bar(x, y, linestyle='-', color='b', linewidth=1)
+    ax.plot(x, y, linestyle='-', color='b', linewidth=1)
 
     ax.set_title(title)
     ax.set_xlabel("Degrees, x")
