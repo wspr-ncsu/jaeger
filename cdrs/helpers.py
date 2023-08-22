@@ -196,6 +196,7 @@ def distribution(degrees):
     _5_to_10 = '5 - 10 edges'
     _2_to_3 = '2 - 3 edges'
     others = 'others'
+    
     data = {}
     data[heavy] = 0
     data[leaf] = 0
@@ -204,11 +205,15 @@ def distribution(degrees):
     data[others] = 0
     
     for i in range(0, len(x)):
-        if (x[i] > 500):
+        degree = x[i]
+        print(f"Checking degree: {degree}, freq: {freqs[i]}")
+        if (degree > 500):
             data[heavy] += freqs[i]
-        elif x[i] <= 10 and x[i] >= 5:
+        elif degree <= 10 and degree >= 5:
             data[_5_to_10] += freqs[i]
-        elif x[i] == 1:
+        elif degree < 5 and degree >= 2:
+            data[_2_to_3] += freqs[i]
+        elif degree == 1:
             data[leaf] = freqs[i]
         else:
             data[others] += freqs[i]
