@@ -20,13 +20,17 @@ def assign_fitness(V, n_0):
     f = decrement(f, 100)
     
     # Divide the new nodes into f groups, assign f and decrease f when group changes
-    group_size = (V - n_0) // f
+    num_of_groups = 10
+    group_size = (V - n_0) // num_of_groups
+    start_index = n_0
     
-    for i in range(n_0, V):
-        fitness[i] = f
+    for group in range(num_of_groups):
+        end_index = start_index + group_size
+        for i in range(start_index, end_index):
+            fitness[i] = f
+        start_index = end_index
         
-        if (i - n_0 + 1) % group_size == 0 and f > 1:
-            f = decrement(f, 10)
+        f = decrement(f, 10)
 
     return fitness
 
