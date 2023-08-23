@@ -1,186 +1,115 @@
 import random
 import secrets
 import networkx as nx
+import numpy as np
 import matplotlib.pyplot as plt
 import json
 from datetime import datetime
 import requests
-
-NUMBER_OF_CARRIERS = 10
-CARRIER_EDGE_ATTACHMENT = 2
-
-NUMBER_OF_SUBSCRIBERS = 100
-SUBSCRIBERS_EDGE_ATTACHMENT = 2
+from custom_network import power_law_graph
 
 CONTRIBUTION_URL = 'http://127.0.0.1:5000/contribute'
 
-class CDR:
-    def __init__(self, src, dst, ts, prev, next) -> None:
-        self.src = src
-        self.dst = dst
-        self.ts = ts
-        self.prev = prev
-        self.next = next;    
+subscribers = []
+user_network = None
+phone_network = None
+market_shares = None
+same_network_call = 0
+cross_network_call = 0
 
+def create_user_network():
+    global user_network
+    user_network = nx.barabasi_albert_graph(len(subscribers), 2)
+
+
+def assign_subscribers_by_market_share(carrier, market_share, num_subs):
+    global subscribers
+    subscribers_count = round(num_subs * market_share)
     
-class Carrier:
-    npa = None
-    subscribers = []
-    
-    def __init__(self, id) -> None:
-        self.id = "net" + str(id)
-        self.npa = random.randint(200, 999)
+    for i in range(subscribers_count):
+        subscribers.append(make_subscriber(carrier))
         
-    def contribute(self, cdr):
+        
+def make_subscriber(carrier):
+    npa = random.randint(200, 999)
+    nxx = random.randint(100, 999)
+    num = random.randint(1000, 9999)
+    
+    return f"{carrier}:{npa}-{nxx}-{num}"
+
+
+def shuffle_subscribers():
+    global subscribers
+    # Fisher-Yates shuffle algorithm
+    for i in reversed(range(1, len(subscribers))):
+        j = secrets.randbelow(i + 1)
+        subscribers[i], subscribers[j] = subscribers[j], subscribers[i]
+            
+            
+def create_phone_network(num_carriers, n_0, m_0):
+    global phone_network
+    
+    graph = nx.Graph()
+    degrees, edges = power_law_graph(num_carriers, n_0, m_0, apply_fitness=True)
+    graph.add_weighted_edges_from(edges)
+    
+    phone_network = graph
+
+def generate_market_shares():
+    global market_shares
+    
+    total_degrees = 2 * len(phone_network.edges)
+    num_carriers = len(phone_network.nodes)
+    shares = np.zeros(num_carriers)
+    
+    for i in range(num_carriers):
+        shares[i] = phone_network.degree[i] / total_degrees
+        
+    market_shares = shares
+
+def simulate_call(src, dst):
+    global same_network_call, cross_network_call
+    source, src_tn = src.split(':')
+    target, dst_tn = dst.split(':')
+    
+    source, target = int(source), int(target)
+    
+    if source == target:
+        same_network_call += 1
+        return
+    else:
+        cross_network_call += 1
+    
+    
+    if source not in phone_network or target not in phone_network:
+        return
+    
+    # Find the call path
+    call_path = nx.shortest_path(phone_network, source=source, target=target, weight='weight')
+    
+    # Map integer based indices to real carrier pointers 
+    call_path = list(call_path)
+    
+    for (index, carrier) in enumerate(call_path):
         prev = next = None
         
-        if cdr.prev is not None:
-            prev = cdr.prev.id
+        if index > 0: 
+            prev = call_path[index - 1]
             
-        if cdr.next is not None:
-            next = cdr.next.id
+        if index < len(call_path) - 1:
+            next = call_path[index + 1]
             
-        cci = f"{cdr.src}:{cdr.dst}:{cdr.ts}"
-        tbc = f"{prev}|{self.id}|{cci}"
-        tfc = f"{self.id}|{next}|{cci}"
+        ts = round(datetime.now().timestamp())
         
-        # make request to backend to submit cci, tbc, and tfc
-        payload = { 'cci': cci, 'tbc': tbc, 'tfc': tfc }
+        # create CDR tupple
+        cdr = (src_tn, dst_tn, ts, prev, carrier, next)
         
-        response = requests.post(CONTRIBUTION_URL, payload)
-        
-        if response.ok:
-            # print(f"\n{self.id}\n\tcci\t=\t{cci}\n\ttbc\t=\t{tbc}\n\ttfc\t=\t{tfc}")
-            return True
-        else:
-            # print(f"\n{self.id} failed to submit record")
-            return False
-
-
-class UserPopulation:
-    number_of_phone_users = NUMBER_OF_SUBSCRIBERS
-    number_of_attachment_edges = SUBSCRIBERS_EDGE_ATTACHMENT
-    
-    interaction = {}
-    subscribers = []
-    
-    def __init__(self) -> None:
-        self.create_structure()
-
-        
-    def create_structure(self):
-        self.interaction = nx.barabasi_albert_graph(
-            self.number_of_phone_users, 
-            self.number_of_attachment_edges
-        )
-        print("Social Interaction created")
-        
-    
-    def assign_subscribers_by_market_share(self, carrier, market_share):
-        subscribers_count = round(self.number_of_phone_users * market_share)
-        
-        for i in range(subscribers_count):
-            self.subscribers.append(self.make_phone(carrier.npa))
+        # Simulate record submission to traceback server
+        contribute(cdr)
             
+def contribute(cdr):
+    print(f'Saving {cdr}')
     
-    def make_phone(self, npa):
-        nxx = random.randint(100, 999)
-        num = random.randint(1000, 9999)
-        return f"{npa}-{nxx}-{num}"
-    
-    
-    def shuffle(self):
-        # Fisher-Yates shuffle algorithm
-        for i in reversed(range(1, len(self.subscribers))):
-            j = secrets.randbelow(i + 1)
-            self.subscribers[i], self.subscribers[j] = self.subscribers[j], self.subscribers[i]
-
-
-class Network:
-    same_network_call = 0
-    cross_network_call = 0
-    
-    market_shares = []
-    number_of_carriers = NUMBER_OF_CARRIERS
-    number_of_attachment_edges = CARRIER_EDGE_ATTACHMENT
-    
-    carriers = []
-    npa_lookups = {}
-    topology = None
-
-    def __init__(self):
-        self.create_topology()
-        self.generate_market_shares()
-        
-        
-    def create_topology(self):
-        G = nx.barabasi_albert_graph(self.number_of_carriers, self.number_of_attachment_edges)
-
-        for u, v, d in G.edges(data=True):
-            d['weight'] = random.randint(1, 10)
-
-        self.topology = G
-        
-        counter = 0
-        while (counter < self.number_of_carriers):
-            carrier = Carrier(counter)
-            self.carriers.append(carrier)
-            self.npa_lookups[str(carrier.npa)] = counter
-            counter += 1
-            
-
-    def simulate_call(self, src, dst):
-        """
-        Simulate phone call between src and dst
-        1. Find the shortest path between provider for src and provider for dst
-        2. Create Cdr records for each carrier
-        3. Simulate submission
-        """
-        
-        src_npa = src[:3]
-        dst_npa = dst[:3]
-        
-        if src_npa == dst_npa:
-            self.same_network_call += 1
-            return
-        
-        originator = self.npa_lookups.get(src_npa)
-        terminator = self.npa_lookups.get(dst_npa)
-        
-        # Find the call path
-        call_path = nx.shortest_path(self.topology, source=originator, target=terminator, weight='weight')
-        
-        # Map integer based indices to real carrier pointers 
-        call_path = list(map(lambda id: self.carriers[id], call_path))
-        
-        for (index, carrier) in enumerate(call_path):
-            prev = next = None
-            
-            if index > 0: 
-                prev = call_path[index - 1]
-                
-            if index < len(call_path) - 1:
-                next = call_path[index + 1]
-                
-            ts = round(datetime.now().timestamp())
-            
-            # create CDR log
-            cdr = CDR(src=src, dst=dst, ts=ts, next=next, prev=prev)
-            
-            # Simulate record submission to traceback server
-            carrier.contribute(cdr)
-        
-    
-    def generate_market_shares(self):
-        """
-        Generate market shares for carriers. 
-        This will be used for generating subscribers
-        """
-        total_degrees = 2 * len(self.topology.edges)
-        
-        for i in range(self.number_of_carriers):
-            self.market_shares.append( self.topology.degree[i] / total_degrees)
-        
 
 def draw_graph(G):
     nx.draw(G, with_labels=True, node_color='lightblue', font_weight='bold')
@@ -189,31 +118,27 @@ def draw_graph(G):
 def to_json(data):
     return json.dumps(data, indent=4)
     
-if __name__ == '__main__':
-    telephony = Network()
-    population = UserPopulation()
+def simulate():
+    for edge in user_network.edges:
+        src = subscribers[edge[0]]
+        dst = subscribers[edge[1]]
+        print(edge)
+        try:
+            simulate_call(src, dst)
+        except IndexError as err:
+            print(err)
+                
+def run(num_subs, num_carriers):
+    create_phone_network(num_carriers, 5, 2)
+    generate_market_shares()
     
-    for (i, carrier) in enumerate(telephony.carriers):
-        population.assign_subscribers_by_market_share(carrier, telephony.market_shares[i])
+    for carrier in phone_network.nodes:
+        assign_subscribers_by_market_share(carrier, market_shares[carrier], num_subs)
         
-    population.shuffle()
+    create_user_network()
     
-    def simulate():
-        counter = 0
-        while counter < population.number_of_phone_users:
-            interactions = list(population.interaction.adj[counter])
-            src = population.subscribers[counter]
-            
-            for person in interactions:
-                try:
-                    dst = population.subscribers[person]
-                    telephony.simulate_call(src, dst)
-                except IndexError as err:
-                    print(err)
-                    
-            counter += 1
-            
+    shuffle_subscribers()
+        
+    print(f'total subs: {len(subscribers)}')
+    
     simulate()
-        
-        
-    

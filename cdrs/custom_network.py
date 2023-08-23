@@ -4,6 +4,7 @@ import networkx as nx
 from helpers import assign_fitness
 import matplotlib.pyplot as plt
 from helpers import draw_graph
+import random
 
 # parameters
 V = 7000
@@ -47,9 +48,9 @@ def init_gens():
     genY = np.array(list(range(n_0, last_index)))
     genZ = np.array(list(range(last_index, V)))
     
-    print(f"GenX: {genX}, len = { len(genX) }")
-    print(f"GenY: {genY}, len = { len(genY) }")
-    print(f"GenZ: {genZ}, len = { len(genZ) }")
+    # print(f"GenX: {genX}, len = { len(genX) }")
+    # print(f"GenY: {genY}, len = { len(genY) }")
+    # print(f"GenZ: {genZ}, len = { len(genZ) }")
     
     
 def patch_g_state(start = 0, end = curr_net_size):
@@ -68,21 +69,21 @@ def init_graph_state(af = True):
     
     
 def create_net_x():
-    print("Building Network X...")
+    # print("Building Network X...")
     
     global g_state, edges, curr_net_size
     curr_net_size = n_0
     
     for src in range(0, n_0):
         for dst in range(src + 1, n_0):
-            edges.append((src, dst))
+            edges.append((src, dst, random.randint(1, 10)))
             g_state[d_index][src] += 1
             g_state[d_index][dst] += 1
             
     # draw_graph(edges=edges)
     
 def create_net_y():
-    print("Building Network Y...")
+    # print("Building Network Y...")
     
     global genY, g_state, edges, curr_net_size
     
@@ -108,7 +109,7 @@ def create_net_y():
         
         
 def create_net_z():
-    print("Building Network Z")
+    # print("Building Network Z")
     
     global genY, g_state, edges, curr_net_size
     
@@ -136,6 +137,6 @@ def extend_network(node, gen, weights):
         g_state[d_index][snode] += 1
         g_state[d_index][node] += 1
         
-        edges.append((snode, node))
+        edges.append((snode, node, random.randint(1, 10)))
         
     curr_net_size += len(snodes) # update graph size
