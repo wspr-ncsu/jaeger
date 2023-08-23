@@ -20,13 +20,17 @@ def assign_fitness(V, n_0):
     f = decrement(f, 100)
     
     # Divide the new nodes into f groups, assign f and decrease f when group changes
-    group_size = (V - n_0) // f
+    num_of_groups = 10
+    group_size = (V - n_0) // num_of_groups
+    start_index = n_0
     
-    for i in range(n_0, V):
-        fitness[i] = f
+    for group in range(num_of_groups):
+        end_index = start_index + group_size
+        for i in range(start_index, end_index):
+            fitness[i] = f
+        start_index = end_index
         
-        if (i - n_0 + 1) % group_size == 0 and f > 1:
-            f = decrement(f, 10)
+        f = decrement(f, 10)
 
     return fitness
 
@@ -196,6 +200,7 @@ def distribution(degrees):
     _5_to_10 = '5 - 10 edges'
     _2_to_3 = '2 - 3 edges'
     others = 'others'
+    
     data = {}
     data[heavy] = 0
     data[leaf] = 0
@@ -204,11 +209,15 @@ def distribution(degrees):
     data[others] = 0
     
     for i in range(0, len(x)):
-        if (x[i] > 500):
+        degree = x[i]
+        print(f"Checking degree: {degree}, freq: {freqs[i]}")
+        if (degree > 500):
             data[heavy] += freqs[i]
-        elif x[i] <= 10 and x[i] >= 5:
+        elif degree <= 10 and degree >= 5:
             data[_5_to_10] += freqs[i]
-        elif x[i] == 1:
+        elif degree < 5 and degree >= 2:
+            data[_2_to_3] += freqs[i]
+        elif degree == 1:
             data[leaf] = freqs[i]
         else:
             data[others] += freqs[i]

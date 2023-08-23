@@ -5,22 +5,12 @@ from redis import Redis
 from threading import Thread
 from dotenv import load_dotenv
 from flask import Flask, request
-from psycopg2 import connect as db_connect
+import clickhouse_connect
 from werkzeug.exceptions import HTTPException
 
 load_dotenv()
 
 def env(envname, default=""):
-    """
-    Gets environment variable from .env
-    
-    Args: 
-        envname: Environment variable name
-        default: The default value for this variable if not set
-        
-    Returns:
-        A string of value of variable from .env
-    """
     value = os.getenv(envname)
     return value or default
 
@@ -31,19 +21,16 @@ class Database:
     
     
     def open_db(self):
-        """
-        Establishes a database connection
-        """
         DB_HOST = env("DB_HOST")
         DB_NAME = env("DB_NAME")
         DB_USER = env("DB_USER")
         DB_PASS = env("DB_PASS")
         
-        return db_connect(
-            host=DB_HOST,
-            database=DB_NAME,
-            user=DB_USER,
-            password=DB_PASS
+        return clickhouse_connect.get_client(
+            host=DB_HOST, 
+            username=DB_USER, 
+            password=DB_PASS,
+            database=DB_NAME
         )
         
         
@@ -76,19 +63,29 @@ class Database:
     
     
     def migrate(self):
-        """
-        Drops and recreates the database tables and their integrity constraints
-        """
         print('Starting Database Migrations')
+        
         opened_database = self.open_db()
-        SCHEMA_FILE = os.getcwd() + "/schema.sql"
-
-        with opened_database.cursor() as cursor:
-            with open(SCHEMA_FILE, "r") as schema:
-                query = schema.read()
-                cursor.execute(query)
-            opened_database.commit()
-
+        
+        DDLs = [
+            'DROP TABLE IF EXISTS providers',
+            '''CREATE TABLE IF NOT EXISTS providers (
+                id UInt32 PRIMARY KEY, 
+                name VARCHAR NOT NULL
+            ) ENGINE = MergeTree()''',
+            'DROP TABLE IF EXISTS cdrs',
+            '''CREATE TABLE IF NOT EXISTS cdrs (
+                cci VARCHAR NOT NULL, 
+                tbc VARCHAR NOT NULL, 
+                tfc VARCHAR NOT NULL, 
+                created_at DateTime DEFAULT now(), 
+                PRIMARY KEY (cci, tbc, tfc)
+            ) ENGINE = MergeTree()'''
+        ]
+        
+        for ddl in DDLs:
+            opened_database.command(ddl)
+            
         print('Migrations Completed.')
         
         

@@ -3,6 +3,8 @@ import math
 import networkx as nx
 from helpers import assign_fitness
 import matplotlib.pyplot as plt
+from helpers import draw_graph
+import random
 
 # parameters
 V = 7000
@@ -17,9 +19,9 @@ genZ = None
 f_index, d_index, p_index = 0, 1, 2
 g_state = None
 
-genY_percent = 0.7
+genY_percent = 0.5
 genY_split = 0.7, 0.3
-genZ_percent = 0.3
+genZ_percent = 0.5
 
 edges = []
 curr_net_size = 0
@@ -46,17 +48,17 @@ def init_gens():
     genY = np.array(list(range(n_0, last_index)))
     genZ = np.array(list(range(last_index, V)))
     
-    # print(f"GenX: {genX}")
-    # print(f"GenY: {genY}")
-    # print(f"GenZ: {genZ}")
+    # print(f"GenX: {genX}, len = { len(genX) }")
+    # print(f"GenY: {genY}, len = { len(genY) }")
+    # print(f"GenZ: {genZ}, len = { len(genZ) }")
     
     
 def patch_g_state(start = 0, end = curr_net_size):
     global g_state
     
-    d_x_f = g_state[d_index][start:end] * g_state[f_index][start:end]
-    td_x_f = sum(d_x_f)
-    g_state[p_index][start:end] = d_x_f / td_x_f
+    degree_times_fitness = g_state[d_index][start:end] * g_state[f_index][start:end]
+    total_degree_times_fitness = sum(degree_times_fitness)
+    g_state[p_index][start:end] = degree_times_fitness / total_degree_times_fitness
         
         
 def init_graph_state(af = True):
@@ -67,29 +69,21 @@ def init_graph_state(af = True):
     
     
 def create_net_x():
-    print("Building Network X...")
+    # print("Building Network X...")
     
     global g_state, edges, curr_net_size
     curr_net_size = n_0
     
-    # G = nx.barabasi_albert_graph(n_0, 2)
-    # edges = list(G.edges())
-    
-    # for node in G.nodes():
-    #     g_state[d_index][node] = G.degree(node)
-        
-    # # print(f"GenX degrees: {g_state[d_index][0:n_0]}" )
-    # nx.draw(G, with_labels=True, node_color='lightblue', font_weight='bold')
-    # plt.show()
-    
     for src in range(0, n_0):
         for dst in range(src + 1, n_0):
-            edges.append((src, dst))
+            edges.append((src, dst, random.randint(1, 10)))
             g_state[d_index][src] += 1
             g_state[d_index][dst] += 1
+            
+    # draw_graph(edges=edges)
     
 def create_net_y():
-    print("Building Network Y...")
+    # print("Building Network Y...")
     
     global genY, g_state, edges, curr_net_size
     
@@ -115,7 +109,7 @@ def create_net_y():
         
         
 def create_net_z():
-    print("Building Network Z")
+    # print("Building Network Z")
     
     global genY, g_state, edges, curr_net_size
     
@@ -134,12 +128,15 @@ def create_net_z():
 def extend_network(node, gen, weights):
     global curr_net_size, g_state, edges
     
+    # print(f'gen: {len(gen)}')
+    # print(f'weights: {len(weights)}')
+    gen = gen[0:len(weights)]
     snodes = np.random.choice(gen, p=weights, size=m_0, replace=False)
         
     for snode in snodes:
         g_state[d_index][snode] += 1
         g_state[d_index][node] += 1
         
-        edges.append((snode, node))
+        edges.append((snode, node, random.randint(1, 10)))
         
     curr_net_size += len(snodes) # update graph size
