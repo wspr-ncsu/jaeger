@@ -1,11 +1,11 @@
 import numpy as np
 import math
 import networkx as nx
-from helpers import assign_fitness
+from helpers import assign_fitness, draw_graph
 import matplotlib.pyplot as plt
-from helpers import draw_graph
 import random
 
+dev = False
 # parameters
 V = 7000
 n_0 = 5
@@ -26,9 +26,10 @@ genZ_percent = 0.5
 edges = []
 curr_net_size = 0
 
-def power_law_graph(_V, _n_0, _m_0 = 1, apply_fitness = True):
-    global V, n_0, m_0, g_state, curr_net_size
-    V, n_0, m_0 = _V, _n_0, _m_0
+def create_network(_V, _n_0, _m_0 = 1, apply_fitness = True, dev_mode = False):
+    global V, n_0, m_0, g_state, curr_net_size, dev
+    
+    V, n_0, m_0, dev = _V, _n_0, _m_0, dev_mode
     
     init_gens()
     init_graph_state(apply_fitness)
@@ -48,9 +49,11 @@ def init_gens():
     genY = np.array(list(range(n_0, last_index)))
     genZ = np.array(list(range(last_index, V)))
     
-    # print(f"GenX: {genX}, len = { len(genX) }")
-    # print(f"GenY: {genY}, len = { len(genY) }")
-    # print(f"GenZ: {genZ}, len = { len(genZ) }")
+    if dev:
+        print(f"GenX: {genX}, len = { len(genX) }")
+        print(f"GenY: {genY}, len = { len(genY) }")
+        print(f"GenZ: {genZ}, len = { len(genZ) }")
+        
     
     
 def patch_g_state(start = 0, end = curr_net_size):
@@ -69,8 +72,6 @@ def init_graph_state(af = True):
     
     
 def create_net_x():
-    # print("Building Network X...")
-    
     global g_state, edges, curr_net_size
     curr_net_size = n_0
     
@@ -79,8 +80,9 @@ def create_net_x():
             edges.append((src, dst, random.randint(1, 10)))
             g_state[d_index][src] += 1
             g_state[d_index][dst] += 1
-            
-    # draw_graph(edges=edges)
+    if dev:
+        print('Generation X')
+        draw_graph(edges=edges)
     
 def create_net_y():
     # print("Building Network Y...")
@@ -128,8 +130,6 @@ def create_net_z():
 def extend_network(node, gen, weights):
     global curr_net_size, g_state, edges
     
-    # print(f'gen: {len(gen)}')
-    # print(f'weights: {len(weights)}')
     gen = gen[0:len(weights)]
     snodes = np.random.choice(gen, p=weights, size=m_0, replace=False)
         

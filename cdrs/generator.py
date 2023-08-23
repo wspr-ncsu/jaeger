@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import json
 from datetime import datetime
 import requests
-from custom_network import power_law_graph
+from phone_network import create_network
 
 CONTRIBUTION_URL = 'http://127.0.0.1:5000/contribute'
 
@@ -50,7 +50,7 @@ def create_phone_network(num_carriers, n_0, m_0):
     global phone_network
     
     graph = nx.Graph()
-    degrees, edges = power_law_graph(num_carriers, n_0, m_0, apply_fitness=True)
+    degrees, edges = create_network(num_carriers, n_0, m_0, apply_fitness=True)
     graph.add_weighted_edges_from(edges)
     
     phone_network = graph

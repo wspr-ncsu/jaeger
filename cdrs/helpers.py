@@ -266,7 +266,7 @@ def show_goodness_of_fit(degrees):
     
 def draw_graph(edges):
     G = nx.Graph()
-    G.add_edges_from(edges)
+    G.add_weighted_edges_from(edges)
 
     # Draw the graph using Matplotlib
     nx.draw(G, with_labels=True, node_color='lightblue', font_weight='bold')
