@@ -2,23 +2,25 @@
 
 # Function to setup Python3 virtual env
 function runvenv {
-    if [ -z $1 ]
+    cmd=$1
+
+    if [ -z $cmd ]
         then
         echo "Missing arg to VENV (activate, deactivate, setup)"
         return
     fi
 
-    if [ $1 == "activate" ] 
+    if [ $cmd == "activate" ] 
         then
         echo "Activating VENV"
         source ./venv/bin/activate
         echo "VENV activated"
-    elif [ $1 == "deactivate" ]
+    elif [ $cmd == "deactivate" ]
         then
         echo "Deactivating VENV"
         source ./venv/bin/deactivate
         echo "VENV deactivated"
-    elif [ $1 == "setup" ]
+    elif [ $cmd == "setup" ]
         then
         echo "Creating VENV..."
         python3 -m venv venv
@@ -34,17 +36,19 @@ function runvenv {
 
 # Function for app specific commands
 function runapp {
-    if [ -z $1 ]
+    cmd=$1
+
+    if [ -z $cmd ]
         then
         echo "Missing arg to app command (migrate, start)"
         return
     fi
 
-    if [ $1 == "migrate" ] 
+    if [ $cmd == "migrate" ] 
         then
         echo "Running app migrate"
         python3 app.py migrate
-    elif [ $1 == "start" ]
+    elif [ $cmd == "start" ]
         then
         echo "Starting app"
         flask run
@@ -54,32 +58,37 @@ function runapp {
 }
 
 # Function for data generation commands
-function runseeder {
-    source ./venv/bin/activate
-    python3 generator/generate.py
+function runcdr {
+    cmd=$1
+
+    if [ -z $cmd ]
+        then
+        echo "Missing command to cdr module"
+        echo "Available commands: generate"
+        return
+    fi
+
+    if [ $cmd == "generate" ] 
+        then
+        echo "Running CDR generator"
+        python3 ./cdrs/generator.py
+    else
+        echo "Unknown CDR Command"
+    fi
 }
 
-if [ $1 == "seed" ] 
+module=$1
+command=$2
+
+if [ $module == "cdr" ] 
     then
-    runseeder
-elif [ $1 == 'app' ]
+    runcdr $command
+elif [ $module == 'app' ]
     then
-    runapp $2
-elif [ $1 == 'venv' ]
+    runapp $command
+elif [ $module == 'venv' ]
     then
-    runvenv $2
-elif [ $1 == 'demo' ]
-    then
-    python demo/run.py run
-elif [ $1 == 'traceback' ]
-    then
-    python demo/run.py traceback $2
-elif [ $1 == 'traceforward' ]
-    then
-    python demo/run.py traceforward $2
-elif [ $1 == 'lookup' ]
-    then
-    python demo/run.py lookup $2
+    runvenv $command
 else
     echo "Unknown command"
 fi

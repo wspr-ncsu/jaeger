@@ -142,3 +142,13 @@ def run(num_subs, num_carriers):
     print(f'total subs: {len(subscribers)}')
     
     simulate()
+ 
+def get_input(prompt, default=None):
+    response = input(prompt)
+    return response if response else default
+    
+if __name__ == '__main__':
+    num_carriers = int(get_input(f'Number of carriers (default is 50): ', 50))
+    num_subs = int(get_input(f'Number of subscribers (default is 1000): ', 1000))
+    
+    run(num_subs=num_subs, num_carriers=num_carriers)
