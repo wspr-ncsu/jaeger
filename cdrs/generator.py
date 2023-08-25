@@ -7,12 +7,15 @@ import json
 from datetime import datetime
 import requests
 from phone_network import create_network
+import pickle
 
 CONTRIBUTION_URL = 'http://127.0.0.1:5000/contribute'
 
 subscribers = []
+cache_file = 'cache.pkl'
 user_network = None
 phone_network = None
+shortest_paths = None
 market_shares = None
 same_network_call = 0
 cross_network_call = 0
@@ -80,15 +83,8 @@ def simulate_call(src, dst):
     else:
         cross_network_call += 1
     
-    
-    if source not in phone_network or target not in phone_network:
-        return
-    
-    # Find the call path
-    call_path = nx.shortest_path(phone_network, source=source, target=target, weight='weight')
-    
     # Map integer based indices to real carrier pointers 
-    call_path = list(call_path)
+    call_path = get_call_path(source, target)
     
     for (index, carrier) in enumerate(call_path):
         prev = next = None
@@ -106,9 +102,19 @@ def simulate_call(src, dst):
         
         # Simulate record submission to traceback server
         contribute(cdr)
-            
+
+
+def all_pairs_johnson():
+    global shortest_paths
+    shortest_paths = nx.johnson(phone_network, weight='weight')
+    
+    
+def get_call_path(source, target):
+    return shortest_paths[source][target]
+    
 def contribute(cdr):
-    print(f'Saving {cdr}')
+    # print(f'Saving {cdr}')
+    pass
     
 
 def draw_graph(G):
@@ -119,33 +125,77 @@ def to_json(data):
     return json.dumps(data, indent=4)
     
 def simulate():
-    for edge in user_network.edges:
+    total = len(user_network.edges)
+    
+    for i, edge in enumerate(user_network.edges):
         src = subscribers[edge[0]]
         dst = subscribers[edge[1]]
-        print(edge)
+        print(f'[{i+1}/{total}]:: {src} -> {dst}')
         try:
             simulate_call(src, dst)
         except IndexError as err:
             print(err)
-                
-def run(num_subs, num_carriers):
-    create_phone_network(num_carriers, 5, 2)
-    generate_market_shares()
+
+def set_cache():
+    data = (phone_network, shortest_paths, market_shares)
+    with open(cache_file, 'wb') as file:
+        pickle.dump(data, file)
+
+def load_cache(num_carriers):
+    global phone_network, shortest_paths, market_shares
     
-    for carrier in phone_network.nodes:
-        assign_subscribers_by_market_share(carrier, market_shares[carrier], num_subs)
+    print('Loading phone network metadata from cache...')
+    
+    with open(cache_file, 'rb') as file:
+        pn, sp, ms = pickle.load(file)
+        phone_network = pn
+        shortest_paths = sp
+        market_shares = ms
+    
+    if len(phone_network.nodes) != num_carriers:
+        return False
+    
+    return phone_network is not None and shortest_paths is not None and market_shares is not None
+    
+    
+def init_phone_network(num_carriers):
+    timed(create_phone_network)(num_carriers, 5, 2)
+    timed(generate_market_shares)()
+    timed(all_pairs_johnson)()
+    timed(set_cache)()
+    
+def run(num_subs, num_carriers, use_cache=False):
+    def runner():
+        if use_cache:
+            init_phone_network(num_carriers) if not timed(load_cache)(num_carriers) else None
+        else:
+            init_phone_network(num_carriers)
         
-    create_user_network()
-    
-    shuffle_subscribers()
+        for carrier in phone_network.nodes:
+            assign_subscribers_by_market_share(carrier, market_shares[carrier], num_subs)
+            
+        timed(create_user_network)()
         
-    print(f'total subs: {len(subscribers)}')
-    
-    simulate()
+        timed(shuffle_subscribers)()
+        
+        simulate()
+        
+    timed(runner)()
  
 def get_input(prompt, default=None):
     response = input(prompt)
     return response if response else default
+
+def timed(func):
+    def wrapped(*args, **kwargs):
+        start = datetime.now()
+        result = func(*args, **kwargs)
+        print(f'{func.__name__} finished in {get_elapsed_time(start)} seconds')
+        return result
+    return wrapped
+
+def get_elapsed_time(start):
+    return round((datetime.now() - start).total_seconds(), 2)
     
 if __name__ == '__main__':
     num_carriers = int(get_input(f'Number of carriers (default is 50): ', 50))
