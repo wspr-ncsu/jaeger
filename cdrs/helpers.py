@@ -195,37 +195,46 @@ def custom_power_law_graph(V, n_0, m_0 = 1, apply_fitness = True):
 def distribution(degrees):
     x, freqs = np.unique(degrees, return_counts=True)
     
-    leaf = 'leaf_nodes'
-    heavy = 'heavy hitters (500+)'
-    _5_to_10 = '5 - 10 edges'
-    _2_to_3 = '2 - 3 edges'
-    others = 'others'
+    bounds = {
+        'heavy hitters (500+)': (500, None),
+        '201 - 499': (201, 499),
+        '101 - 200': (101, 200),
+        '51 - 100': (51, 100),
+        '21 - 50': (21, 50),
+        '11 - 20': (11, 20),
+        '4 - 10': (4, 10),
+        '2 - 3': (2, 3),
+    }
     
     data = {}
-    data[heavy] = 0
-    data[leaf] = 0
-    data[_2_to_3] = 0
-    data[_5_to_10] = 0
-    data[others] = 0
+    
+    # for key in bounds.keys():
+    #     data[key] = 0
     
     for i in range(0, len(x)):
         degree = x[i]
-        print(f"Checking degree: {degree}, freq: {freqs[i]}")
-        if (degree > 500):
-            data[heavy] += freqs[i]
-        elif degree <= 10 and degree >= 5:
-            data[_5_to_10] += freqs[i]
-        elif degree < 5 and degree >= 2:
-            data[_2_to_3] += freqs[i]
-        elif degree == 1:
-            data[leaf] = freqs[i]
-        else:
-            data[others] += freqs[i]
+        # print(f"Checking degree: {degree}, freq: {freqs[i]}")
         
-    for key in data.keys():
-        print(f"{key}: {data[key]}")
+        for key in bounds.keys():
+            bound = bounds[key]
+            if bound[1] is None:
+                if degree >= bound[0]:
+                    data[key] = data[key] + freqs[i] if key in data.keys() else freqs[i]
+            else:
+                if degree >= bound[0] and degree <= bound[1]:
+                    data[key] = data[key] + freqs[i] if key in data.keys() else freqs[i]
+            
+    
+    total_freqs = sum(freqs)
+    data_total = sum(data.values())
+    
+    # print(f"Total freqs: {total_freqs}")
+    # print(f"Total data: {data_total}")
+    
+    # for key in data.keys():
+    #     print(f"{key}: {data[key]}")
         
-    print("\n\n")
+    return data, total_freqs
 
 def plot_degree_distribution(degrees, title = "Degree distribution"):
     x, freqs = np.unique(degrees, return_counts=True)
