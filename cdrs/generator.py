@@ -8,6 +8,8 @@ from datetime import datetime
 import requests
 from phone_network import create_network
 import pickle
+import os
+import argparse
 
 CONTRIBUTION_URL = 'http://127.0.0.1:5000/contribute'
 
@@ -126,15 +128,22 @@ def to_json(data):
     
 def simulate():
     total = len(user_network.edges)
+    start_time = datetime.now()
     
     for i, edge in enumerate(user_network.edges):
         src = subscribers[edge[0]]
         dst = subscribers[edge[1]]
-        print(f'[{i+1}/{total}]:: {src} -> {dst}')
+        # print(f'[{i+1}/{total}]:: {src} -> {dst}')
+        
         try:
             simulate_call(src, dst)
         except IndexError as err:
             print(err)
+        
+        if (i + 1) % 1000 == 0:
+            elapsed = get_elapsed_time(start_time)
+            print(f'[{i+1}/{total}]:: Elapsed time: {elapsed} seconds')
+            start_time = datetime.now()
 
 def set_cache():
     data = (phone_network, shortest_paths, market_shares)
@@ -143,6 +152,9 @@ def set_cache():
 
 def load_cache(num_carriers):
     global phone_network, shortest_paths, market_shares
+    
+    if not os.path.exists(cache_file):
+        return False
     
     print('Loading phone network metadata from cache...')
     
@@ -158,18 +170,19 @@ def load_cache(num_carriers):
     return phone_network is not None and shortest_paths is not None and market_shares is not None
     
     
-def init_phone_network(num_carriers):
+def init_phone_network(num_carriers, use_cache=False):
     timed(create_phone_network)(num_carriers, 5, 2)
     timed(generate_market_shares)()
     timed(all_pairs_johnson)()
-    timed(set_cache)()
+    
+    timed(set_cache)() if use_cache else None
     
 def run(num_subs, num_carriers, use_cache=False):
     def runner():
         if use_cache:
-            init_phone_network(num_carriers) if not timed(load_cache)(num_carriers) else None
+            init_phone_network(num_carriers, use_cache=use_cache) if not timed(load_cache)(num_carriers) else None
         else:
-            init_phone_network(num_carriers)
+            init_phone_network(num_carriers, use_cache=use_cache)
         
         for carrier in phone_network.nodes:
             assign_subscribers_by_market_share(carrier, market_shares[carrier], num_subs)
@@ -198,7 +211,9 @@ def get_elapsed_time(start):
     return round((datetime.now() - start).total_seconds(), 2)
     
 if __name__ == '__main__':
-    num_carriers = int(get_input(f'Number of carriers (default is 50): ', 50))
-    num_subs = int(get_input(f'Number of subscribers (default is 1000): ', 1000))
-    
-    run(num_subs=num_subs, num_carriers=num_carriers)
+    parser = argparse.ArgumentParser(description='Generate CDRs')
+    parser.add_argument('-c', '--carriers', type=int, help='Number of carriers', default=2000)
+    parser.add_argument('-s', '--subscribers', type=int, help='Number of subscribers', default=1000000)
+    args = parser.parse_args()
+    print(args)
+    run(num_carriers=args.carriers, num_subs=args.subscribers)
