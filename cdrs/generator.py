@@ -5,7 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 from datetime import datetime
-import requests
 from phone_network import create_network
 import pickle
 import os
