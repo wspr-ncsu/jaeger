@@ -129,6 +129,8 @@ def simulate():
     total = len(user_network.edges)
     start_time = datetime.now()
     
+    shared_count = 90000
+    
     for i, edge in enumerate(user_network.edges):
         src = subscribers[edge[0]]
         dst = subscribers[edge[1]]
@@ -139,7 +141,7 @@ def simulate():
         except IndexError as err:
             print(err)
         
-        if (i + 1) % 1000 == 0:
+        if (i + 1) % shared_count == 0:
             elapsed = get_elapsed_time(start_time)
             print(f'[{i+1}/{total}]:: Elapsed time: {elapsed} seconds')
             start_time = datetime.now()

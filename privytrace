@@ -71,18 +71,40 @@ function runcdr {
     if [ $cmd == "generate" ] 
         then
         echo "Running CDR generator"
-        python3 ./cdrs/generator.py
+
+        num_carriers=$2
+        num_subs=$3
+
+        if [ -z $num_carriers ]
+            then
+            num_carriers=7000
+        fi
+
+        if [ -z $num_subs ]
+            then
+            num_subs=1000000
+        fi
+
+        python3 ./cdrs/generator.py -c $num_carriers -s $num_subs
     else
         echo "Unknown CDR Command"
     fi
 }
 
+runvenv activate > /dev/null 2>&1
+
 module=$1
 command=$2
 
+if [ -z $module ]
+    then
+    echo "Missing module (app, cdr, venv)"
+    exit 1
+fi
+
 if [ $module == "cdr" ] 
     then
-    runcdr $command
+    runcdr $command $3 $4
 elif [ $module == 'app' ]
     then
     runapp $command
