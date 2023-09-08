@@ -4,6 +4,7 @@ import random
 import math
 import powerlaw
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 def decrement(f, by = 1):
     if f > by:
@@ -280,3 +281,14 @@ def draw_graph(edges):
     # Draw the graph using Matplotlib
     nx.draw(G, with_labels=True, node_color='lightblue', font_weight='bold')
     plt.show()
+    
+def timed(func):
+    def wrapped(*args, **kwargs):
+        start = datetime.now()
+        result = func(*args, **kwargs)
+        print(f'{func.__name__} finished in {get_elapsed_time(start)} seconds')
+        return result
+    return wrapped
+
+def get_elapsed_time(start):
+    return round((datetime.now() - start).total_seconds(), 2)

@@ -1,14 +1,15 @@
+import os
+import json
+import pickle
 import random
 import secrets
-import networkx as nx
-import numpy as np
-import matplotlib.pyplot as plt
-import json
-from datetime import datetime
-from models.phone_network import create_network
-import pickle
-import os
 import argparse
+import numpy as np
+import networkx as nx
+from datetime import datetime
+import matplotlib.pyplot as plt
+from models.phone_network import create_network
+from helpers import timed, get_elapsed_time
 
 CONTRIBUTION_URL = 'http://127.0.0.1:5000/contribute'
 
@@ -199,17 +200,6 @@ def run(num_subs, num_carriers, use_cache=False):
 def get_input(prompt, default=None):
     response = input(prompt)
     return response if response else default
-
-def timed(func):
-    def wrapped(*args, **kwargs):
-        start = datetime.now()
-        result = func(*args, **kwargs)
-        print(f'{func.__name__} finished in {get_elapsed_time(start)} seconds')
-        return result
-    return wrapped
-
-def get_elapsed_time(start):
-    return round((datetime.now() - start).total_seconds(), 2)
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate CDRs')
