@@ -1,5 +1,5 @@
-# PrivyTrace: Accountable, Privacy-Preserving Phone Call Traceback
-PrivyTrace project requires cooperation between mutliple authorities and phone companies to trace phone calls.
+# PrivyTrace
+PrivyTrace is accountable, privacy-preserving, fast phone call traceback project. It requires cooperation between mutliple authorities and phone companies to trace phone calls.
 
 ## System Entities
 - Data generation (data-generation)
