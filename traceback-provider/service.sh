@@ -6,7 +6,11 @@ deps="requirements.txt"
 cmd=$1
 allowed_commands=($setup $serve $migrate)
 
-# if command is venv, run venv command
+if [[ ! " ${allowed_commands[@]} " =~ " ${cmd} " ]]; then
+    echo "Invalid command: $cmd. Valid commands are: ${allowed_commands[@]}"
+    exit 1
+fi
+
 if [ $cmd == $setup ]
     then
     echo "Creating virtual environment"
@@ -17,16 +21,7 @@ if [ $cmd == $setup ]
         echo "Installing requirements"
         pip install -r $deps
     fi
-    
-    exit 0
-fi
-
-if [[ ! " ${allowed_commands[@]} " =~ " ${cmd} " ]]; then
-    echo "Invalid command: $cmd. Valid commands are: ${allowed_commands[@]}"
-    exit 1
-fi
-
-if [ $cmd == $migrate ] 
+elif [ $cmd == $migrate ] 
     then
     echo "Running migrations for traceback provider"
     source ./venv/bin/activate
