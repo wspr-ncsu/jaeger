@@ -5,8 +5,8 @@ from redis import Redis
 from threading import Thread
 from dotenv import load_dotenv
 from flask import Flask, request
-import clickhouse_connect
 from werkzeug.exceptions import HTTPException
+import clickhouse_connect
 
 load_dotenv()
 
