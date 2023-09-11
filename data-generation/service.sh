@@ -13,17 +13,17 @@ fi
 if [ $cmd == $setup ]
     then
     echo "Creating virtual environment"
-    python3.8 -m venv venv
-    source ./venv/bin/activate
+    python3.8 -m venv .venv
+    source ./.venv/bin/activate
 
     if test -f $deps; then
         echo "Installing requirements"
         pip install -r $deps
     fi
-elif [ $cmd == $generate ] 
+elif [ $cmd == $generate ]
     then
     echo "Generating CDR datasets"
-    source ./venv/bin/activate
+    source ./.venv/bin/activate
 
     num_carriers=$2
     num_subs=$3
