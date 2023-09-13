@@ -1,4 +1,5 @@
 import os
+import traceback as ex
 from time import sleep
 from json import loads, dumps
 from redis import Redis
@@ -6,8 +7,8 @@ from threading import Thread
 from dotenv import load_dotenv
 from flask import Flask, request
 from werkzeug.exceptions import HTTPException
-from models.database import init_db, migrate_db
 from models.helpers import env
+import models.groupsig as groupsig
 
 load_dotenv()
 
@@ -30,11 +31,26 @@ class GroupManager:
         app = Flask(__name__, instance_relative_config=True)
         app.config.from_mapping(SECRET_KEY=env("APP_SECRET_KEY"))
         self.create_instance_path(app)
+        refresh = False
 
+        mgr_key, grp_key = groupsig.setup(refresh=refresh)
 
         @app.post('/register')
         def register():
-            return { "msg": "Registered" }, self.HTTP_CREATED
+            cid = request.form.get('cid')
+            
+            if not cid:
+                return {"msg": "Missing cid"}, self.HTTP_UNPROCESSABLE
+            
+            cid = int(cid)
+            
+            if cid < 1 or cid > 7000:
+                return {"msg": "Unrecognized ID"}, self.HTTP_UNPROCESSABLE
+            
+            mem_key = groupsig.register(cid=cid, mgr_key=mgr_key, grp_key=grp_key, refresh=refresh)
+            payload = { 'mem_key': mem_key, 'grp_key': grp_key }
+            
+            return payload, self.HTTP_CREATED
 
 
         @app.post('/deanonymize')
@@ -51,29 +67,18 @@ class GroupManager:
         @app.errorhandler(Exception)
         def handle_all_exceptions(e):
             if isinstance(e, HTTPException):
+                return e
+            else:
+                print("\n")
+                ex.print_exc()
+                print("\n")
+                
                 return {
-                    'msg': e.description
-                }, e.code
-            
-            return {"msg": e.description }, self.HTTP_INTERNAL_SERVER_ERROR
+                    'msg': 'An unexpected error occurred'
+                }, self.HTTP_INTERNAL_SERVER_ERROR
 
         return app
 
 
 def create_app(test_config=None):
     return GroupManager().start(test_config)
-
-if __name__ == '__main__':
-    import sys
-    
-    if (len(sys.argv) >= 2):
-        command = sys.argv[1]
-        
-        if command == 'migrate':
-            init_db()
-            migrate_db()
-        else:
-            print("Invalid Command")
-    else:
-        print("NO ARGUMENT PROVIDED")
-    

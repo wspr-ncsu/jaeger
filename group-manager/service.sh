@@ -28,7 +28,7 @@ elif [ $cmd == $migrate ]
     python app.py migrate
 elif [ $cmd == $serve ]
     then
-    echo "Starting traceback provider server"
+    echo "Starting Group Manager"
     source ./.venv/bin/activate
     flask run
 fi
