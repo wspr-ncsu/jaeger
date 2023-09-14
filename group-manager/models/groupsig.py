@@ -1,9 +1,8 @@
-import base64
 from . import database as db
 from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, constants
 
-manager_secret = 'sK_G'
-group_key = 'vK_G'
+manager_secret = 'GM.sK_G'
+group_key = 'GM.vK_G'
 
 def setup(refresh = False):
     db.connect()
