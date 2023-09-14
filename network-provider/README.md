@@ -23,6 +23,6 @@ They
     - ```./service setup```
 
 
-## Start Service
+### Start Service
 - Run: 
     - ```./service serve```. This starts the server.

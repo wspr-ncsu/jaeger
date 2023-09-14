@@ -18,6 +18,6 @@ The trace authority issues signatures for traces to be carrier out. Without sign
     - ```./service setup```
 
 
-## Start Service
+### Start Service
 - Run: 
     - ```./service serve```. This starts the server.
