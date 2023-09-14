@@ -21,14 +21,22 @@ if [ $cmd == $setup ]
         echo "Installing requirements"
         pip install -r $deps
     fi
-elif [ $cmd == $migrate ]
-    then
-    echo "Running migrations for traceback provider"
-    source ./.venv/bin/activate
-    python app.py migrate
 elif [ $cmd == $serve ]
     then
-    echo "Starting Group Manager"
+    port=$2
+
+    if [ -z "$port" ]
+        then
+        # get APP_PORT from .env file
+        port=$(grep APP_PORT .env | cut -d '=' -f2)
+    fi
+
+    if [ -z "$port" ]
+        then
+        port=9997
+    fi
+
+    echo "Starting Group Manager on port $port"
     source ./.venv/bin/activate
-    flask run
+    flask run --port $port
 fi
