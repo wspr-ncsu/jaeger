@@ -1,13 +1,9 @@
 import os
-import traceback as ex
-from time import sleep
-from json import loads, dumps
 from redis import Redis
 from threading import Thread
 from dotenv import load_dotenv
 from flask import Flask, request
-from werkzeug.exceptions import HTTPException
-from models.helpers import env
+from models.helpers import env, not_found, handle_ex
 import models.groupsig as groupsig
 
 load_dotenv()
@@ -38,22 +34,11 @@ class NetworkProvider:
         
         @app.errorhandler(self.HTTP_NOT_FOUND)
         def page_not_found(e):
-            return {
-                'msg': 'The requested resource could not be found'
-            }, self.HTTP_NOT_FOUND
+            return not_found()
         
         @app.errorhandler(Exception)
         def handle_all_exceptions(e):
-            if isinstance(e, HTTPException):
-                return e
-            else:
-                print("\n")
-                ex.print_exc()
-                print("\n")
-                
-                return {
-                    'msg': 'An unexpected error occurred'
-                }, self.HTTP_INTERNAL_SERVER_ERROR
+            return handle_ex(e)
 
         return app
 
