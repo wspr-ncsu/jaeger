@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from flask import Flask, request
 from models.helpers import env, not_found, handle_ex
 import models.groupsig as groupsig
+import models.trace_auth as trace_auth
+import models.label_mgr as label_mgr
 
 load_dotenv()
 
@@ -30,6 +32,8 @@ class NetworkProvider:
         app.config.from_mapping(SECRET_KEY=env("APP_SECRET_KEY"))
         self.create_instance_path(app)
 
+        vK_t = trace_auth.register(cid)
+        K_prf = label_mgr.register(cid)
         mem_key, grp_key = groupsig.register(cid)
         
         @app.errorhandler(self.HTTP_NOT_FOUND)
