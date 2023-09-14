@@ -2,13 +2,14 @@ import requests
 from .helpers import env
 from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, constants
 
-REGISTER_URL = env('REGISTER_URL')
+grp_sig_base_url = env('GRP_SIG_URL')
 
 # post request to registration server
 def register(cid):
     mem_key, grp_key = None, None
     
-    res = requests.post(REGISTER_URL, data={'cid': cid})
+    url = grp_sig_base_url + '/register'
+    res = requests.post(url, data={'cid': cid})
     res.raise_for_status()
     data = res.json()
     
