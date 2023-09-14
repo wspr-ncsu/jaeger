@@ -1,22 +1,23 @@
+# Trace Authority
+The trace authority issues signatures for traces to be carrier out. Without signing a trace by the trace authority, ciphertexts cannot be decrypted
+
+- ```/register```: Carriers hit this endpoint to retrieve the public verification key
+
+
 ### Requirements
-- Clickhouse v23.8.1
-- Python v3.8.18
-- Pip v23.0.1
+- Python v3.8.18 and Pip v23.0.1
+- Redis Server
 
 ### Initial Setup
 - Create a copy:
     - of ```.env.example``` and save as ```.env```.
-    - of ```.flaskenv``` and save as ```.flaskenv```
-- Edit the variables in ```.env``` and ```.flaskenv``` to suit your case.
+    - Modify the variables in ```.env``` to suit your case.
 - Make service bash script executable (Optional): 
     - ```sudo chmod +x ./service```.
 - Create Virtual Environment and Install dependencies: 
-    - ```./service setup```. 
-    This will automatically activate the venv for you.
-- Create a database with same name as specified in your ```.env``` and run migrations: 
-    - ```./service migrate```
+    - ```./service setup```
 
 
 ## Start PrivyTrace Server Application
 - Run: 
-    - ```./service serve```. This starts the server and the insertion daemon.
+    - ```./service serve```. This starts the server.
