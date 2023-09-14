@@ -4,7 +4,8 @@ PrivyTrace is accountable, privacy-preserving, fast phone call traceback project
 ## System Entities
 - Data generation (```/data-generation```)
 - Group Manager (```/group-manager```)
-- Label Authority (```/label-authority```)
+- Label Manager (```/label-manager```)
+- Trace Authority (```/trace-auth```)
 - Network Provider (```/network-provider```)
 - Traceback Provider (```/traceback-provider```)
 
