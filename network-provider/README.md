@@ -10,8 +10,8 @@ They
 
 
 ### Requirements
-- Python v3.8.18
-- Pip v23.0.1
+- Python v3.8.18 and Pip v23.0.1
+- Redis Server
 
 ### Initial Setup
 - Create a copy:
@@ -23,6 +23,6 @@ They
     - ```./service setup```
 
 
-## Start PrivyTrace Server Application
+## Start Service
 - Run: 
     - ```./service serve```. This starts the server.

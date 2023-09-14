@@ -18,6 +18,6 @@ The label manager manages labels for calls. It exposes few endpoints to handle t
     - ```./service setup```
 
 
-## Start PrivyTrace Server Application
+## Start Service
 - Run: 
     - ```./service serve```. This starts the server.

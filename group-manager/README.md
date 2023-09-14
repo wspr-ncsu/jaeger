@@ -20,6 +20,6 @@ The group manager (GM) manages the group signature scheme. The GM sets up the sc
     - ```./service setup```
 
 
-## Start PrivyTrace Server Application
+## Start Service
 - Run: 
     - ```./service serve```. This starts the server.
