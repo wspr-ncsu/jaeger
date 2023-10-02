@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import networkx as nx
-from helpers import assign_fitness, draw_graph
+from .helpers import assign_fitness, draw_graph
 import matplotlib.pyplot as plt
 import random
 

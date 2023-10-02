@@ -1,3 +1,4 @@
+from os import getenv
 import numpy as np
 import networkx as nx
 import random
@@ -5,6 +6,10 @@ import math
 import powerlaw
 import matplotlib.pyplot as plt
 from datetime import datetime
+
+def env(envname, default=""):
+    value = getenv(envname)
+    return value or default
 
 def decrement(f, by = 1):
     if f > by:
@@ -286,7 +291,7 @@ def timed(func):
     def wrapped(*args, **kwargs):
         start = datetime.now()
         result = func(*args, **kwargs)
-        print(f'{func.__name__} finished in {get_elapsed_time(start)} seconds')
+        print(f'--> {func.__name__} finished in {get_elapsed_time(start)} seconds')
         return result
     return wrapped
 

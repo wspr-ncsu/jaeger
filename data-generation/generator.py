@@ -9,7 +9,7 @@ import networkx as nx
 from datetime import datetime
 import matplotlib.pyplot as plt
 from models.phone_network import create_network
-from helpers import timed, get_elapsed_time
+from models.helpers import timed, get_elapsed_time
 
 CONTRIBUTION_URL = 'http://127.0.0.1:5000/contribute'
 
@@ -179,7 +179,7 @@ def init_phone_network(num_carriers, use_cache=False):
     
     timed(set_cache)() if use_cache else None
     
-def run(num_subs, num_carriers, use_cache=False):
+def run(num_subs, num_carriers, rbcallers, use_cache=False):
     def runner():
         if use_cache:
             init_phone_network(num_carriers, use_cache=use_cache) if not timed(load_cache)(num_carriers) else None
@@ -205,6 +205,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate CDRs')
     parser.add_argument('-c', '--carriers', type=int, help='Number of carriers', default=2000)
     parser.add_argument('-s', '--subscribers', type=int, help='Number of subscribers', default=1000000)
+    parser.add_argument('-r', '--robocallers', type=int, help='Number of robocallers', default=100)
     args = parser.parse_args()
     print(args)
-    run(num_carriers=args.carriers, num_subs=args.subscribers)
+    run(num_carriers=args.carriers, num_subs=args.subscribers, rbcallers=args.robocallers)
