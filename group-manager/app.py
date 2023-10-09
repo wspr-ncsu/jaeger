@@ -9,6 +9,7 @@ from flask import Flask, request
 from werkzeug.exceptions import HTTPException
 from models.helpers import env
 import models.groupsig as groupsig
+import models.helpers as helpers
 
 load_dotenv()
 
@@ -37,19 +38,9 @@ class GroupManager:
 
         @app.post('/register')
         def register():
-            cid = request.form.get('cid')
-            
-            if not cid:
-                return {"msg": "Missing cid"}, self.HTTP_UNPROCESSABLE
-            
-            cid = int(cid)
-            
-            if cid < 1 or cid > 7000:
-                return {"msg": "Unrecognized ID"}, self.HTTP_UNPROCESSABLE
-            
+            cid = helpers.validate_cid(request.form.get('cid'))
             mem_key = groupsig.register(cid=cid, mgr_key=mgr_key, grp_key=grp_key, refresh=refresh)
             payload = { 'mem_key': mem_key, 'grp_key': grp_key }
-            
             return payload, self.HTTP_CREATED
 
 

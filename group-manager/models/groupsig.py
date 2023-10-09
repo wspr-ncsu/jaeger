@@ -28,6 +28,8 @@ def register(cid, grp_key, mgr_key, refresh = False):
     mem_key = None if refresh else db.find(cid)
     
     if not mem_key:
+        groupsig.init(constants.GL19_CODE, 0)
+        
         # Convert base64 encoded key strings into objects
         mgr_key = mgrkey.mgrkey_import(constants.GL19_CODE, mgr_key)
         grp_key = grpkey.grpkey_import(constants.GL19_CODE, grp_key)
