@@ -9,4 +9,4 @@ def register(cid):
     res.raise_for_status()
     data = res.json()
     
-    return data['vKey']
+    return data['vk']

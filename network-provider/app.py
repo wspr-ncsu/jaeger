@@ -32,8 +32,8 @@ class NetworkProvider:
         app.config.from_mapping(SECRET_KEY=env("APP_SECRET_KEY"))
         self.create_instance_path(app)
 
-        kprf = label_mgr.register(cid)
-        sig_ver_key = trace_auth.register(cid)
+        # kprf = label_mgr.register(cid)
+        vk = trace_auth.register(cid)
         mem_key, grp_key = groupsig.register(cid)
         
         @app.errorhandler(self.HTTP_NOT_FOUND)
