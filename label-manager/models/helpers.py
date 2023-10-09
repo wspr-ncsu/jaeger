@@ -1,3 +1,4 @@
+import json
 from os import getenv
 import traceback as ex
 from werkzeug.exceptions import HTTPException
@@ -11,7 +12,7 @@ def not_found():
 
 def handle_ex(e):
     if isinstance(e, HTTPException):
-        return e
+        return { 'msg': e.description }, e.code
     else:
         print("\n")
         ex.print_exc()
@@ -20,7 +21,29 @@ def handle_ex(e):
         return {
             'msg': 'An unexpected error occurred'
         }, 500
+
+def validate_cid(cid):
+    if not cid:
+        raise Panic("Missing cid")
     
+    cid = int(cid)
+    
+    if cid < 1 or cid > 7000:
+        raise Panic("Unrecognized ID")
+    
+    return cid
+
+def validate_xs(xs):
+    if not xs:
+        raise Panic("Missing xs")
+    
+    xs = json.loads(xs)
+    
+    if not isinstance(xs, list):
+        raise Panic("xs must be a list")
+
+    return xs
+
 class Panic(HTTPException):
     code = 422
     description = "Unprocessable entity"

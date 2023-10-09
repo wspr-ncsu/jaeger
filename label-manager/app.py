@@ -7,7 +7,7 @@ import models.helpers as helpers
 
 load_dotenv()
 
-class GroupManager:
+class LabelManager:
     def __init__(self) -> None:
         self.HTTP_OK = 200
         self.HTTP_CREATED = 201
@@ -27,21 +27,15 @@ class GroupManager:
         self.create_instance_path(app)
         refresh = False
 
-        kprf = label_mgr.setup(refresh=refresh)
+        sk = label_mgr.setup(refresh=refresh)
 
-        @app.post('/register')
-        def register():
-            cid = request.form.get('cid')
+        @app.post('/evaluate')
+        def evaluate():
+            cid = helpers.validate_cid(request.form.get('cid'))
+            xs = helpers.validate_xs(request.form.get('xs'))
+            fxs = label_mgr.batch_evaluation(sk, xs)
             
-            if not cid:
-                return {"msg": "Missing cid"}, self.HTTP_UNPROCESSABLE
-            
-            cid = int(cid)
-            
-            if cid < 1 or cid > 7000:
-                return {"msg": "Unrecognized ID"}, self.HTTP_UNPROCESSABLE
-            
-            return { 'kprf': kprf }, self.HTTP_OK
+            return { 'fxs': fxs }, self.HTTP_OK
         
         @app.errorhandler(self.HTTP_NOT_FOUND)
         def page_not_found(e):
@@ -55,4 +49,4 @@ class GroupManager:
 
 
 def create_app(test_config=None):
-    return GroupManager().start(test_config)
+    return LabelManager().start(test_config)
