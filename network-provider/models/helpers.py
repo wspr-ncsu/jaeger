@@ -29,3 +29,7 @@ class Panic(HTTPException):
         super().__init__()
         self.description = message
         self.code = code
+        
+        
+def toEpoch(date):
+    return int(date.timestamp())

@@ -4,6 +4,17 @@ from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, constants
 
 grp_sig_base_url = env('GRP_SIG_URL')
 
+mK = None
+gK = None
+
+def init(mem_key, grp_key):
+    """Initialize the scheme with the given verification key"""
+    mK = mem_key
+    gK = grp_key
+    
+def sign(label, ciphertext):
+    pass
+
 # post request to registration server
 def register(cid):
     mem_key, grp_key = None, None
