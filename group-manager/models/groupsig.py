@@ -25,7 +25,9 @@ def setup(refresh = False):
     
 def register(cid, grp_key, mgr_key, refresh = False):
     db.connect()
-    mem_key = None if refresh else db.find(cid)
+    dbkey = f'GM.members.{cid}'
+    
+    mem_key = None if refresh else db.find(dbkey)
     
     if not mem_key:
         groupsig.init(constants.GL19_CODE, 0)
@@ -42,6 +44,6 @@ def register(cid, grp_key, mgr_key, refresh = False):
         msg4 = groupsig.join_mem(3, grp_key, msgin = msg3, memkey = mem_key)
         mem_key = memkey.memkey_export(msg4['memkey'])
 
-        db.save(cid, mem_key)
+        db.save(dbkey, mem_key)
         
     return mem_key
