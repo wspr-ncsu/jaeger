@@ -32,7 +32,7 @@ class GroupManager:
         app = Flask(__name__, instance_relative_config=True)
         app.config.from_mapping(SECRET_KEY=env("APP_SECRET_KEY"))
         self.create_instance_path(app)
-        refresh = False
+        refresh = True
 
         mgr_key, grp_key = groupsig.setup(refresh=refresh)
 

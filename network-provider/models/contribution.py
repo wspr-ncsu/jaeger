@@ -3,9 +3,9 @@ from . import oprf
 from . import scheme
 from . import label_mgr
 from . import groupsig
-from . import traceback_provider
 from .helpers import CDR
 from typing import List
+from . import traceback_provider as ITG
 from oblivious.ristretto import scalar as Scalar, point as Point
 
 cid = None
@@ -24,7 +24,7 @@ def contribute(cdrs: List[CDR]):
     labels = get_labels(cdrs)
     cts = encrypt(cdrs)
     sigs = sign(labels=labels, cts=cts)
-    traceback_provider.submit(labels=labels, cts=cts, sigs=sigs)
+    ITG.submit(labels=labels, cts=cts, sigs=sigs)
     
 def get_labels(cdrs: List[CDR]) -> List[str]:
     """Get the labels for the CDRs by querying the label manager through OPRF"""
