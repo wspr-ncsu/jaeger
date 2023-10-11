@@ -4,24 +4,19 @@ from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, constants
 
 grp_sig_base_url = env('GRP_SIG_URL', 'http://localhost:9000')
 
-mK = None
-gK = None
+usk = None
+gpk = None
 
 def init(mem_key, grp_key):
     """Initialize the scheme with the given verification key"""
-    global mK, gK
-    
-    
-    mK = mem_key
-    gK = grp_key
+    global usk, gpk
+    usk = mem_key
+    gpk = grp_key
     
 def sign(label: str, ct: str):
-    print('signing')
+    msg = f'{label}|{ct}'.encode() # label|ct
     groupsig.init(constants.GL19_CODE, 0)
-    msg = f'{label}|{ct}'.encode()
-    print(mK)
-    print(gK)
-    sigma = groupsig.sign(msg=msg, memkey=mK, grpkey=gK)
+    sigma = groupsig.sign(msg=msg, memkey=usk, grpkey=gpk)
     # return signature.signature_export(sigma)
     
 
