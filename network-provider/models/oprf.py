@@ -3,8 +3,7 @@ from oblivious.ristretto import point, scalar
 def mask(msg: str) -> (scalar, point):
     x = point.hash(msg.encode())
     s = scalar.random()
-    # return (s, s * x)
-    return (s, x) # debug
+    return (s, s * x) # s is a scalar, x is a point
 
 def unmask(s: scalar, fx: point) -> point:
     return fx / s

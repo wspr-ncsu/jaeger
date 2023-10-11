@@ -33,8 +33,6 @@ class LabelManager:
         def evaluate():
             cid = helpers.validate_cid(request.form.get('cid'))
             xs = helpers.validate_xs(request.form.get('xs'))
-            print(request.form.get('cid'))
-            print(request.form.get('xs'))
             
             fxs = label_mgr.batch_evaluation(sk, xs)
             

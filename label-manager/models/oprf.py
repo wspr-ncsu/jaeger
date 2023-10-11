@@ -3,9 +3,7 @@ from oblivious.ristretto import point, scalar
 def keygen():
     return scalar.random()
 
-def eval(sk: scalar, x: point):
-    print('imported point: ', x) # debug
-    print('imported scalar: ', sk) # debug
+def eval(sk: scalar, x: point): # sk is a scalar, x is a point
     return sk * x
 
 def export_point(pt: point) -> str:
