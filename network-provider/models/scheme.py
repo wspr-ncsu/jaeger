@@ -1,4 +1,4 @@
-from witenc import bls, utils, encrypt, decrypt
+from witenc import bls, utils, encrypt as enc, decrypt as dec
 
 vk = None
 
@@ -7,5 +7,7 @@ def init(k):
     global vk
     vk = k
 
-def encrypt():
-    pass
+def encrypt(cdr):
+    tag = f'{cdr.src}|{cdr.dst}|{cdr.ts}'
+    message = f'{cdr.prev}|{cdr.curr}|{cdr.next}'
+    return enc(pk=vk, tag=tag, message=message)

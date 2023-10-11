@@ -4,16 +4,18 @@ def keygen():
     return scalar.random()
 
 def eval(sk: scalar, x: point):
+    print('imported point: ', x) # debug
+    print('imported scalar: ', sk) # debug
     return sk * x
 
-def import_x(pt):
+def export_point(pt: point) -> str:
+    return pt.to_base64()
+
+def import_point(pt: str) -> point:
     return point.from_base64(pt)
 
-def export_sk(sk):
-    return sk.to_base64()
+def import_scalar(s: str) -> scalar:
+    return scalar.from_base64(s)
 
-def import_sk(sk):
-    return scalar.from_base64(sk)
-
-def export_fx(fx):
-    return fx.to_base64()
+def export_scalar(s: scalar) -> str: 
+    return s.to_base64()

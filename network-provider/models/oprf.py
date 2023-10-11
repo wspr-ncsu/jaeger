@@ -1,23 +1,16 @@
 from oblivious.ristretto import point, scalar
 
-def msg_to_x(msg):
-    return point.hash(msg.encode())
+def mask(msg: str) -> (scalar, point):
+    x = point.hash(msg.encode())
+    s = scalar.random()
+    # return (s, s * x)
+    return (s, x) # debug
 
-def mask_x(x):
-    c = scalar.random()
-    return (c, c * x)
+def unmask(s: scalar, fx: point) -> point:
+    return fx / s
 
-def unmask_fx(c, fx):
-    return fx / c
+def export_point(pt: point) -> str:
+    return pt.to_base64()
 
-def export_x(x):
-    return x.to_base64()
-
-def import_x(x):
-    return point.from_base64(x)
-
-def export_fx(fx):
-    return fx.to_base64()
-
-def import_fx(fx):
-    return scalar.from_base64(fx)
+def import_point(pt: str) -> point:
+    return point.from_base64(pt)

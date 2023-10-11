@@ -1,6 +1,9 @@
 from os import getenv
 import traceback as ex
 from werkzeug.exceptions import HTTPException
+from collections import namedtuple
+
+CDR = namedtuple('CDR', ['src', 'dst', 'ts', 'prev', 'curr', 'next'])
 
 def env(envname, default=""):
     value = getenv(envname)
@@ -33,3 +36,4 @@ class Panic(HTTPException):
         
 def toEpoch(date):
     return int(date.timestamp())
+

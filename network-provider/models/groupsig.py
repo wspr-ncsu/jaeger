@@ -2,7 +2,7 @@ import requests
 from .helpers import env
 from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, constants
 
-grp_sig_base_url = env('GRP_SIG_URL')
+grp_sig_base_url = env('GRP_SIG_URL', 'http://localhost:9000')
 
 mK = None
 gK = None
@@ -12,8 +12,8 @@ def init(mem_key, grp_key):
     mK = mem_key
     gK = grp_key
     
-def sign(label, ciphertext):
-    pass
+def sign(label: str, ciphertext: str):
+    return []
 
 # post request to registration server
 def register(cid):
