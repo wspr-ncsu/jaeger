@@ -13,4 +13,4 @@ def evaluate(cid: str, labels: List[str]) -> List[Scalar]:
     print(data)
     print(res.text)
     res.raise_for_status()
-    return res.json()
+    return res.json()['fxs']

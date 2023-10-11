@@ -20,6 +20,7 @@ def init(id, mem_key, grp_key, vk):
 
 def contribute(cdrs: List[CDR]):
     """Contribute a CDR to the database"""
+    
     labels = get_labels(cdrs)
     return labels
     ciphertexts = encrypt(cdrs)
@@ -28,6 +29,7 @@ def contribute(cdrs: List[CDR]):
     
 def get_labels(cdrs: List[CDR]) -> List[str]:
     """Get the labels for the CDRs by querying the label manager through OPRF"""
+    
     xs, masks = mask_labels(cdrs)
     evaluations = label_mgr.evaluate(cid, xs)
     labels = unmask_evaluations(evaluations, masks)
@@ -36,6 +38,7 @@ def get_labels(cdrs: List[CDR]) -> List[str]:
 
 def mask_labels(cdrs: List[CDR]) -> (List[str], List[Scalar]):
     """Mask the labels using OPRF"""
+    
     xs = []
     masks = []
     
@@ -49,17 +52,19 @@ def mask_labels(cdrs: List[CDR]) -> (List[str], List[Scalar]):
     return xs, masks
 
 def unmask_evaluations(evaluations: List[str], masks: List[Scalar]):
-    return evaluations # debug
     """Unmask the evaluations using OPRF to remove initial masking"""
+
     for index, evaluation in enumerate(evaluations):
+        print(evaluation)
         fx = oprf.import_point(evaluation)
-        fx = oprf.unmask(evaluation, masks[index])
-        evaluations[index] = oprf.export_fx(fx)
+        fx = oprf.unmask(masks[index], fx)
+        evaluations[index] = oprf.export_point(fx)
         
     return evaluations
     
 def sign(labels, ciphertexts):
     """Sign the ciphertexts and labels"""
+    
     signatures = np.empty(len(ciphertexts), dtype=str)
     
     for index, ciphertext in enumerate(ciphertexts):
@@ -67,7 +72,7 @@ def sign(labels, ciphertexts):
         
     return signatures
 
-def encrypt(labels, cdrs):
+def encrypt(cdrs):
     """Encrypt the CDRs. We use the witness encryption scheme"""
     cts = np.empty(len(cdrs), dtype=str)
     
