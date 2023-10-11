@@ -9,11 +9,21 @@ gK = None
 
 def init(mem_key, grp_key):
     """Initialize the scheme with the given verification key"""
+    global mK, gK
+    
+    
     mK = mem_key
     gK = grp_key
     
-def sign(label: str, ciphertext: str):
-    return []
+def sign(label: str, ct: str):
+    print('signing')
+    groupsig.init(constants.GL19_CODE, 0)
+    msg = f'{label}|{ct}'.encode()
+    print(mK)
+    print(gK)
+    sigma = groupsig.sign(msg=msg, memkey=mK, grpkey=gK)
+    # return signature.signature_export(sigma)
+    
 
 # post request to registration server
 def register(cid):

@@ -22,10 +22,9 @@ def contribute(cdrs: List[CDR]):
     """Contribute a CDR to the database"""
     
     labels = get_labels(cdrs)
-    return labels
-    ciphertexts = encrypt(cdrs)
-    signatures = sign(labels=labels, ciphertexts=ciphertexts)
-    traceback_provider.submit(labels, ciphertexts, signatures)
+    cts = encrypt(cdrs)
+    sigs = sign(labels=labels, cts=cts)
+    traceback_provider.submit(labels=labels, cts=cts, sigs=sigs)
     
 def get_labels(cdrs: List[CDR]) -> List[str]:
     """Get the labels for the CDRs by querying the label manager through OPRF"""
@@ -62,21 +61,21 @@ def unmask_evaluations(evaluations: List[str], masks: List[Scalar]):
         
     return evaluations
     
-def sign(labels, ciphertexts):
+def sign(labels, cts):
     """Sign the ciphertexts and labels"""
     
-    signatures = np.empty(len(ciphertexts), dtype=str)
+    signatures = []
     
-    for index, ciphertext in enumerate(ciphertexts):
-        signatures[index] = groupsig.sign(labels[index], ciphertext)
+    for index, ct in enumerate(cts):
+        signatures.append(groupsig.sign(labels[index], ct))
         
     return signatures
 
 def encrypt(cdrs):
     """Encrypt the CDRs. We use the witness encryption scheme"""
-    cts = np.empty(len(cdrs), dtype=str)
+    cts = []
     
-    for index, cdr in enumerate(cdrs):
-        cts[index] = scheme.encrypt(cdr)
+    for cdr in cdrs:
+        cts.append(scheme.encrypt(cdr))
         
     return cts
