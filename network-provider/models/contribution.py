@@ -24,6 +24,7 @@ def contribute(cdrs: List[CDR]):
     labels = get_labels(cdrs)
     cts = encrypt(cdrs)
     sigs = sign(labels=labels, cts=cts)
+    
     ITG.submit(labels=labels, cts=cts, sigs=sigs)
     
 def get_labels(cdrs: List[CDR]) -> List[str]:
@@ -67,7 +68,8 @@ def sign(labels, cts):
     signatures = []
     
     for index, ct in enumerate(cts):
-        signatures.append(groupsig.sign(labels[index], ct))
+        msg = f'{labels[index]}|{ct}'.encode()
+        signatures.append(groupsig.sign(msg))
         
     return signatures
 

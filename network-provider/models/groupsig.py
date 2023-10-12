@@ -13,8 +13,7 @@ def init(gsign_keys):
     usk = gsign_keys['usk']
     gpk = gsign_keys['gpk']
     
-def sign(label: str, ct: str):
-    msg = f'{label}|{ct}'.encode()
+def sign(msg):
     sigma = groupsig.sign(msg, usk, gpk)
     return signature.signature_export(sigma)
     
