@@ -5,12 +5,11 @@ import models.contribution as contribution
 
 cid = 2000
 vk = trace_auth.register(cid)
-mem_key, grp_key = groupsig.register(cid)
+gsign_keys = groupsig.register(cid)
 
 # print("vk: ", vk)
-print("mem_key: ", mem_key)
-print("grp_key: ", grp_key)
-contribution.init(id=cid, mem_key=mem_key, grp_key=grp_key, vk=vk)
+print("gsign_keys: ", gsign_keys)
+contribution.init(id=cid, gsign_keys=gsign_keys, vk=vk)
 
 cdr = CDR('1000', '1001', '2020-01-01 00:00:00', 1000, cid, 2000)
 res = contribution.contribute([cdr])

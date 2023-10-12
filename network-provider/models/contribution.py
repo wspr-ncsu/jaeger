@@ -10,13 +10,13 @@ from oblivious.ristretto import scalar as Scalar, point as Point
 
 cid = None
 
-def init(id, mem_key, grp_key, vk):
+def init(id, gsign_keys, vk):
     """Initialize the scheme with the given verification key"""
     global cid
     
     cid = id
     scheme.init(vk)
-    groupsig.init(mem_key, grp_key)
+    groupsig.init(gsign_keys)
 
 def contribute(cdrs: List[CDR]):
     """Contribute a CDR to the database"""
