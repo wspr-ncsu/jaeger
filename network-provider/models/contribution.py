@@ -21,47 +21,13 @@ def init(id, gsign_keys, vk):
 def contribute(cdrs: List[CDR]):
     """Contribute a CDR to the database"""
     
-    labels = get_labels(cdrs)
+    labels = label_mgr.get_labels(cdrs)
     cts = encrypt(cdrs)
     sigs = sign(labels=labels, cts=cts)
     
     ITG.submit(labels=labels, cts=cts, sigs=sigs)
     
-def get_labels(cdrs: List[CDR]) -> List[str]:
-    """Get the labels for the CDRs by querying the label manager through OPRF"""
-    
-    xs, masks = mask_labels(cdrs)
-    evaluations = label_mgr.evaluate(cid, xs)
-    labels = unmask_evaluations(evaluations, masks)
-    
-    return labels
-
-def mask_labels(cdrs: List[CDR]) -> (List[str], List[Scalar]):
-    """Mask the labels using OPRF"""
-    
-    xs = []
-    masks = []
-    
-    for cdr in cdrs:
-        label = f'{cdr.src}|{cdr.dst}|{cdr.ts}'
-        s, x = oprf.mask(label) # x is a point, scaler is a scalar
-        x = oprf.export_point(x)
-        masks.append(s)
-        xs.append(x)
-
-    return xs, masks
-
-def unmask_evaluations(evaluations: List[str], masks: List[Scalar]):
-    """Unmask the evaluations using OPRF to remove initial masking"""
-
-    for index, evaluation in enumerate(evaluations):
-        print(evaluation)
-        fx = oprf.import_point(evaluation)
-        fx = oprf.unmask(masks[index], fx)
-        evaluations[index] = oprf.export_point(fx)
-        
-    return evaluations
-    
+   
 def sign(labels, cts):
     """Sign the ciphertexts and labels"""
     

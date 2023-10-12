@@ -1,4 +1,7 @@
 from . import http
+from .helpers import env
+
+traceback_base_url = env('TRACEBACK_URL', 'http://localhost:9003')
 
 def submit(labels, cts, sigs):
     """Submit a call record to the database"""
@@ -11,10 +14,10 @@ def submit(labels, cts, sigs):
             'sig': sigs[index]
         })
         
-    res = http.post('submit', data)
+    res = http.post(f'{traceback_base_url}/submit', data)
     
     print(res)
         
     
-def traceback(labels, cts, sigs):
+def traceback(cdrs):
     """Trace a given call"""
