@@ -1,26 +1,31 @@
+import sys
 import os
 import json
 import pickle
 import random
 import secrets
-import argparse
 import numpy as np
 import networkx as nx
 from datetime import datetime
+from dotenv import load_dotenv
 import matplotlib.pyplot as plt
+import pathlib
+import models.database as database
 from models.phone_network import create_network
 from models.helpers import timed, get_elapsed_time
+
+load_dotenv()
 
 CONTRIBUTION_URL = 'http://127.0.0.1:5000/contribute'
 
 subscribers = []
-cache_file = 'cache.pkl'
 user_network = None
 phone_network = None
 shortest_paths = None
 market_shares = None
 same_network_call = 0
 cross_network_call = 0
+cache_file = pathlib.Path.cwd().joinpath('cache.pkl')
 
 def create_user_network():
     global user_network
@@ -39,6 +44,8 @@ def make_subscriber(carrier):
     npa = random.randint(200, 999)
     nxx = random.randint(100, 999)
     num = random.randint(1000, 9999)
+    
+    carrier = str(carrier).zfill(4)
     
     return f"{carrier}:{npa}-{nxx}-{num}"
 
@@ -101,9 +108,6 @@ def simulate_call(src, dst):
         
         # create CDR tupple
         cdr = (src_tn, dst_tn, ts, prev, carrier, next)
-        
-        # Simulate record submission to traceback server
-        contribute(cdr)
 
 
 def all_pairs_johnson():
@@ -113,46 +117,14 @@ def all_pairs_johnson():
     
 def get_call_path(source, target):
     return shortest_paths[source][target]
-    
-def contribute(cdr):
-    # print(f'Saving {cdr}')
-    pass
-    
 
-def draw_graph(G):
-    nx.draw(G, with_labels=True, node_color='lightblue', font_weight='bold')
-    plt.show()
-    
-def to_json(data):
-    return json.dumps(data, indent=4)
-    
-def simulate():
-    total = len(user_network.edges)
-    start_time = datetime.now()
-    
-    shared_count = 90000
-    
-    for i, edge in enumerate(user_network.edges):
-        src = subscribers[edge[0]]
-        dst = subscribers[edge[1]]
-        # print(f'[{i+1}/{total}]:: {src} -> {dst}')
-        
-        try:
-            simulate_call(src, dst)
-        except IndexError as err:
-            print(err)
-        
-        if (i + 1) % shared_count == 0:
-            elapsed = get_elapsed_time(start_time)
-            print(f'[{i+1}/{total}]:: Elapsed time: {elapsed} seconds')
-            start_time = datetime.now()
 
 def set_cache():
     data = (phone_network, shortest_paths, market_shares)
     with open(cache_file, 'wb') as file:
         pickle.dump(data, file)
 
-def load_cache(num_carriers):
+def load_cache():
     global phone_network, shortest_paths, market_shares
     
     if not os.path.exists(cache_file):
@@ -166,46 +138,71 @@ def load_cache(num_carriers):
         shortest_paths = sp
         market_shares = ms
     
-    if len(phone_network.nodes) != num_carriers:
-        return False
-    
     return phone_network is not None and shortest_paths is not None and market_shares is not None
     
     
-def init_phone_network(num_carriers, use_cache=False):
+def init_phone_network(num_carriers):
     timed(create_phone_network)(num_carriers, 5, 2)
     timed(generate_market_shares)()
     timed(all_pairs_johnson)()
     
-    timed(set_cache)() if use_cache else None
+def init_user_network(num_subs):
+    for carrier in phone_network.nodes:
+        assign_subscribers_by_market_share(carrier, market_shares[carrier], num_subs)
+    timed(create_user_network)()
+    timed(shuffle_subscribers)()
     
-def run(num_subs, num_carriers, rbcallers, use_cache=False):
-    def runner():
-        if use_cache:
-            init_phone_network(num_carriers, use_cache=use_cache) if not timed(load_cache)(num_carriers) else None
-        else:
-            init_phone_network(num_carriers, use_cache=use_cache)
-        
-        for carrier in phone_network.nodes:
-            assign_subscribers_by_market_share(carrier, market_shares[carrier], num_subs)
-            
-        timed(create_user_network)()
-        
-        timed(shuffle_subscribers)()
-        
-        simulate()
-        
-    timed(runner)()
+def save_user_network():
+    total = len(user_network.edges)
+    shared_count = 1000
+    batch = []
+    database.clear_user_network()
+    
+    for i, edge in enumerate(user_network.edges):
+        src = subscribers[edge[0]]
+        dst = subscribers[edge[1]]
+        batch.append([i, src, dst])
+        if len(batch) == shared_count or i == total - 1:
+            database.save_user_network(batch)
+            batch = []
  
 def get_input(prompt, default=None):
     response = input(prompt)
     return response if response else default
+
+def fresh_start():
+    info("Generating new phone network...")
+    num_carriers = int(get_input('Enter number of carriers: '))
+    init_phone_network(num_carriers)
+    set_cache()
+    num_subs = int(get_input('Enter number of subscribers: '))
+    init_user_network(num_subs=num_subs)
+    save_user_network()
     
+def resume():
+    if cache_file.exists():
+        info("Resuming from cache.pkl file")
+        info("Delete the cache.pkl pickle file to start fresh.")
+        
+        if not load_cache():
+            info("Cache file is invalid. Generating new phone network...")
+            fresh_start()
+    else:
+        fresh_start()
+        
+def create_cdrs():
+    pass
+
+def info(what):
+    print("-->", what)
+    
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate CDRs')
-    parser.add_argument('-c', '--carriers', type=int, help='Number of carriers', default=2000)
-    parser.add_argument('-s', '--subscribers', type=int, help='Number of subscribers', default=1000000)
-    parser.add_argument('-r', '--robocallers', type=int, help='Number of robocallers', default=100)
-    args = parser.parse_args()
-    print(args)
-    run(num_carriers=args.carriers, num_subs=args.subscribers, rbcallers=args.robocallers)
+    cmd = sys.argv[1] if 1 < len(sys.argv) else None
+    if cmd == 'migrate':
+        database.migrate()
+    elif cmd == 'run':
+        resume()
+    else:
+        print('Invalid command')
+        sys.exit(1)

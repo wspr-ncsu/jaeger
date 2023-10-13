@@ -1,0 +1,7 @@
+{
+    "drop edges table": "DROP TABLE IF EXISTS edges",
+    "create edges table": "CREATE TABLE IF NOT EXISTS edges (id UInt32 PRIMARY KEY, src VARCHAR(15) NOT NULL, dst VARCHAR(15) NOT NULL) ENGINE = MergeTree()",
+
+    "drop cdrs table": "DROP TABLE IF EXISTS cdrs",
+    "create cdrs table": "CREATE TABLE IF NOT EXISTS cdrs (id UInt32 PRIMARY KEY, src VARCHAR(15) NOT NULL, dst VARCHAR(15) NOT NULL, ts DateTime DEFAULT now(), prev VARCHAR(15) NULL, curr VARCHAR(15) NOT NULL, next VARCHAR(15) NULL) ENGINE = MergeTree()"
+}
