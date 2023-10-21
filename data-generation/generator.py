@@ -173,10 +173,11 @@ def get_input(prompt, default=None):
 def fresh_start():
     info("Generating new phone network...")
     num_carriers = int(get_input('Enter number of carriers: '))
-    init_phone_network(num_carriers)
-    set_cache()
     num_subs = int(get_input('Enter number of subscribers: '))
+    
+    init_phone_network(num_carriers)
     init_user_network(num_subs=num_subs)
+    set_cache()
     save_user_network()
     
 def resume():
@@ -201,6 +202,9 @@ if __name__ == '__main__':
     cmd = sys.argv[1] if 1 < len(sys.argv) else None
     if cmd == 'migrate':
         database.migrate()
+        # delete cache file
+        if cache_file.exists():
+            cache_file.unlink()
     elif cmd == 'run':
         resume()
     else:
