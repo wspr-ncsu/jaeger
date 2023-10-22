@@ -1,20 +1,19 @@
+from . import helpers
 from . import database as db
 from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, constants, gml as GML
 
 SCHEME = constants.BBS04_CODE
-msk_key = 'GM.msk'
-gpk_key = 'GM.gpk'
-gml_key = 'GM.gml'
+msk_file = '.keys/groupsig/.msk'
+gpk_file = '.keys/groupsig/.gpk'
+gml_file = '.keys/groupsig/.gml'
 
 GML_SAVED = False
 
 def setup(refresh = False):
-    db.connect()
-    
     # retrieve setup keys
-    msk_str = None if refresh else db.find(msk_key)
-    gpk_str = None if refresh else db.find(gpk_key)
-    gml_str = None if refresh else db.find(gml_key)
+    msk_str = None if refresh else helpers.read_from_file(msk_file)
+    gpk_str = None if refresh else helpers.read_from_file(gpk_file)
+    gml_str = None if refresh else helpers.read_from_file(gml_file)
     
     if not msk_str or not gpk_str or not gml_str:
         bbs04 = groupsig.setup(SCHEME)
@@ -27,8 +26,9 @@ def setup(refresh = False):
         msk_str = mgrkey.mgrkey_export(msk)
         gpk_str = grpkey.grpkey_export(gpk)
         
-        db.save(msk_key, msk_str)
-        db.save(gpk_key, gpk_str)
+        
+        helpers.write_to_file(msk_file, msk_str)
+        helpers.write_to_file(gpk_file, gpk_str)
     else:
         # Convert base64 encoded key strings into objects
         groupsig.init(SCHEME, 0)
@@ -70,11 +70,10 @@ def save_gml(gml):
     if GML_SAVED:
         return
     
-    db.connect()
-    saved = db.find(gml_key)
+    saved = helpers.read_from_file(gml_file)
     export_d = GML.gml_export(gml)
     
     if saved != export_d:
-        db.save(gml_key, export_d)
+        helpers.write_to_file(gml_file, export_d)
         
     GML_SAVED = True
