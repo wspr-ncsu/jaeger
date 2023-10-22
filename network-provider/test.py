@@ -3,15 +3,30 @@ import models.groupsig as groupsig
 import models.trace_auth as trace_auth
 import models.contribution as contribution
 import models.traceback as traceback
+from datetime import datetime
 from blspy import G1Element
 
-carrier_id: str = '1'
-tapk: G1Element = trace_auth.register(carrier_id)
-group: dict = groupsig.register(carrier_id)
+tapk: G1Element = trace_auth.register()
+carriers = [1, 2, 3, 4, 5]
+groups = {}
 
-cdr: CDR = CDR('1000', '1001', '2020-01-01 00:00:00', 1000, carrier_id, 3000)
+for carrier in carriers:
+    groups[carrier] = groupsig.register(carrier)
 
-contribution.contribute(group=group, tapk=tapk, cdrs=[cdr])
-traceback.trace(group=group, tapk=tapk, cdrs=[cdr])
+callpath = [4, 3, 5, 1, 2]
+src, dst = 1000, 1001
+ts = datetime.now()
+cdrs = []
 
-# print("Done!")
+for index, curr in enumerate(callpath):
+    prev = None if index == 0 else callpath[index - 1]
+    next = None if index == len(callpath) - 1 else callpath[index + 1]
+    # add random seconds to ts
+    ts = ts.replace(second=ts.second + index)
+    cdr = CDR(src=src, dst=dst, ts=ts.strftime('%Y-%m-%d %H:%M:%S'), prev=prev, curr=curr , next=next)
+    
+    contribution.contribute(group=groups[curr], tapk=tapk, cdrs=[cdr])
+
+
+records = traceback.trace(group=groups['2'], tapk=tapk, cdrs=[cdr])
+print(records)

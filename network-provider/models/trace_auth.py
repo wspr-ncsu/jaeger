@@ -8,7 +8,7 @@ trace_auth_base_url = helpers.env('TRACE_AUTH_URL', 'http://localhost:9992')
 
 tapk_key = 'TA.pk'
 
-def register(cid: str) -> G1Element:
+def register() -> G1Element:
     db.connect()
     
     pk: str = db.find(tapk_key)
