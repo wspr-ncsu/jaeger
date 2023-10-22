@@ -23,29 +23,25 @@ def contribute(cdrs: List[CDR]):
     """Contribute a CDR to the database"""
     
     labels = label_mgr.get_labels(cdrs)
-    cts = encrypt(cdrs)
-    sigs = sign(labels=labels, cts=cts)
-    
-    ITG.submit(labels=labels, cts=cts, sigs=sigs)
-    
-   
-def sign(labels, cts):
-    """Sign the ciphertexts and labels"""
-    
-    signatures = []
-    
-    for index, ct in enumerate(cts):
-        msg = bytes(f'{labels[index]}|{ct}', 'utf-8')
-        signatures.append(groupsig.sign(msg))
-        
-    return signatures
 
-def encrypt(cdrs: List[CDR]):
+    payload = encrypt(cdrs=cdrs, labels=labels)
+    
+    ITG.submit(labels=labels, cts=payload.cts, sigs=payload.sigs)
+    
+
+def encrypt(cdrs: List[CDR], labels: List[str]) -> dict:
     """Encrypt the CDRs. We use the witness encryption scheme"""
     cts = []
+    sigs = []
     
-    for cdr in cdrs:
-        ct: dict = scheme.encrypt(cdr)
+    for index, cdr in enumerate(cdrs):
+        label: bytes = bytes(labels[index], 'utf-8')
+        msg: bytes = bytes(cdr.get_hops(), 'utf-8')
+        
+        ct: dict = scheme.encrypt(label=label, cdr=msg)
         cts.append(scheme.export_ct(ct))
         
-    return cts
+        payload = bytes(f'{labels[index]}|{ct}', 'utf-8')
+        sigs.append(groupsig.sign(payload))
+        
+    return { 'cts': cts, 'sigs': sigs }

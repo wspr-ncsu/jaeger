@@ -29,8 +29,7 @@ def mask_labels(cdrs: List[CDR]) -> (List[str], List[oprf.scalar]):
     masks = []
     
     for cdr in cdrs:
-        label = f'{cdr.src}|{cdr.dst}|{cdr.ts}'
-        s, x = oprf.mask(label) # x is a point, scaler is a scalar
+        s, x = oprf.mask(cdr.get_call_detail()) # x is a point, scaler is a scalar
         x = oprf.export_point(x)
         masks.append(s)
         xs.append(x)
