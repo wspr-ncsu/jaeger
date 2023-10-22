@@ -34,3 +34,9 @@ def import_ct(ct: str) -> dict:
         ct: bytes = bytes.fromhex(ct)
         
     return pickle.loads(ct)
+
+def import_sig(sig: str) -> G2Element:
+    if type(sig) == str:
+        sig: bytes = bytes.fromhex(sig)
+        
+    return G2Element.from_bytes(sig)

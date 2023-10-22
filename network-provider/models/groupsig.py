@@ -7,6 +7,11 @@ grp_sig_base_url = helpers.env('GRP_SIG_URL', 'http://localhost:9990')
 def sign(group: dict, msg: bytes) -> str:
     sigma = groupsig.sign(msg, group['usk'], group['gpk'])
     return signature.signature_export(sigma)
+
+def open(group: dict, faulty_set: list):
+    """Open a faulty set"""
+    faulty_set = [signature.signature_import(s) for s in faulty_set]
+    groupsig.open(faulty_set, group['gpk'], group['usk'])
     
 # post request to registration server
 def register(cid: str) -> dict:
