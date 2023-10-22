@@ -26,7 +26,7 @@ def contribute(cdrs: List[CDR]):
 
     payload = encrypt(cdrs=cdrs, labels=labels)
     
-    ITG.submit(labels=labels, cts=payload.cts, sigs=payload.sigs)
+    ITG.submit(labels=labels, cts=payload['cts'], sigs=payload['sigs'])
     
 
 def encrypt(cdrs: List[CDR], labels: List[str]) -> dict:

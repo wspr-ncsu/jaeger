@@ -2,7 +2,7 @@ import requests
 from .helpers import env
 from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, constants
 
-grp_sig_base_url = env('GRP_SIG_URL', 'http://localhost:9000')
+grp_sig_base_url = env('GRP_SIG_URL', 'http://localhost:9990')
 
 usk = None
 gpk = None

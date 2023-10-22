@@ -2,7 +2,7 @@ import requests
 from .helpers import env
 from blspy import G1Element
 
-trace_auth_base_url = env('TRACE_AUTH_URL', 'http://localhost:9001')
+trace_auth_base_url = env('TRACE_AUTH_URL', 'http://localhost:9992')
 
 def register(cid: str) -> G1Element:
     url = trace_auth_base_url + '/register'

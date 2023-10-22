@@ -1,5 +1,6 @@
 from os import getenv
 from collections import namedtuple
+from datetime import datetime
 
 def env(envname, default=""):
     value = getenv(envname)
@@ -8,8 +9,9 @@ def env(envname, default=""):
 def not_found():
     return { 'msg': 'The requested resource could not be found' }, 404
         
-def toEpoch(date):
-    return int(date.timestamp())
+def toEpoch(date: str):
+    return int(datetime.strptime(date, '%Y-%m-%d %H:%M:%S').timestamp())
+    
 
 class CDR:
     label = None

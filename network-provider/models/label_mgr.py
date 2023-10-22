@@ -6,7 +6,7 @@ from .helpers import CDR
 from typing import List
 from . import oprf
 
-label_mgr_base_url = env('LABEL_MGR_URL', 'http://localhost:9002')
+label_mgr_base_url = env('LABEL_MGR_URL', 'http://localhost:9991')
 cid = None
 
 def init(carrier_id):

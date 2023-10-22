@@ -3,6 +3,9 @@ from .helpers import env
 import clickhouse_connect
 import json
 import pathlib
+from dotenv import load_dotenv
+
+load_dotenv()
 
 status_active = 1
 status_inactive = 0
@@ -35,22 +38,6 @@ def migrate():
         
     print('Migrations Completed.')
     
-def get_state():    
+def insert_records(records, cols=['label', 'sigma', 'ct']):    
     connection = open_db()
-    query = f"SELECT * FROM states WHERE status = {status_active}"
-    result = connection.query(query).result_rows
-    
-    if len(result) == 0:
-        return None
-    
-    return result[0]
-
-def save_user_network(edges):
-    connection = open_db()
-    columns = ["id", "src", "dst"]
-    rows = edges
-    connection.insert("edges", data=rows, column_names=columns)
- 
-def clear_user_network():
-    connection = open_db()
-    connection.command("TRUNCATE TABLE edges")
+    connection.insert("cdrs", data=records, column_names=cols)
