@@ -35,6 +35,7 @@ class GroupManager:
         refresh = False
 
         gsign_keys = groupsig.setup(refresh=refresh)
+        groupsig.register_all(gsign_keys, refresh=refresh)
 
         @app.post('/register')
         def register():
