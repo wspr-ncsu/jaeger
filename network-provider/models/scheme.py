@@ -2,24 +2,25 @@ from witencpy import (Scheme, OTP, CipherText)
 from blspy import (BasicSchemeMPL, G1Element, G2Element)
 import secrets
 import pickle
+from .helpers import CDR
 
-vk: G1Element = None
+pk: G1Element = None
 
-def init(pk: G1Element):
+def init(trace_auth_pub_key: G1Element):
     """Initialize the scheme with the given verification key"""
-    global vk
-    vk = pk
+    global pk
+    pk = trace_auth_pub_key
 
-def encrypt(cdr):
+def encrypt(cdr: CDR) -> dict:
     # Generate a new key for each CDR
     key: bytes = bytes(BasicSchemeMPL.key_gen(secrets.token_bytes(32)))
     
     # We want to encrypt the key with witness encryption
-    tag = bytes(f'{cdr.src}|{cdr.dst}|{cdr.ts}')
-    ct1: bytes = bytes(Scheme.encrypt(vk, tag, key))
+    tag = bytes(f'{cdr.src}|{cdr.dst}|{cdr.ts}', 'utf-8')
+    ct1: bytes = bytes(Scheme.encrypt(pk, tag, key))
     
     # We want to encrypt the message with the key using OTP
-    msg: bytes = bytes(f'{cdr.prev}|{cdr.curr}|{cdr.next}')
+    msg: bytes = bytes(f'{cdr.prev}|{cdr.curr}|{cdr.next}', 'utf-8')
     ct2: bytes = bytes(OTP.encrypt(key, msg))
     
     return { 'ct1': ct1, 'ct2': ct2 }

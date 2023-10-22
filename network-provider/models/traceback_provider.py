@@ -6,13 +6,9 @@ traceback_base_url = env('TRACEBACK_URL', 'http://localhost:9003')
 def submit(labels, cts, sigs):
     """Submit a call record to the database"""
     
-    data = { 'batch': [] }
+    data = { 'calls': [] }
     for index, label in enumerate(labels):
-        data['batch'].append({
-            'lbl': label,
-            'ct': cts[index],
-            'sig': sigs[index]
-        })
+        data['calls'].append([label, cts[index], sigs[index]])
         
     res = http.post(f'{traceback_base_url}/submit', data)
     

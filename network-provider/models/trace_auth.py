@@ -10,4 +10,4 @@ def register(cid: str) -> G1Element:
     res.raise_for_status()
     data = res.json()
     
-    return G1Element.from_bytes(data['pk'])
+    return G1Element.from_bytes(bytes.fromhex(data['pk']))

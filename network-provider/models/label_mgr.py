@@ -9,9 +9,9 @@ from . import oprf
 label_mgr_base_url = env('LABEL_MGR_URL', 'http://localhost:9002')
 cid = None
 
-def init(id):
+def init(carrier_id):
     global cid
-    cid = id
+    cid = carrier_id
 
 def get_labels(cdrs: List[CDR]) -> List[str]:
     """Get the labels for the CDRs by querying the label manager through OPRF"""
@@ -50,6 +50,9 @@ def unmask_evaluations(evaluations: List[str], masks: List[oprf.scalar]):
  
 
 def evaluate(cid: str, labels: List[str]) -> List[oprf.scalar]:
+    if not cid:
+        raise Exception('Carrier ID not set')
+    
     url = label_mgr_base_url + '/evaluate'
     data = { 'xs': json.dumps(labels), 'cid': cid }
     res = requests.post(url, data=data)

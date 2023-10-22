@@ -7,13 +7,13 @@ grp_sig_base_url = env('GRP_SIG_URL', 'http://localhost:9000')
 usk = None
 gpk = None
 
-def init(gsign_keys: dict):
+def init(group_signature_keys: dict):
     """Initialize the scheme with the given verification key"""
     global usk, gpk
-    usk = gsign_keys['usk']
-    gpk = gsign_keys['gpk']
+    usk = group_signature_keys['usk']
+    gpk = group_signature_keys['gpk']
     
-def sign(msg: bytes):
+def sign(msg: bytes) -> str:
     sigma = groupsig.sign(msg, usk, gpk)
     return signature.signature_export(sigma)
     
@@ -26,7 +26,7 @@ def register(cid: str) -> dict:
     data = res.json()
     
     # initialize the groupsig library otherwise segmentation fault occurs
-    groupsig.init(constants.GL19_CODE, 0)
+    groupsig.init(constants.BBS04_CODE, 0)
     usk = memkey.memkey_import(constants.BBS04_CODE, data['usk'])
     gpk = grpkey.grpkey_import(constants.BBS04_CODE, data['gpk'])
     

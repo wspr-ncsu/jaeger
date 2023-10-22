@@ -2,15 +2,20 @@ from models.helpers import CDR
 import models.groupsig as groupsig
 import models.trace_auth as trace_auth
 import models.contribution as contribution
+from blspy import G1Element
 
-cid = 2000
-vk = trace_auth.register(cid)
-gsign_keys = groupsig.register(cid)
+carrier_id: str = '2000'
+trace_auth_pub_key: G1Element = trace_auth.register(carrier_id)
+group_signature_keys: dict = groupsig.register(carrier_id)
 
-# print("vk: ", vk)
-print("gsign_keys: ", gsign_keys)
-contribution.init(id=cid, gsign_keys=gsign_keys, vk=vk)
+contribution.init(
+    carrier_id=carrier_id, 
+    trace_auth_pub_key=trace_auth_pub_key,
+    group_signature_keys=group_signature_keys 
+)
 
-cdr = CDR('1000', '1001', '2020-01-01 00:00:00', 1000, cid, 2000)
-res = contribution.contribute([cdr])
-print(res)
+cdr: CDR = CDR('1000', '1001', '2020-01-01 00:00:00', 1000, carrier_id, 3000)
+
+contribution.contribute([cdr])
+
+print("Done!")

@@ -10,13 +10,14 @@ from blspy import G1Element
 
 cid = None
 
-def init(id: str, gsign_keys: dict, pk: G1Element):
+def init(carrier_id: str, group_signature_keys: dict, trace_auth_pub_key: G1Element):
     """Initialize the scheme with the given verification key"""
     global cid
     
-    cid = id
-    scheme.init(pk=pk)
-    groupsig.init(gsign_keys)
+    cid = carrier_id
+    scheme.init(trace_auth_pub_key=trace_auth_pub_key)
+    groupsig.init(group_signature_keys)
+    label_mgr.init(carrier_id=carrier_id)
 
 def contribute(cdrs: List[CDR]):
     """Contribute a CDR to the database"""
@@ -34,16 +35,17 @@ def sign(labels, cts):
     signatures = []
     
     for index, ct in enumerate(cts):
-        msg = f'{labels[index]}|{ct}'.encode()
+        msg = bytes(f'{labels[index]}|{ct}', 'utf-8')
         signatures.append(groupsig.sign(msg))
         
     return signatures
 
-def encrypt(cdrs):
+def encrypt(cdrs: List[CDR]):
     """Encrypt the CDRs. We use the witness encryption scheme"""
     cts = []
     
     for cdr in cdrs:
-        cts.append(scheme.encrypt(cdr))
+        ct: dict = scheme.encrypt(cdr)
+        cts.append(scheme.export_ct(ct))
         
     return cts
