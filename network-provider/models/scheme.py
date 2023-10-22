@@ -11,17 +11,10 @@ def init(trace_auth_pub_key: G1Element):
     global pk
     pk = trace_auth_pub_key
 
-def encrypt(cdr: CDR) -> dict:
-    # Generate a new key for each CDR
+def encrypt(label: bytes, cdr: bytes) -> dict:
     key: bytes = bytes(BasicSchemeMPL.key_gen(secrets.token_bytes(32)))
-    
-    # We want to encrypt the key with witness encryption
-    tag = bytes(f'{cdr.src}|{cdr.dst}|{cdr.ts}', 'utf-8')
-    ct1: bytes = bytes(Scheme.encrypt(pk, tag, key))
-    
-    # We want to encrypt the message with the key using OTP
-    msg: bytes = bytes(f'{cdr.prev}|{cdr.curr}|{cdr.next}', 'utf-8')
-    ct2: bytes = bytes(OTP.encrypt(key, msg))
+    ct1: bytes = bytes(Scheme.encrypt(pk, label, key))
+    ct2: bytes = bytes(OTP.encrypt(key, cdr))
     
     return { 'ct1': ct1, 'ct2': ct2 }
 
