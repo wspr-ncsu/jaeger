@@ -1,4 +1,3 @@
-import numpy as np
 from . import oprf
 from . import scheme
 from . import label_mgr
@@ -7,15 +6,16 @@ from .helpers import CDR
 from typing import List
 from . import traceback_provider as ITG
 from oblivious.ristretto import scalar as Scalar, point as Point
+from blspy import G1Element
 
 cid = None
 
-def init(id, gsign_keys, vk):
+def init(id: str, gsign_keys: dict, pk: G1Element):
     """Initialize the scheme with the given verification key"""
     global cid
     
     cid = id
-    scheme.init(vk)
+    scheme.init(pk=pk)
     groupsig.init(gsign_keys)
 
 def contribute(cdrs: List[CDR]):

@@ -7,19 +7,19 @@ grp_sig_base_url = env('GRP_SIG_URL', 'http://localhost:9000')
 usk = None
 gpk = None
 
-def init(gsign_keys):
+def init(gsign_keys: dict):
     """Initialize the scheme with the given verification key"""
     global usk, gpk
     usk = gsign_keys['usk']
     gpk = gsign_keys['gpk']
     
-def sign(msg):
+def sign(msg: bytes):
     sigma = groupsig.sign(msg, usk, gpk)
     return signature.signature_export(sigma)
     
 
 # post request to registration server
-def register(cid):
+def register(cid: str) -> dict:
     url = grp_sig_base_url + '/register'
     res = requests.post(url, data={'cid': cid})
     res.raise_for_status()

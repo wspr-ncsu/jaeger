@@ -1,6 +1,9 @@
 from os import getenv
 import traceback as ex
+from collections import namedtuple
 from werkzeug.exceptions import HTTPException
+
+Keys = namedtuple('Keys', ['sk', 'pk'])
 
 def env(envname, default=""):
     value = getenv(envname)
