@@ -2,6 +2,14 @@ from os import getenv
 from collections import namedtuple
 from datetime import datetime
 
+def write_to_file(filename, content):
+    with open(filename, "w") as f:
+        f.write(content)
+
+def read_from_file(filename):
+    with open(filename, "r") as f:
+        return f.read()
+    
 def env(envname, default=""):
     value = getenv(envname)
     return value or default
@@ -12,6 +20,9 @@ def not_found():
 def toEpoch(date: str):
     return int(datetime.strptime(date, '%Y-%m-%d %H:%M:%S').timestamp())
     
+class Carrier:
+    def __init__(self, group) -> None:
+        pass
 
 class CDR:
     label = None

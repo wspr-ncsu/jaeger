@@ -1,33 +1,26 @@
-import requests
-from .helpers import env
-from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, constants
+from . import helpers
+from . import database as db
+from pygroupsig import groupsig, signature, memkey, grpkey, constants
 
-grp_sig_base_url = env('GRP_SIG_URL', 'http://localhost:9990')
-
-usk = None
-gpk = None
-
-def init(group_signature_keys: dict):
-    """Initialize the scheme with the given verification key"""
-    global usk, gpk
-    usk = group_signature_keys['usk']
-    gpk = group_signature_keys['gpk']
+grp_sig_base_url = helpers.env('GRP_SIG_URL', 'http://localhost:9990')
     
-def sign(msg: bytes) -> str:
-    sigma = groupsig.sign(msg, usk, gpk)
+def sign(group: dict, msg: bytes) -> str:
+    sigma = groupsig.sign(msg, group['usk'], group['gpk'])
     return signature.signature_export(sigma)
     
-
 # post request to registration server
 def register(cid: str) -> dict:
-    url = grp_sig_base_url + '/register'
-    res = requests.post(url, data={'cid': cid})
-    res.raise_for_status()
-    data = res.json()
+    db.connect()
+    
+    usk = db.find(f'GM.members.{cid}')
+    gpk = db.find(f'GM.gpk')
+    
+    if not usk or not gpk:
+        raise Exception("Group Signature Keys not found")
     
     # initialize the groupsig library otherwise segmentation fault occurs
     groupsig.init(constants.BBS04_CODE, 0)
-    usk = memkey.memkey_import(constants.BBS04_CODE, data['usk'])
-    gpk = grpkey.grpkey_import(constants.BBS04_CODE, data['gpk'])
+    usk = memkey.memkey_import(constants.BBS04_CODE, usk)
+    gpk = grpkey.grpkey_import(constants.BBS04_CODE, gpk)
     
     return { 'usk': usk, 'gpk': gpk }

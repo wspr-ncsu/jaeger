@@ -4,8 +4,8 @@ from . import database as db
 from blspy import (BasicSchemeMPL, PrivateKey)
 from .helpers import Keys, Panic
 
-priv_id = 'TA.sK'
-pubk_id = 'TA.pK'
+priv_id = 'TA.sk'
+pubk_id = 'TA.pk'
 
 def setup(refresh = False):
     db.connect()

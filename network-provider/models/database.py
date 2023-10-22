@@ -1,5 +1,8 @@
 from redis import Redis
 from .helpers import env
+from dotenv import load_dotenv
+
+load_dotenv()
 
 connection = None
 

@@ -5,19 +5,15 @@ from typing import List
 from .helpers import CDR
 from typing import List
 from . import oprf
+from . import http
 
 label_mgr_base_url = env('LABEL_MGR_URL', 'http://localhost:9991')
-cid = None
 
-def init(carrier_id):
-    global cid
-    cid = carrier_id
-
-def get_labels(cdrs: List[CDR]) -> List[str]:
+def get_labels(group: dict, cdrs: List[CDR]) -> List[str]:
     """Get the labels for the CDRs by querying the label manager through OPRF"""
     
     xs, masks = mask_labels(cdrs)
-    evaluations = evaluate(cid, xs)
+    evaluations = evaluate(group, xs)
     labels = unmask_evaluations(evaluations, masks)
     
     return labels
@@ -48,14 +44,10 @@ def unmask_evaluations(evaluations: List[str], masks: List[oprf.scalar]):
     return evaluations
  
 
-def evaluate(cid: str, labels: List[str]) -> List[oprf.scalar]:
-    if not cid:
-        raise Exception('Carrier ID not set')
-    
+def evaluate(group: dict, labels: List[str]) -> List[oprf.scalar]:
     url = label_mgr_base_url + '/evaluate'
-    data = { 'xs': json.dumps(labels), 'cid': cid }
-    res = requests.post(url, data=data)
-    print(data)
-    print(res.text)
-    res.raise_for_status()
-    return res.json()['fxs']
+    data = { 'xs': labels }
+    res = http.post(url=url, group=group, data=data)
+    print(res)
+    
+    return res['fxs']

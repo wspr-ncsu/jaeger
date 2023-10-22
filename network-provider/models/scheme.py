@@ -4,14 +4,7 @@ import secrets
 import pickle
 from .helpers import CDR
 
-pk: G1Element = None
-
-def init(trace_auth_pub_key: G1Element):
-    """Initialize the scheme with the given verification key"""
-    global pk
-    pk = trace_auth_pub_key
-
-def encrypt(label: bytes, cdr: bytes) -> dict:
+def encrypt(pk: G1Element, label: bytes, cdr: bytes) -> dict:
     key: bytes = bytes(BasicSchemeMPL.key_gen(secrets.token_bytes(32)))
     ct1: bytes = bytes(Scheme.encrypt(pk, label, key))
     ct2: bytes = bytes(OTP.encrypt(key, cdr))
