@@ -24,3 +24,4 @@ package-lock.json
 .DS_Store
 *.pkl
 *.pickle
+.keys
