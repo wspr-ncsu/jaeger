@@ -27,18 +27,18 @@ class TraceAuth:
         self.create_instance_path(app)
         refresh = False
 
-        sk, vk = witness_enc.setup(refresh=refresh)
+        keys: helpers.Keys = witness_enc.setup(refresh=refresh)
 
         @app.post('/register')
         def register():
             cid = helpers.validate_cid(request.form.get('cid'))
-            return { 'vk': vk }, self.HTTP_OK
+            return { 'pk': keys.pk }, self.HTTP_OK
         
         @app.post('/authorize')
         def authorize():
             cid = helpers.validate_cid(request.form.get('cid'))
             label = helpers.validate_label(request.form.get('label'))
-            sigma = witness_enc.sign(sk=sk, tag=label)
+            sigma = witness_enc.authorize(sk=keys.sk, tag=label)
             return { 'sigma': sigma }, self.HTTP_OK
         
         @app.errorhandler(self.HTTP_NOT_FOUND)

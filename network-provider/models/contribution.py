@@ -1,4 +1,3 @@
-import numpy as np
 from . import oprf
 from . import scheme
 from . import label_mgr
@@ -7,43 +6,31 @@ from .helpers import CDR
 from typing import List
 from . import traceback_provider as ITG
 from oblivious.ristretto import scalar as Scalar, point as Point
+from blspy import G1Element
 
-cid = None
-
-def init(id, gsign_keys, vk):
-    """Initialize the scheme with the given verification key"""
-    global cid
-    
-    cid = id
-    scheme.init(vk)
-    groupsig.init(gsign_keys)
-
-def contribute(cdrs: List[CDR]):
+def contribute(group: dict, tapk: G1Element, cdrs: List[CDR]):
     """Contribute a CDR to the database"""
     
-    labels = label_mgr.get_labels(cdrs)
-    cts = encrypt(cdrs)
-    sigs = sign(labels=labels, cts=cts)
-    
-    ITG.submit(labels=labels, cts=cts, sigs=sigs)
-    
-   
-def sign(labels, cts):
-    """Sign the ciphertexts and labels"""
-    
-    signatures = []
-    
-    for index, ct in enumerate(cts):
-        msg = f'{labels[index]}|{ct}'.encode()
-        signatures.append(groupsig.sign(msg))
-        
-    return signatures
+    labels = label_mgr.get_labels(group, cdrs)
 
-def encrypt(cdrs):
+    payload = encrypt(tapk=tapk, group=group, cdrs=cdrs, labels=labels)
+    
+    ITG.submit(group=group, labels=labels, cts=payload['cts'], sigs=payload['sigs'])
+    
+
+def encrypt(tapk: G1Element, group: dict, cdrs: List[CDR], labels: List[str]) -> dict:
     """Encrypt the CDRs. We use the witness encryption scheme"""
     cts = []
+    sigs = []
     
-    for cdr in cdrs:
-        cts.append(scheme.encrypt(cdr))
+    for index, cdr in enumerate(cdrs):
+        label: bytes = bytes(labels[index], 'utf-8')
+        msg: bytes = bytes(cdr.get_hops(), 'utf-8')
         
-    return cts
+        ct: dict = scheme.encrypt(pk=tapk, label=label, cdr=msg)
+        cts.append(scheme.export_ct(ct))
+        
+        payload = bytes(f'{labels[index]}|{ct}', 'utf-8')
+        sigs.append(groupsig.sign(group=group, msg=payload))
+        
+    return { 'cts': cts, 'sigs': sigs }

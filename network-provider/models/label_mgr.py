@@ -5,19 +5,15 @@ from typing import List
 from .helpers import CDR
 from typing import List
 from . import oprf
+from . import http
 
-label_mgr_base_url = env('LABEL_MGR_URL', 'http://localhost:9002')
-cid = None
+label_mgr_base_url = env('LABEL_MGR_URL', 'http://localhost:9991')
 
-def init(id):
-    global cid
-    cid = id
-
-def get_labels(cdrs: List[CDR]) -> List[str]:
+def get_labels(group: dict, cdrs: List[CDR]) -> List[str]:
     """Get the labels for the CDRs by querying the label manager through OPRF"""
     
     xs, masks = mask_labels(cdrs)
-    evaluations = evaluate(cid, xs)
+    evaluations = evaluate(group, xs)
     labels = unmask_evaluations(evaluations, masks)
     
     return labels
@@ -29,8 +25,7 @@ def mask_labels(cdrs: List[CDR]) -> (List[str], List[oprf.scalar]):
     masks = []
     
     for cdr in cdrs:
-        label = f'{cdr.src}|{cdr.dst}|{cdr.ts}'
-        s, x = oprf.mask(label) # x is a point, scaler is a scalar
+        s, x = oprf.mask(cdr.get_call_detail()) # x is a point, scaler is a scalar
         x = oprf.export_point(x)
         masks.append(s)
         xs.append(x)
@@ -49,11 +44,10 @@ def unmask_evaluations(evaluations: List[str], masks: List[oprf.scalar]):
     return evaluations
  
 
-def evaluate(cid: str, labels: List[str]) -> List[oprf.scalar]:
+def evaluate(group: dict, labels: List[str]) -> List[oprf.scalar]:
     url = label_mgr_base_url + '/evaluate'
-    data = { 'xs': json.dumps(labels), 'cid': cid }
-    res = requests.post(url, data=data)
-    print(data)
-    print(res.text)
-    res.raise_for_status()
-    return res.json()['fxs']
+    data = { 'xs': labels }
+    res = http.post(url=url, group=group, data=data)
+    print(res)
+    
+    return res['fxs']

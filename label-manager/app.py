@@ -31,11 +31,8 @@ class LabelManager:
 
         @app.post('/evaluate')
         def evaluate():
-            cid = helpers.validate_cid(request.form.get('cid'))
-            xs = helpers.validate_xs(request.form.get('xs'))
-            
+            xs = helpers.validate_xs(request.form.get('payload'))
             fxs = label_mgr.batch_evaluation(sk, xs)
-            
             return { 'fxs': fxs }, self.HTTP_OK
         
         @app.errorhandler(self.HTTP_NOT_FOUND)

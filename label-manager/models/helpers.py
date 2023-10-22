@@ -33,11 +33,11 @@ def validate_cid(cid):
     
     return cid
 
-def validate_xs(xs):
-    if not xs:
-        raise Panic("Missing xs")
+def validate_xs(payload):
+    if not payload:
+        raise Panic("Missing payload")
     
-    xs = json.loads(xs)
+    xs = json.loads(payload)['xs']
     
     if not isinstance(xs, list):
         raise Panic("xs must be a list")

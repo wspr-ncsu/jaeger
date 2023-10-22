@@ -1,26 +1,21 @@
 setup="setup"
 serve="serve"
 migrate="migrate"
+test="test"
 deps="requirements.txt"
 
 cmd=$1
-allowed_commands=($setup $serve $migrate)
+allowed_commands=($setup $serve $migrate, $test)
 
 if [[ ! " ${allowed_commands[@]} " =~ " ${cmd} " ]]; then
     echo "Invalid command: $cmd. Valid commands are: ${allowed_commands[@]}"
     exit 1
 fi
 
-if [ $cmd == $setup ]
+if [ $cmd == $test ]
     then
-    echo "Creating virtual environment"
-    python3.8 -m venv .venv
-    source ./.venv/bin/activate
-
-    if test -f $deps; then
-        echo "Installing requirements"
-        pip install -r $deps
-    fi
+    echo -e "Running test.py \n"
+    python3.8 test.py
 elif [ $cmd == $migrate ]
     then
     echo "Running migrations for traceback provider"

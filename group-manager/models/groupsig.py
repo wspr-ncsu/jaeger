@@ -6,8 +6,6 @@ msk_key = 'GM.msk'
 gpk_key = 'GM.gpk'
 gml_key = 'GM.gml'
 
-GML_SAVED = False
-
 def setup(refresh = False):
     db.connect()
     
@@ -37,6 +35,13 @@ def setup(refresh = False):
         gml = GML.gml_import(SCHEME, gml_str)
     
     return { 'msk': msk, 'gpk': gpk, 'gml': gml }
+
+def register_all(gsign_keys, refresh = False):
+    for cid in range(1000):
+        print(f'Registering cid={cid}')
+        register(cid, gsign_keys, refresh)
+        
+    save_gml(gsign_keys['gml'])
     
 def register(cid, gsign_keys, refresh = False):
     db.connect()
@@ -59,22 +64,12 @@ def register(cid, gsign_keys, refresh = False):
     
     gpk = grpkey.grpkey_export(gpk)
     
-    # hacky way to save gml instead of saving in the setup function
-    save_gml(gml)
-    
     return { 'usk': usk, 'gpk': gpk }
 
 def save_gml(gml):
-    global GML_SAVED
-    
-    if GML_SAVED:
-        return
-    
     db.connect()
     saved = db.find(gml_key)
     export_d = GML.gml_export(gml)
     
     if saved != export_d:
         db.save(gml_key, export_d)
-        
-    GML_SAVED = True
