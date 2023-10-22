@@ -1,7 +1,5 @@
 from redis import Redis
 from rq import Queue
-from . import helpers
-from . import groupsig
 import json
 from . import database
 
@@ -13,7 +11,7 @@ def job(payload: str):
     records = []
     
     for call in calls:
-        if not groupsig.verify(call['s'], f"{call['l']}|{call['c']}"):
+        if not groupsig_verify(call['s'], f"{call['l']}|{call['c']}"):
             continue
         records.append([call['l'], call['s'], call['c']])
         
@@ -27,19 +25,32 @@ def submit(request):
     
     queue.enqueue(job, payload)
     
-def trace(request):
+def traceback(request):
     payload = reject_request(request)
     
     if not payload:
-        return
+        return []
     
-    # TODO: Implement tracing
+    labels = []
+    calls = json.loads(payload)
+    
+    for call in calls:
+        if trace_auth_verify(call['s'], call['l']):
+            labels.append(call['l'])
+        
+    return database.get_records(labels)
 
 def reject_request(request):
     sig: str = request.headers.get('X-Privytrace').split(' ')[1]
     payload = request.form.get('payload')
     
-    if groupsig.verify(sig, payload):
+    if groupsig_verify(sig, payload):
         return payload
     else:
         return True
+
+def groupsig_verify(sig: str, msg):
+    return True
+
+def trace_auth_verify(sig: str, msg):
+    return True

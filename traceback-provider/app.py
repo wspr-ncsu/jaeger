@@ -27,9 +27,10 @@ class TracebackProvider:
             jobs.submit(request)
             return response.ok()
 
-        @app.post('/deanonymize')
-        def deanonymize():
-            return response.ok()
+        @app.post('/traceback')
+        def traceback():
+            cts = jobs.traceback(request)
+            return response.ok({'cts': cts})
         
         
         @app.errorhandler(404)
