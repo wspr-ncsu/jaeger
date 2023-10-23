@@ -84,23 +84,16 @@ def link_cdrs(cdrs: dict):
     origin, transit, terminal = parse_cdrs(msgs)
     sub_paths = find_subpath(origin, transit)
     
-    sub_paths.insert(0, origin['id'])
-    print('Linked CDRs \n', ' --> '.join(sub_paths))
-    
-    if len(sub_paths) < len(msgs):
-        fragmentation_fault(msgs=msgs)
-        
-    return msgs
-    
-def fragmentation_fault(msgs):
-    print('\nFragmentation detected.')
-    print('CDRs are fragmented into multiple paths.')
-    
+    print('CDRs decrypted')
     for msg in msgs:
         prev, curr, next = msg.split('|')
         print(f'{curr} --> {next}')
         
-    print('\n')
+    sub_paths.insert(0, origin['id'])
+    print('\nLinked CDRs \n', ' --> '.join(sub_paths))
+
+    return msgs
+    
     
 def find_subpath(_from, transit):
     path = []

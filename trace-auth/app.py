@@ -26,16 +26,12 @@ class TraceAuth:
         app.config.from_mapping(SECRET_KEY=helpers.env("APP_SECRET_KEY"))
         self.create_instance_path(app)
         refresh = False
-
         keys: helpers.Keys = witness_enc.setup(refresh=refresh)
-
-        @app.post('/register')
-        def register():
-            cid = helpers.validate_cid(request.form.get('cid'))
-            return { 'pk': keys.pk }, self.HTTP_OK
+        gpk = helpers.get_gpk()
         
         @app.post('/authorize')
         def authorize():
+            helpers.validate_signature(request=request, gpk=gpk)
             labels = helpers.validate_labels(request.form.get('payload'))
             sigs = witness_enc.authorize(sk=keys.sk, labels=labels)
             return { 'res': sigs }, self.HTTP_OK

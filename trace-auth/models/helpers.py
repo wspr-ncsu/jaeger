@@ -3,6 +3,8 @@ from os import getenv
 import traceback as ex
 from collections import namedtuple
 from werkzeug.exceptions import HTTPException
+from pygroupsig import groupsig, signature, constants, grpkey
+from . import database
 
 Keys = namedtuple('Keys', ['sk', 'pk'])
 
@@ -53,3 +55,24 @@ def validate_labels(labels):
         raise Panic("Missing labels")
     
     return labels
+
+def get_gpk():
+    database.connect()
+    groupsig.init(constants.BBS04_CODE, 0)
+    gpk = database.find('GM.gpk')
+    
+    if not gpk:
+        raise Exception('GPK not found in Redis')
+    
+    gpk = grpkey.grpkey_import(constants.BBS04_CODE, gpk)
+    
+    return gpk
+
+def validate_signature(request, gpk):
+    sig: str = request.headers.get('X-Privytrace').split(' ')[1]
+    msg: str = request.form.get('payload')
+    
+    sig = signature.signature_import(constants.BBS04_CODE, sig)
+    
+    if not groupsig.verify(sig, msg, gpk):
+        raise Panic("Bad Request")
