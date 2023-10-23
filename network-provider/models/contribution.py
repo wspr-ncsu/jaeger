@@ -28,9 +28,10 @@ def encrypt(tapk: G1Element, group: dict, cdrs: List[CDR], labels: List[str]) ->
         msg: bytes = bytes(cdr.get_hops(), 'utf-8')
         
         ct: dict = scheme.encrypt(pk=tapk, label=label, cdr=msg)
-        cts.append(scheme.export_ct(ct))
+        ct = scheme.export_ct(ct)
+        cts.append(ct)
         
-        payload = bytes(f'{labels[index]}|{ct}', 'utf-8')
+        payload = f'{labels[index]}|{ct}'
         sigs.append(groupsig.sign(group=group, msg=payload))
         
     return { 'cts': cts, 'sigs': sigs }

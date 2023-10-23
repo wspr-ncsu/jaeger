@@ -6,6 +6,7 @@ import models.helpers as helpers
 import models.response as response
 from werkzeug.exceptions import HTTPException
 import models.jobs as jobs
+import models.redis as redis
 
 load_dotenv()
 
@@ -21,15 +22,16 @@ class TracebackProvider:
         app = Flask(__name__, instance_relative_config=True)
         app.config.from_mapping(SECRET_KEY=helpers.env("APP_SECRET_KEY"))
         self.create_instance_path(app)
+        gpk = redis.get_gpk()
 
         @app.post('/submit')
         def submit():
-            jobs.submit(request)
+            jobs.submit(request=request, gpk=gpk)
             return response.ok()
 
         @app.post('/traceback')
         def traceback():
-            cts = jobs.traceback(request)
+            cts = jobs.traceback(request=request, gpk=gpk)
             return response.ok({'res': cts})
         
         

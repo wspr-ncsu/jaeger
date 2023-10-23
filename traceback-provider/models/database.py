@@ -1,4 +1,3 @@
-from redis import Redis
 from .helpers import env
 import clickhouse_connect
 import json

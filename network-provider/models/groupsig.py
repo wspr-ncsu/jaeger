@@ -4,7 +4,7 @@ from pygroupsig import groupsig, signature, memkey, grpkey, constants
 
 grp_sig_base_url = helpers.env('GRP_SIG_URL', 'http://localhost:9990')
     
-def sign(group: dict, msg: bytes) -> str:
+def sign(group: dict, msg: str) -> str:
     sigma = groupsig.sign(msg, group['usk'], group['gpk'])
     return signature.signature_export(sigma)
 

@@ -19,7 +19,6 @@ def make_headers(group: dict, payload: str = None, override: dict = None):
     headers = {}
     
     if (payload):
-        payload = bytes(payload, 'utf-8')
         headers['X-Privytrace'] = 'Sig ' + groupsig.sign(group=group, msg=payload)
     
     return headers if not override else { **headers, **override }
