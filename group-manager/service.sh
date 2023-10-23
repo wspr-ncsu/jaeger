@@ -35,5 +35,5 @@ if [ $cmd == $serve ]
         sudo kill -9 $portInUse
     fi
 
-    flask run --port $port
+    flask run --debug --port $port
 fi
