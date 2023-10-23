@@ -1,11 +1,10 @@
-setup="setup"
 serve="serve"
 migrate="migrate"
 test="test"
 deps="requirements.txt"
 
 cmd=$1
-allowed_commands=($setup $serve $migrate, $test)
+allowed_commands=($serve $migrate $test)
 
 if [[ ! " ${allowed_commands[@]} " =~ " ${cmd} " ]]; then
     echo "Invalid command: $cmd. Valid commands are: ${allowed_commands[@]}"

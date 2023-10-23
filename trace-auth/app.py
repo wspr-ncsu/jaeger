@@ -36,10 +36,9 @@ class TraceAuth:
         
         @app.post('/authorize')
         def authorize():
-            cid = helpers.validate_cid(request.form.get('cid'))
-            label = helpers.validate_label(request.form.get('label'))
-            sigma = witness_enc.authorize(sk=keys.sk, tag=label)
-            return { 'sigma': sigma }, self.HTTP_OK
+            labels = helpers.validate_labels(request.form.get('payload'))
+            sigs = witness_enc.authorize(sk=keys.sk, labels=labels)
+            return { 'res': sigs }, self.HTTP_OK
         
         @app.errorhandler(self.HTTP_NOT_FOUND)
         def page_not_found(e):

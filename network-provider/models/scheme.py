@@ -13,13 +13,13 @@ def encrypt(pk: G1Element, label: bytes, cdr: bytes) -> dict:
 
 def decrypt(sig: G2Element, ct: dict) -> bytes:
     # Decrypt the key using witness encryption
-    ct1: CipherText = CipherText.from_bytes(ct.ct1)
+    ct1: CipherText = CipherText.from_bytes(ct['ct1'])
     key: bytes = bytes(Scheme.decrypt(sig, ct1))
     
     # Decrypt the message with key using OTP
-    msg = OTP.decrypt(key, ct.ct2)
+    msg = bytes(OTP.decrypt(key, ct['ct2']))
     
-    return msg
+    return msg.decode()
     
 def export_ct(ct: dict, dtype=str) -> str:
     ct: bytes = pickle.dumps(ct)

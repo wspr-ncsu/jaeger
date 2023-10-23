@@ -36,7 +36,7 @@ def unmask_evaluations(evaluations: List[str], masks: List[oprf.scalar]):
     """Unmask the evaluations using OPRF to remove initial masking"""
 
     for index, evaluation in enumerate(evaluations):
-        print(evaluation)
+        # print(evaluation)
         fx = oprf.import_point(evaluation)
         fx = oprf.unmask(masks[index], fx)
         evaluations[index] = oprf.export_point(fx)
@@ -48,6 +48,6 @@ def evaluate(group: dict, labels: List[str]) -> List[oprf.scalar]:
     url = label_mgr_base_url + '/evaluate'
     data = { 'xs': labels }
     res = http.post(url=url, group=group, data=data)
-    print(res)
+    # print(res)
     
     return res['fxs']

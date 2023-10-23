@@ -42,9 +42,20 @@ def insert_records(records, cols=['label', 'sigma', 'ct']):
     connection = open_db()
     connection.insert("cdrs", data=records, column_names=cols)
     
-def get_records(labels):
+def get_ciphertexts(labels):
+    labels = '\',\''.join(labels)
+    labels = f'\'{labels}\'' # wrap in quotes
     connection = open_db()
-    query = f"SELECT sigma, ct FROM cdrs WHERE label IN {labels}"
+    query = f"SELECT label, sigma, ct FROM cdrs WHERE label IN ({labels})"
     result = connection.query(query)
-    return result.result_rows
+    
+    cts = {}
+    print(len(result.result_rows))
+    for label, sigma, ct in result.result_rows:
+        if label not in cts:
+            cts[label] = []
+            
+        cts[label].append({ 'sigma': sigma, 'ct': ct })
+
+    return cts
     

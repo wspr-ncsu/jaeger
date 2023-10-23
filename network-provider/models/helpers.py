@@ -18,6 +18,9 @@ def not_found():
     return { 'msg': 'The requested resource could not be found' }, 404
         
 def toEpoch(date: str):
+    if (type(date) is int):
+        return date
+    
     return int(datetime.strptime(date, '%Y-%m-%d %H:%M:%S').timestamp())
     
 class Carrier:

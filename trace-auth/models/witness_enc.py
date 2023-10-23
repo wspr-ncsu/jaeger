@@ -28,13 +28,12 @@ def setup(refresh = False):
     return Keys(sk=sk, pk=pk)
     
  
-def authorize(sk: PrivateKey, tag: bytes):
-    if type(tag) is not bytes:
-        raise Panic("Tag must be a bytes object")
+def authorize(sk: PrivateKey, labels: list):
+    sigs = {}
     
-    if not isinstance(sk, PrivateKey):
-        raise Panic("Invalid signing key")
+    for label in labels:
+        msg = bytes(label, 'utf-8')
+        sigma = BasicSchemeMPL.sign(sk, msg)
+        sigs[label] = bytes(sigma).hex()
     
-    signature = BasicSchemeMPL.sign(sk, tag)
-    
-    return bytes(signature).hex()
+    return sigs

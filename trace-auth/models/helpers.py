@@ -1,3 +1,4 @@
+import json
 from os import getenv
 import traceback as ex
 from collections import namedtuple
@@ -45,8 +46,10 @@ def validate_cid(cid):
     
     return cid
 
-def validate_label(label):
-    if not label:
-        raise Panic("Missing label")
+def validate_labels(labels):
+    labels = json.loads(labels)
     
-    return label
+    if not len(labels):
+        raise Panic("Missing labels")
+    
+    return labels

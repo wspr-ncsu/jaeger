@@ -15,18 +15,23 @@ for carrier in carriers:
 
 callpath = [4, 3, 5, 1, 2]
 src, dst = 1000, 1001
-ts = datetime.now()
+ts = ['2023-10-23 15:28:51', '2023-10-23 15:28:53', '2023-10-23 15:28:53', '2023-10-23 15:28:54', '2023-10-23 15:28:55']
 cdrs = []
 
-for index, curr in enumerate(callpath):
-    prev = None if index == 0 else callpath[index - 1]
-    next = None if index == len(callpath) - 1 else callpath[index + 1]
-    # add random seconds to ts
-    ts = ts.replace(second=ts.second + index)
-    cdr = CDR(src=src, dst=dst, ts=ts.strftime('%Y-%m-%d %H:%M:%S'), prev=prev, curr=curr , next=next)
+def contribute():
+    for index, curr in enumerate(callpath):
+        prev = None if index == 0 else callpath[index - 1]
+        next = None if index == len(callpath) - 1 else callpath[index + 1]
+        cdr = CDR(src=src, dst=dst, ts=ts[index], prev=prev, curr=curr , next=next)
+        contribution.contribute(group=groups[curr], tapk=tapk, cdrs=[cdr])
+        cdrs.append(cdr)
+
+
+def trace():
+    cdr = CDR(src=src, dst=dst, ts='2023-10-23 15:28:55', prev=1, curr=2 , next=None)
+    records = traceback.trace(group=groups[2], tapk=tapk, cdrs=[cdr])
+    # print(records)
     
-    contribution.contribute(group=groups[curr], tapk=tapk, cdrs=[cdr])
+# contribute()
+trace()
 
-
-records = traceback.trace(group=groups['2'], tapk=tapk, cdrs=[cdr])
-print(records)

@@ -3,6 +3,7 @@ from . import helpers
 from blspy import G1Element
 from . import database as db
 from . import http
+from typing import List
 
 trace_auth_base_url = helpers.env('TRACE_AUTH_URL', 'http://localhost:9992')
 
@@ -18,13 +19,8 @@ def register() -> G1Element:
     
     return G1Element.from_bytes(bytes.fromhex(pk))
 
-def authorize(group: dict, labels: list, sigs: list):
+def authorize(group: dict, labels: List[str]):
     """Request signature from Trace Auth"""
-    records = []
-    
-    for index, label in enumerate(labels):
-        records.append({ 'l': label, 's': sigs[index]})
-    
     url = f'{trace_auth_base_url}/authorize'
-    res = http.post(url=url, data=records, group=group)
-    return res
+    res = http.post(url=url, data=labels, group=group)
+    return res['res']

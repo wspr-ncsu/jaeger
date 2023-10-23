@@ -30,15 +30,10 @@ def traceback(request):
     
     if not payload:
         return []
+
+    labels = json.loads(payload)
     
-    labels = []
-    calls = json.loads(payload)
-    
-    for call in calls:
-        if trace_auth_verify(call['s'], call['l']):
-            labels.append(call['l'])
-        
-    return database.get_records(labels)
+    return database.get_ciphertexts(labels)
 
 def reject_request(request):
     sig: str = request.headers.get('X-Privytrace').split(' ')[1]

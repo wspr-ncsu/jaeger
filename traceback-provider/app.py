@@ -30,7 +30,7 @@ class TracebackProvider:
         @app.post('/traceback')
         def traceback():
             cts = jobs.traceback(request)
-            return response.ok({'cts': cts})
+            return response.ok({'res': cts})
         
         
         @app.errorhandler(404)
