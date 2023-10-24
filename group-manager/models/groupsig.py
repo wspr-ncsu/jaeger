@@ -1,3 +1,4 @@
+from . import helpers
 from . import database as db
 from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, constants, gml as GML
 
@@ -73,3 +74,23 @@ def save_gml(gml):
     
     if saved != export_d:
         db.save(gml_key, export_d)
+        
+def validate_request(request, gpk):
+    sig: str = request.headers.get('X-Privytrace').split(' ')[1]
+    msg: str = request.form.get('payload')
+    
+    sig = signature.signature_import(SCHEME, sig)
+    
+    if not groupsig.verify(sig, msg, gpk):
+        raise helpers.Panic('Bad Request')
+    
+def open_sigs(records, gsign_keys):
+    groupsig.init(SCHEME, 0)
+    results = []
+    
+    for record in records:
+        try:
+            sig = signature.signature_import(SCHEME, record['sig'])
+            opened = groupsig.open(sig, gsign_keys['msk'], gsign_keys['gpk'], gsign_keys['gml'])
+        except:
+            pass
