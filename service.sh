@@ -12,8 +12,8 @@
 #      qs: stops the queue worker
 #      qr: restarts the queue worker
 
-valid_apps=(gm lm ta tbp)
-valid_commands=(serve migrate qw qs)
+valid_apps=(gm lm ta tbp, db)
+valid_commands=(serve qw qs migrate)
 
 app=$(echo $1 | cut -d ":" -f 1)
 cmd=$(echo $1 | cut -d ":" -f 2)
@@ -91,6 +91,15 @@ fi
 if ! is_valid valid_commands $cmd; then
     echo "Invalid command: $cmd. Valid commands are: ${valid_commands[@]}"
     exit 1
+fi
+
+if [ $app == "db" ]
+    then
+    if [ $cmd == "migrate" ]
+        then
+        migrate
+    fi
+    exit 0
 fi
 
 if [ $cmd == "serve" ]

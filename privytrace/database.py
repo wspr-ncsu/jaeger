@@ -7,16 +7,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def open_db():
-    DB_HOST = config.DB_HOST
-    DB_NAME = config.DB_NAME
-    DB_USER = config.DB_USER
-    DB_PASS = config.DB_PASS
-    
     return clickhouse_connect.get_client(
-        host=DB_HOST, 
-        username=DB_USER, 
-        password=DB_PASS,
-        database=DB_NAME
+        host=config.DB_HOST, 
+        username=config.DB_USER, 
+        password=config.DB_PASS,
+        database=config.DB_NAME
     )
 
 
@@ -24,7 +19,7 @@ def migrate():
     print('Starting Database Migrations')
     connection = open_db()
     
-    text = pathlib.Path.cwd().joinpath('ddls.json').read_text()
+    text = pathlib.Path.cwd().joinpath('schema.json').read_text()
     DDLs = json.loads(text)
     
     for ddl in DDLs:

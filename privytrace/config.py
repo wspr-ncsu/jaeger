@@ -11,6 +11,11 @@ def env(envname, default=""):
 
 APP_SECRET_KEY = env("APP_SECRET_KEY")
 
+DB_HOST = env("DB_HOST")
+DB_NAME = env("DB_NAME")
+DB_USER = env("DB_USER")
+DB_PASS = env("DB_PASS")
+
 REDIS_HOST = env("REDIS_HOST")
 REDIS_PORT = env("REDIS_PORT")
 REDIS_PASS = env("REDIS_PASS")
