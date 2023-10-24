@@ -48,13 +48,10 @@ def get_ciphertexts(labels):
     query = f"SELECT label, sigma, ct FROM cdrs WHERE label IN ({labels})"
     result = connection.query(query)
     
-    cts = {}
-    print(len(result.result_rows))
+    cts = []
+    
     for label, sigma, ct in result.result_rows:
-        if label not in cts:
-            cts[label] = []
-            
-        cts[label].append({ 'sigma': sigma, 'ct': ct })
+        cts.append({ 'label': label, 'sigma': sigma, 'ct': ct })
 
     return cts
     

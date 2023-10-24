@@ -51,36 +51,28 @@ def sign_labels(group: dict, labels: List[str]) -> List[str]:
 
 def decrypt_records(records: List[dict], witneses: List[str]):
     """Decrypt a list of records"""
-    msgs = {}
+    msgs = []
     no_witness = []
     
-    for label in records:
+    for record in records:
+        label = record['label']
+        
         if label not in witneses:
-            no_witness.append(label)
+            no_witness.append(record)
             continue
         
         sig: G2Element = scheme.import_sig(witneses[label])
-        
-        for record in records[label]:
-            ct: dict = scheme.import_ct(record['ct'])
+        ct: dict = scheme.import_ct(record['ct'])
             
-            if label not in msgs:
-                msgs[label] = []
-                
-            msgs[label].append(scheme.decrypt(sig=sig, ct=ct))
+        msgs.append(scheme.decrypt(sig=sig, ct=ct))
         
     return { 'msgs': msgs, 'no_witness': no_witness }
 
 def get_faulty_set(records, dec_cdrs):
-    return []
+    return records
 
-def link_cdrs(cdrs: dict):
+def link_cdrs(msgs: list):
     """Link a list of decrypted cdrs"""
-    msgs = []
-    
-    for label in cdrs:
-        msgs += cdrs[label]
-    
     origin, transit, terminal = parse_cdrs(msgs)
     sub_paths = find_subpath(origin, transit)
     

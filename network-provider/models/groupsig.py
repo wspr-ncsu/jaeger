@@ -1,8 +1,9 @@
 from . import helpers
 from . import database as db
+from . import http
 from pygroupsig import groupsig, signature, memkey, grpkey, constants
 
-grp_sig_base_url = helpers.env('GRP_SIG_URL', 'http://localhost:9990')
+gm_base_url = helpers.env('GRP_SIG_URL', 'http://localhost:9990')
     
 def sign(group: dict, msg: str) -> str:
     sigma = groupsig.sign(msg, group['usk'], group['gpk'])
@@ -10,8 +11,7 @@ def sign(group: dict, msg: str) -> str:
 
 def open(group: dict, faulty_set: list):
     """Open a faulty set"""
-    faulty_set = [signature.signature_import(s) for s in faulty_set]
-    groupsig.open(faulty_set, group['gpk'], group['usk'])
+    http.post(f'{gm_base_url}/open', data=faulty_set, group=group)
     
 # post request to registration server
 def register(cid: str) -> dict:
