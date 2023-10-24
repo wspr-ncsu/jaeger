@@ -44,9 +44,12 @@ class GroupManager:
             return payload, self.HTTP_CREATED
 
 
-        @app.post('/deanonymize')
-        def deanonymize():
-            return { "msg": "Deanonymized" }, self.HTTP_OK
+        @app.post('/open')
+        def open_sigs():
+            groupsig.validate_request(request=request, gpk=gsign_keys['gpk'])
+            records = loads(request.form.get('payload'))
+            res = groupsig.open_sigs(records=records, gsign_keys=gsign_keys)
+            return { "res": res }, self.HTTP_OK
         
         
         @app.errorhandler(self.HTTP_NOT_FOUND)
