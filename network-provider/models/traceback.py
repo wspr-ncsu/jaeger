@@ -19,6 +19,10 @@ def trace(group: dict, tapk: G1Element, cdrs: List[CDR]):
         
         records = traceback_provider.query_trace(group=group, labels=labels)
         
+        if not records:
+            print(f'No records found for {cdr.src} and {cdr.dst} at {cdr.ts}')
+            continue
+        
         dec_cdrs = decrypt_records(records=records, witneses=witneses)
     
         faulty_set = get_faulty_set(records, dec_cdrs)
@@ -69,7 +73,7 @@ def decrypt_records(records: List[dict], witneses: List[str]):
     return { 'msgs': msgs, 'no_witness': no_witness }
 
 def get_faulty_set(records, dec_cdrs):
-    return records
+    return []
 
 def link_cdrs(msgs: list):
     """Link a list of decrypted cdrs"""
