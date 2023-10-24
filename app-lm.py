@@ -1,19 +1,14 @@
 import os
-from threading import Thread
 from dotenv import load_dotenv
 from flask import Flask, request
-import models.label_mgr as label_mgr
-import models.helpers as helpers
+import privytrace.config as config
+import privytrace.helpers as helpers
+import privytrace.label_mgr as label_mgr
+import privytrace.response as response
 
 load_dotenv()
 
 class LabelManager:
-    def __init__(self) -> None:
-        self.HTTP_OK = 200
-        self.HTTP_CREATED = 201
-        self.HTTP_NOT_FOUND = 404
-        self.HTTP_UNPROCESSABLE = 422
-           
     def create_instance_path(self, app):
         # ensure the instance folder exists
         try:
@@ -23,7 +18,7 @@ class LabelManager:
         
     def start(self, test_config=None):
         app = Flask(__name__, instance_relative_config=True)
-        app.config.from_mapping(SECRET_KEY=helpers.env("APP_SECRET_KEY"))
+        app.config.from_mapping(SECRET_KEY=config.APP_SECRET_KEY)
         self.create_instance_path(app)
         refresh = False
 
@@ -31,17 +26,17 @@ class LabelManager:
 
         @app.post('/evaluate')
         def evaluate():
-            xs = helpers.validate_xs(request.form.get('payload'))
+            xs = helpers.validate_json_list(request.form.get('payload'))
             fxs = label_mgr.batch_evaluation(sk, xs)
-            return { 'fxs': fxs }, self.HTTP_OK
+            return response.ok({ 'res': fxs })
         
-        @app.errorhandler(self.HTTP_NOT_FOUND)
+        @app.errorhandler(response.NOT_FOUND)
         def page_not_found(e):
-            return helpers.not_found()
+            return response.not_found()
         
         @app.errorhandler(Exception)
         def handle_all_exceptions(e):
-            return helpers.handle_ex(e)
+            return response.handle_ex(e)
 
         return app
 

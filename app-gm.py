@@ -1,26 +1,13 @@
 import os
 import traceback as ex
-from time import sleep
-from json import loads, dumps
-from redis import Redis
-from threading import Thread
-from dotenv import load_dotenv
+from json import loads
 from flask import Flask, request
-from werkzeug.exceptions import HTTPException
-from models.helpers import env
-import models.groupsig as groupsig
-import models.helpers as helpers
-
-load_dotenv()
+import privytrace.config as config
+import privytrace.helpers as helpers
+import privytrace.groupsig as groupsig
+import privytrace.response as response
 
 class GroupManager:
-    def __init__(self) -> None:
-        self.HTTP_OK = 200
-        self.HTTP_CREATED = 201
-        self.HTTP_NOT_FOUND = 404
-        self.HTTP_UNPROCESSABLE = 422
-        self.HTTP_INTERNAL_SERVER_ERROR = 500
-           
     def create_instance_path(self, app):
         # ensure the instance folder exists
         try:
@@ -30,7 +17,7 @@ class GroupManager:
         
     def start(self, test_config=None):
         app = Flask(__name__, instance_relative_config=True)
-        app.config.from_mapping(SECRET_KEY=env("APP_SECRET_KEY"))
+        app.config.from_mapping(SECRET_KEY=config.APP_SECRET_KEY)
         self.create_instance_path(app)
         refresh = False
 
@@ -41,7 +28,7 @@ class GroupManager:
         def register():
             cid = helpers.validate_cid(request.form.get('cid'))
             payload = groupsig.register(cid=cid, gsign_keys=gsign_keys, refresh=refresh)
-            return payload, self.HTTP_CREATED
+            return response.created(payload=payload)
 
 
         @app.post('/open')
@@ -49,27 +36,16 @@ class GroupManager:
             groupsig.validate_request(request=request, gpk=gsign_keys['gpk'])
             records = loads(request.form.get('payload'))
             res = groupsig.open_sigs(records=records, gsign_keys=gsign_keys)
-            return { "res": res }, self.HTTP_OK
+            return response.ok(payload=res)
         
         
-        @app.errorhandler(self.HTTP_NOT_FOUND)
+        @app.errorhandler(response.NOT_FOUND)
         def page_not_found(e):
-            return {
-                'msg': 'The requested resource could not be found'
-            }, self.HTTP_NOT_FOUND
+            return response.not_found()
         
         @app.errorhandler(Exception)
         def handle_all_exceptions(e):
-            if isinstance(e, HTTPException):
-                return e
-            else:
-                print("\n")
-                ex.print_exc()
-                print("\n")
-                
-                return {
-                    'msg': 'An unexpected error occurred'
-                }, self.HTTP_INTERNAL_SERVER_ERROR
+            return response.handle_ex(e)
 
         return app
 

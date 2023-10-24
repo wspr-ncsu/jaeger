@@ -1,7 +1,7 @@
-from redis import Redis
-from rq import Queue
 import json
+from rq import Queue
 from . import database
+from redis import Redis
 from pygroupsig import groupsig, signature, constants, grpkey
 
 queue = Queue(connection=Redis())

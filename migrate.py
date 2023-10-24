@@ -1,5 +1,5 @@
-import models.database as database
 from dotenv import load_dotenv
+import privytrace.database as database
 
 load_dotenv()
 

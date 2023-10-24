@@ -1,4 +1,0 @@
-{
-    "drop cdrs table": "DROP TABLE IF EXISTS cdrs",
-    "create cdrs table": "CREATE TABLE IF NOT EXISTS cdrs (label VARCHAR NOT NULL, sigma VARCHAR NOT NULL, ct VARCHAR NOT NULL, PRIMARY KEY (label, sigma)) ENGINE = MergeTree()"
-}

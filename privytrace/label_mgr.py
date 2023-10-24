@@ -1,18 +1,16 @@
-from . import database as db
 from . import oprf
+from . import redis
 from typing import List
 
 sk_label = 'LM.sk'
 
 def setup(refresh = False):
-    db.connect()
-    
     # retrieve setup keys
-    sk = None if refresh else db.find(sk_label)
+    sk = None if refresh else redis.find(sk_label)
     
     if not sk:
         sk = oprf.keygen()
-        db.save(sk_label, oprf.export_scalar(sk))
+        redis.save(sk_label, oprf.export_scalar(sk))
         return sk
     
     return oprf.import_scalar(sk)

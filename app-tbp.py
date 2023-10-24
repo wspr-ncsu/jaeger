@@ -2,11 +2,10 @@ import os
 import traceback as ex
 from dotenv import load_dotenv
 from flask import Flask, request
-import models.helpers as helpers
-import models.response as response
-from werkzeug.exceptions import HTTPException
-import models.jobs as jobs
-import models.redis as redis
+import privytrace.groupsig as groupsig
+import privytrace.jobs as jobs
+import privytrace.config as config
+import privytrace.response as response
 
 load_dotenv()
 
@@ -20,9 +19,9 @@ class TracebackProvider:
         
     def start(self, test_config=None):
         app = Flask(__name__, instance_relative_config=True)
-        app.config.from_mapping(SECRET_KEY=helpers.env("APP_SECRET_KEY"))
+        app.config.from_mapping(SECRET_KEY=config.APP_SECRET_KEY)
         self.create_instance_path(app)
-        gpk = redis.get_gpk()
+        gpk = groupsig.get_gpk()
 
         @app.post('/submit')
         def submit():
@@ -41,13 +40,7 @@ class TracebackProvider:
         
         @app.errorhandler(Exception)
         def handle_all_exceptions(e):
-            if isinstance(e, HTTPException):
-                return e
-            else:
-                print("\n")
-                ex.print_exc()
-                print("\n")
-                return response.internal_server_error()
+            return response.handle_ex(e)
 
         return app
 

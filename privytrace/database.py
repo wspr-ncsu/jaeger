@@ -1,20 +1,16 @@
-from .helpers import env
-import clickhouse_connect
 import json
 import pathlib
+from . import config
+import clickhouse_connect
 from dotenv import load_dotenv
 
 load_dotenv()
 
-status_active = 1
-status_inactive = 0
-status_completed = 2
-
 def open_db():
-    DB_HOST = env("DB_HOST")
-    DB_NAME = env("DB_NAME")
-    DB_USER = env("DB_USER")
-    DB_PASS = env("DB_PASS")
+    DB_HOST = config.DB_HOST
+    DB_NAME = config.DB_NAME
+    DB_USER = config.DB_USER
+    DB_PASS = config.DB_PASS
     
     return clickhouse_connect.get_client(
         host=DB_HOST, 
