@@ -22,12 +22,12 @@ class LabelManager:
         self.create_instance_path(app)
         refresh = False
 
-        sk = label_mgr.setup(refresh=refresh)
+        sk = label_mgr.server_setup(refresh=refresh)
 
         @app.post('/evaluate')
         def evaluate():
             xs = helpers.validate_json_list(request.form.get('payload'))
-            fxs = label_mgr.batch_evaluation(sk, xs)
+            fxs = label_mgr.server_batch_evaluation(sk, xs)
             return response.ok({ 'res': fxs })
         
         @app.errorhandler(response.NOT_FOUND)

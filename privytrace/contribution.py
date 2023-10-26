@@ -1,17 +1,16 @@
-from . import oprf
-from . import scheme
+from . import witenc
 from . import label_mgr
 from . import groupsig
 from .helpers import CDR
 from typing import List
-from . import traceback_provider as ITG
-from oblivious.ristretto import scalar as Scalar, point as Point
+from . import itg as ITG
 from blspy import G1Element
+from oblivious.ristretto import scalar as Scalar, point as Point
 
 def contribute(group: dict, tapk: G1Element, cdrs: List[CDR]):
     """Contribute a CDR to the database"""
     
-    labels = label_mgr.get_labels(group, cdrs)
+    labels = label_mgr.client_request_labels(group, cdrs)
 
     payload = encrypt(tapk=tapk, group=group, cdrs=cdrs, labels=labels)
     
@@ -27,8 +26,8 @@ def encrypt(tapk: G1Element, group: dict, cdrs: List[CDR], labels: List[str]) ->
         label: bytes = bytes(labels[index], 'utf-8')
         msg: bytes = bytes(cdr.get_hops(), 'utf-8')
         
-        ct: dict = scheme.encrypt(pk=tapk, label=label, cdr=msg)
-        ct = scheme.export_ct(ct)
+        ct: dict = witenc.client_encrypt(pk=tapk, label=label, cdr=msg)
+        ct = witenc.client_export_ct(ct)
         cts.append(ct)
         
         payload = f'{labels[index]}|{ct}'

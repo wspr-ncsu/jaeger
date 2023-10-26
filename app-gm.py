@@ -21,21 +21,21 @@ class GroupManager:
         self.create_instance_path(app)
         refresh = False
 
-        gsign_keys = groupsig.setup(refresh=refresh)
-        groupsig.register_all(gsign_keys, refresh=refresh)
+        gsign_keys = groupsig.mgr_setup(refresh=refresh)
+        groupsig.mgr_register_all(gsign_keys, refresh=refresh)
 
         @app.post('/register')
         def register():
             cid = helpers.validate_cid(request.form.get('cid'))
-            payload = groupsig.register(cid=cid, gsign_keys=gsign_keys, refresh=refresh)
+            payload = groupsig.mgr_register_carrier(cid=cid, gsign_keys=gsign_keys, refresh=refresh)
             return response.created(payload=payload)
 
 
         @app.post('/open')
         def open_sigs():
-            groupsig.validate_request(request=request, gpk=gsign_keys['gpk'])
+            groupsig.validate_signature_from_request(request=request, gpk=gsign_keys['gpk'])
             records = loads(request.form.get('payload'))
-            res = groupsig.open_sigs(records=records, gsign_keys=gsign_keys)
+            res = groupsig.mgr_open_sigs(records=records, gsign_keys=gsign_keys)
             return response.ok(payload=res)
         
         

@@ -1,6 +1,7 @@
 import json
 from os import getenv
 from .response import Panic
+from datetime import datetime
 
 def write_to_file(filename, content):
     with open(filename, "w") as f:
@@ -42,3 +43,26 @@ def validate_json(payload):
         raise Panic("xs must be a dict")
 
     return payload
+
+def toEpoch(date: str):
+    if (type(date) is int):
+        return date
+    
+    return int(datetime.strptime(date, '%Y-%m-%d %H:%M:%S').timestamp())
+
+class CDR:
+    label = None
+    
+    def __init__(self, src, dst, ts, prev, curr, next):
+        self.src = src
+        self.dst = dst
+        self.ts = toEpoch(ts)
+        self.prev = prev
+        self.curr = curr
+        self.next = next
+        
+    def get_call_detail(self):
+        return f'{self.src}|{self.dst}|{self.ts}'
+    
+    def get_hops(self):
+        return f'{self.prev}|{self.curr}|{self.next}'

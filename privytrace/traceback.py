@@ -1,11 +1,11 @@
-from .helpers import CDR
-from typing import List
-from . import label_mgr
+from . import itg
+from . import witenc
 from . import groupsig
+from . import label_mgr
+from typing import List
 from . import trace_auth
-from . import traceback_provider
+from .helpers import CDR
 from blspy import G1Element, G2Element
-from . import scheme
 
 MAX_EPOCHS = 60 # Seconds
 
@@ -13,11 +13,11 @@ def trace(group: dict, tapk: G1Element, cdrs: List[CDR]):
     """Trace given call detail records"""
     for cdr in cdrs:
         cdr_set = get_range(cdr)
-        labels = label_mgr.get_labels(group, cdr_set)
+        labels = label_mgr.client_request_labels(group, cdr_set)
         
-        witneses = trace_auth.authorize(group=group, labels=labels)
+        witneses = trace_auth.request_authorization(group=group, labels=labels)
         
-        records = traceback_provider.query_trace(group=group, labels=labels)
+        records = itg.request_a_trace(group=group, labels=labels)
         
         if not records:
             print(f'No records found for {cdr.src} and {cdr.dst} at {cdr.ts}')
@@ -28,7 +28,7 @@ def trace(group: dict, tapk: G1Element, cdrs: List[CDR]):
         faulty_set = get_faulty_set(records, dec_cdrs)
         
         if faulty_set:
-            groupsig.open(group=group, faulty_set=faulty_set)
+            groupsig.client_open(group=group, faulty_set=faulty_set)
             
         return link_cdrs(dec_cdrs['msgs'])
     
@@ -65,10 +65,10 @@ def decrypt_records(records: List[dict], witneses: List[str]):
             no_witness.append(record)
             continue
         
-        sig: G2Element = scheme.import_sig(witneses[label])
-        ct: dict = scheme.import_ct(record['ct'])
+        sig: G2Element = witenc.client_import_sig(witneses[label])
+        ct: dict = witenc.client_import_ct(record['ct'])
             
-        msgs.append(scheme.decrypt(sig=sig, ct=ct))
+        msgs.append(witenc.client_decrypt(sig=sig, ct=ct))
         
     return { 'msgs': msgs, 'no_witness': no_witness }
 

@@ -1,18 +1,6 @@
 #!/bin/bash
 
-# This script is used to run the traceback service.
-# ./service.sh {app}:{cmd}
-
-# {app} is the name of the app to run (e.g. gm, lm, ta or tbp)
-
-# {cmd} is the command to run (e.g. serve, migrate, qw, qs, qr)
-#      serve: runs the app
-#      migrate: runs the migrations
-#      qw: starts the queue worker
-#      qs: stops the queue worker
-#      qr: restarts the queue worker
-
-valid_apps=(gm lm ta tbp, db)
+valid_apps=(gm lm ta itg db)
 valid_commands=(serve qw qs migrate)
 
 app=$(echo $1 | cut -d ":" -f 1)
@@ -47,7 +35,7 @@ function run_app {
     elif [ $app == "ta" ]
         then
         port=9992
-    elif [ $app == "tbp" ]
+    elif [ $app == "itg" ]
         then
         port=9993
     fi
@@ -65,6 +53,13 @@ function run_app {
 }
 
 function queue:stop {
+    # if rq.pid.log does not exist, then a queue worker is not running
+    if [ ! -f ./logs/rq.pid.log ]
+        then
+        echo "Queue worker is not running"
+        exit 1
+    fi
+    
     echo "Stopping queue worker for traceback provider"
     kill $(cat ./logs/rq.pid.log)
     rm ./logs/rq.pid.log
@@ -93,6 +88,12 @@ if ! is_valid valid_commands $cmd; then
     exit 1
 fi
 
+if [ $cmd == "serve" ]
+    then
+    run_app $app
+    exit 0
+fi
+
 if [ $app == "db" ]
     then
     if [ $cmd == "migrate" ]
@@ -102,16 +103,13 @@ if [ $app == "db" ]
     exit 0
 fi
 
-if [ $cmd == "serve" ]
+if [ $app == "itg" ]
     then
-    run_app $app
-elif [ $cmd == "migrate" ]
-    then
-    migrate
-elif [ $cmd == "qw" ]
-    then
-    queue:work
-elif [ $cmd == "qs" ]
-    then
-    queue:stop
+    if [ $cmd == "qw" ]
+        then
+        queue:work
+    elif [ $cmd == "qs" ]
+        then
+        queue:stop
+    fi
 fi

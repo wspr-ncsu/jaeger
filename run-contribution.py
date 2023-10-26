@@ -1,17 +1,16 @@
-from models.helpers import CDR
-import models.groupsig as groupsig
-import models.trace_auth as trace_auth
+from privytrace.helpers import CDR
+import privytrace.groupsig as groupsig
+import privytrace.trace_auth as trace_auth
 import privytrace.contribution as contribution
 import privytrace.traceback as traceback
-from datetime import datetime
 from blspy import G1Element
 
-tapk: G1Element = trace_auth.register()
+tapk: G1Element = trace_auth.request_registration()
 carriers = [1, 2, 3, 4, 5]
 groups = {}
 
 for carrier in carriers:
-    groups[carrier] = groupsig.register(carrier)
+    groups[carrier] = groupsig.client_register(carrier)
 
 callpath = [4, 3, 5, 1, 2]
 src, dst = 1000, 1001
@@ -32,6 +31,6 @@ def trace():
     records = traceback.trace(group=groups[2], tapk=tapk, cdrs=[cdr])
     # print(records)
     
-# contribute()
-trace()
+contribute()
+# trace()
 

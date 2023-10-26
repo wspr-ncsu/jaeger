@@ -5,7 +5,7 @@ from typing import List
 from .helpers import CDR
 from typing import List
 from . import oprf
-from . import http
+from ...privytrace import http
 
 label_mgr_base_url = env('LABEL_MGR_URL', 'http://localhost:9991')
 
@@ -43,7 +43,6 @@ def unmask_evaluations(evaluations: List[str], masks: List[oprf.scalar]):
         
     return evaluations
  
-
 def evaluate(group: dict, labels: List[str]) -> List[oprf.scalar]:
     url = label_mgr_base_url + '/evaluate'
     data = { 'xs': labels }

@@ -22,14 +22,14 @@ class TraceAuth:
         app.config.from_mapping(SECRET_KEY=config.APP_SECRET_KEY)
         self.create_instance_path(app)
         refresh = False
-        keys: config.WEKeys = witenc.setup(refresh=refresh)
+        keys: config.WEKeys = witenc.server_setup(refresh=refresh)
         gpk = groupsig.get_gpk()
         
         @app.post('/authorize')
         def authorize():
             groupsig.validate_signature_from_request(request=request, gpk=gpk)
             labels = helpers.validate_json_list(request.form.get('payload'))
-            sigs = witenc.authorize(sk=keys.sk, labels=labels)
+            sigs = witenc.server_authorize(sk=keys.sk, labels=labels)
             return response.ok({ 'res': sigs })
         
         @app.errorhandler(response.NOT_FOUND)

@@ -1,6 +1,6 @@
 from . import helpers
 from . import database as db
-from . import http
+from ...privytrace import http
 from pygroupsig import groupsig, signature, memkey, grpkey, constants
 
 gm_base_url = helpers.env('GRP_SIG_URL', 'http://localhost:9990')

@@ -19,21 +19,21 @@ class Panic(HTTPException):
 def res(payload, code):
     return dumps(payload), code
 
-def ok(payload={'msg': 'OK'}):
+def ok(payload={'res': 'OK'}):
     return res(payload, 200)
 
-def created(payload={'msg': 'Created'}):
+def created(payload={'res': 'Created'}):
     return res(payload, 201)
 
-def not_found(payload={'msg': 'Cannot find resource'}):
+def not_found(payload={'res': 'Cannot find resource'}):
     return res(payload, 404)
 
-def internal_server_error(payload={'msg': 'An unexpected error occurred'}):
+def internal_server_error(payload={'res': 'An unexpected error occurred'}):
     return res(payload, 500)
 
 def handle_ex(e):
     if isinstance(e, HTTPException):
-        return { 'msg': e.description }, e.code
+        return { 'res': e.description }, e.code
     else:
         print("\n")
         ex.print_exc()

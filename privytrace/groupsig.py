@@ -2,6 +2,8 @@ from . import redis
 from . import helpers
 from . import config
 from .response import Panic
+from . import http
+from . import redis
 from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, constants, gml as GML
 
 SCHEME = config.GS_Scheme
@@ -9,7 +11,7 @@ msk_key = config.GS_msk_key
 gpk_key = config.GS_gpk_key
 gml_key = config.GS_gml_key
 
-def setup(refresh = False):
+def mgr_setup(refresh = False):
     # retrieve setup keys
     msk_str = None if refresh else redis.find(msk_key)
     gpk_str = None if refresh else redis.find(gpk_key)
@@ -41,13 +43,13 @@ def setup(refresh = False):
     
     return { 'msk': msk, 'gpk': gpk, 'gml': gml }
 
-def register_all(gsign_keys, refresh = False):
+def mgr_register_all(gsign_keys, refresh = False):
     for cid in range(1000):
-        register(cid, gsign_keys, refresh)
+        mgr_register_carrier(cid, gsign_keys, refresh)
         
-    save_gml(gsign_keys['gml'])
+    mgr_save_gml(gsign_keys['gml'])
     
-def register(cid, gsign_keys, refresh = False):
+def mgr_register_carrier(cid, gsign_keys, refresh = False):
     redis.connect()
     dbkey = f'GM.members.{cid}'
     
@@ -70,7 +72,7 @@ def register(cid, gsign_keys, refresh = False):
     
     return { 'usk': usk, 'gpk': gpk }
 
-def save_gml(gml):
+def mgr_save_gml(gml):
     redis.connect()
     saved = redis.find(gml_key)
     export_d = GML.gml_export(gml)
@@ -78,7 +80,7 @@ def save_gml(gml):
     if saved != export_d:
         redis.save(gml_key, export_d)
         
-def validate_request(request, gpk):
+def mgr_validate_request(request, gpk):
     sig: str = request.headers.get('X-Privytrace').split(' ')[1]
     msg: str = request.form.get('payload')
     
@@ -87,7 +89,7 @@ def validate_request(request, gpk):
     if not groupsig.verify(sig, msg, gpk):
         raise helpers.Panic('Bad Request')
     
-def open_sigs(records, gsign_keys):
+def mgr_open_sigs(records, gsign_keys):
     groupsig.init(SCHEME, 0)
     results = []
     
@@ -113,7 +115,29 @@ def validate_signature_from_request(request, gpk):
     sig: str = request.headers.get('X-Privytrace').split(' ')[1]
     msg: str = request.form.get('payload')
     
-    sig = signature.signature_import(constants.BBS04_CODE, sig)
+    sig = signature.signature_import(SCHEME, sig)
     
     if not groupsig.verify(sig, msg, gpk):
         raise Panic("Bad Request")
+    
+def sign(group: dict, msg: str) -> str:
+    sigma = groupsig.sign(msg, group['usk'], group['gpk'])
+    return signature.signature_export(sigma)
+
+def client_open(group: dict, faulty_set: list):
+    """Open a faulty set"""
+    http.post(f'{config.GM_BASE_URL}/open', data=faulty_set, group=group)
+    
+def client_register(cid: str) -> dict:
+    usk = redis.find(f'GM.members.{cid}')
+    gpk = redis.find(config.GS_gpk_key)
+    
+    if not usk or not gpk:
+        raise Exception("Group Signature Keys not found")
+    
+    # initialize the groupsig library otherwise segmentation fault occurs
+    groupsig.init(SCHEME, 0)
+    usk = memkey.memkey_import(SCHEME, usk)
+    gpk = grpkey.grpkey_import(SCHEME, gpk)
+    
+    return { 'usk': usk, 'gpk': gpk }

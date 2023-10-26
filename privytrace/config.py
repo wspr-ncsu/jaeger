@@ -28,3 +28,13 @@ GS_Scheme = constants.BBS04_CODE
 GS_gpk_key = 'GM.gpk'
 GS_msk_key = 'GM.msk'
 GS_gml_key = 'GM.gml'
+
+TA_sk_key = 'TA.sk'
+TA_pk_key = 'TA.pk'
+
+LM_sk_key = 'LM.sk'
+
+GM_BASE_URL = env('GM_BASE_URL', 'http://localhost:9990')
+LM_BASE_URL = env('LM_BASE_URL', 'http://localhost:9991')
+TA_BASE_URL = env('TA_BASE_URL', 'http://localhost:9992')
+ITG_BASE_URL = env('ITG_BASE_URL', 'http://localhost:9993')
