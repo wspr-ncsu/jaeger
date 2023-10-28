@@ -2,6 +2,7 @@ import json
 from os import getenv
 from .response import Panic
 from datetime import datetime
+from colorama import Fore, Style
 
 def write_to_file(filename, content):
     with open(filename, "w") as f:
@@ -66,3 +67,46 @@ class CDR:
     
     def get_hops(self):
         return f'{self.prev}|{self.curr}|{self.next}'
+    
+    
+class Logger:
+    def __init__(self, msg, sub=True):
+        Logger.default(msg, sub=sub)
+        
+    @staticmethod
+    def log(msg, sub=True, type=None):
+        if type == 'error':
+            msg = f'{Fore.RED}{msg}'
+        elif type == 'warning':
+            msg = f'{Fore.YELLOW}{msg}'
+        elif type == 'success':
+            msg = f'{Fore.GREEN}{msg}'
+        elif type == 'info':
+            msg = f'{Fore.BLUE}{msg}'
+            
+        if sub:
+            print('->', msg)
+        else:
+            print(msg)
+            
+        print(Style.RESET_ALL, end='')
+        
+    @staticmethod
+    def success(msg, sub=True):
+        Logger.log(msg, sub=sub, type='success')
+        
+    @staticmethod
+    def error(msg, sub=True):
+        Logger.log(msg, sub=sub, type='error')
+        
+    @staticmethod
+    def warn(msg, sub=True):
+        Logger.log(msg, sub=sub, type='warning')
+        
+    @staticmethod
+    def info(msg, sub=True):
+        Logger.log(msg, sub=sub, type='info')
+        
+    @staticmethod
+    def default(msg, sub=True):
+        Logger.log(msg, sub=sub)
