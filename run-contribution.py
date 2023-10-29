@@ -12,6 +12,17 @@ from privytrace.datagen import database
 groups = {}
 tapk: G1Element = trace_auth.request_registration()
 
+def run_contribute():
+    for carrier in generator.phone_network.nodes:
+        try:
+            cgroup = get_carrier_groupsig(carrier)
+            records = database.get_cdrs(carrier)
+            records = [CDR(*record) for record in records]
+            contribution.contribute(group=cgroup, tapk=tapk, cdrs=records)
+        except Exception as e:
+            Logger.error(e)
+            continue
+
 def get_carrier_groupsig(carrier):
     if carrier not in groups:
         groups[carrier] = groupsig.client_register(carrier)
@@ -21,8 +32,12 @@ def get_carrier_groupsig(carrier):
 def store_records(cdrs):
     database.save_cdrs(cdrs)
 
-def run_contribution(args):
+def init(args):
     if args.network:
+        if not args.subscribers:
+            Logger.error('Please specify number of subscribers with -s option.')
+            return
+        
         Logger.info('Generating phone network...')
         generator.fresh_start(args.network)
     else:
@@ -32,9 +47,13 @@ def run_contribution(args):
         else:
             Logger.error('Cache file not found. Please run with -n option to generate phone network.')
             return
-        
-    generator.init_user_network(args.subscribers)
-    generate()
+    
+    if args.subscribers:
+        Logger.info('Generating subscribers...')
+        generator.init_user_network(args.subscribers)
+        generate()
+    
+    run_contribute()
     
 def generate():
     temp = []
@@ -52,9 +71,9 @@ def generate():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run contribution and tracebacks')
     parser.add_argument('-n', '--network', type=int, help='Number of phone networks', required=False)
-    parser.add_argument('-s', '--subscribers', type=int, help='Number of subscribers', required=True)
+    parser.add_argument('-s', '--subscribers', type=int, help='Number of subscribers', required=False)
     args = parser.parse_args()
     
-    run_contribution(args)
+    init(args)
     
             
