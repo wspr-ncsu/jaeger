@@ -8,7 +8,6 @@ def post(url: str, data: dict, group: dict, headers: dict = None):
     data = json.dumps(data)
     headers = make_headers(group=group, payload=data, override=headers)
     res = requests.post(url, data={ 'payload': data }, headers=headers)
-    print(res.text)
     res.raise_for_status()
     res = res.json()
     

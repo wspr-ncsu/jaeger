@@ -11,7 +11,6 @@ def submit(labels, cts, sigs, group: dict):
         calls.append({ 'l': label, 'c': cts[index], 's': sigs[index]})
     
     res = http.post(url=f'{ITG_BASE_URL}/submit', data=calls, group=group)
-    print(res)
         
     
 def request_a_trace(group: dict, labels: List[str]):

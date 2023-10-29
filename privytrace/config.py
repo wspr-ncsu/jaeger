@@ -38,3 +38,5 @@ GM_BASE_URL = env('GM_BASE_URL', 'http://localhost:9990')
 LM_BASE_URL = env('LM_BASE_URL', 'http://localhost:9991')
 TA_BASE_URL = env('TA_BASE_URL', 'http://localhost:9992')
 ITG_BASE_URL = env('ITG_BASE_URL', 'http://localhost:9993')
+
+MAX_EPOCHS = 5 # Seconds

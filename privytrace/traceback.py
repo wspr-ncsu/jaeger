@@ -5,15 +5,16 @@ from . import label_mgr
 from typing import List
 from . import trace_auth
 from .helpers import CDR
+from .config import MAX_EPOCHS
 from blspy import G1Element, G2Element
-
-MAX_EPOCHS = 60 # Seconds
 
 def trace(group: dict, tapk: G1Element, cdrs: List[CDR]):
     """Trace given call detail records"""
     for cdr in cdrs:
         cdr_set = get_range(cdr)
         labels = label_mgr.client_request_labels(group, cdr_set)
+        
+        return labels
         
         witneses = trace_auth.request_authorization(group=group, labels=labels)
         
