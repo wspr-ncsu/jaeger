@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+table = "ct_records"
+
 def open_db():
     return clickhouse_connect.get_client(
         host=config.DB_HOST, 
@@ -30,13 +32,13 @@ def migrate():
     
 def insert_records(records, cols=['label', 'sigma', 'ct']):    
     connection = open_db()
-    connection.insert("cdrs", data=records, column_names=cols)
+    connection.insert(table, data=records, column_names=cols)
     
 def get_ciphertexts(labels):
     labels = '\',\''.join(labels)
     labels = f'\'{labels}\'' # wrap in quotes
     connection = open_db()
-    query = f"SELECT label, sigma, ct FROM cdrs WHERE label IN ({labels})"
+    query = f"SELECT label, sigma, ct FROM {table} WHERE label IN ({labels})"
     result = connection.query(query)
     
     cts = []

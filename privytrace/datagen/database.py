@@ -14,8 +14,8 @@ def count_records():
     return res
 
 def get_cdrs(carrier):
-    res = db.open_db().query(f"SELECT * FROM {table} WHERE curr='{carrier}'")
+    res = db.open_db().query(f"SELECT src, dst, ts, prev, curr, next FROM {table} WHERE curr='{carrier}' and status=0")
     return res.result_rows
 
-def clear_cdrs(carrier):
-    db.open_db().command(f"DELETE FROM {table} WHERE curr='{carrier}'")
+def mark_cdrs_as_contributed(carrier):
+    db.open_db().command(f"ALTER TABLE {table} UPDATE status=1 WHERE curr='{carrier}'")

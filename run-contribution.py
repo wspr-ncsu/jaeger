@@ -13,12 +13,20 @@ groups = {}
 tapk: G1Element = trace_auth.request_registration()
 
 def run_contribute():
+    Logger.info('Running contribution...')
     for carrier in generator.phone_network.nodes:
         try:
             cgroup = get_carrier_groupsig(carrier)
             records = database.get_cdrs(carrier)
+            reclen = len(records)
+            
+            if reclen == 0:
+                continue
+            
+            Logger.default(f'submitting cdrs {reclen} for carrier {carrier}')
             records = [CDR(*record) for record in records]
             contribution.contribute(group=cgroup, tapk=tapk, cdrs=records)
+            database.mark_cdrs_as_contributed(carrier)
         except Exception as e:
             Logger.error(e)
             continue
