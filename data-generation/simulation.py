@@ -1,4 +1,4 @@
-import generator
+import privytrace.datagen.generator as generator
 import models.database as db
 import argparse
 from dotenv import load_dotenv

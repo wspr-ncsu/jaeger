@@ -10,9 +10,11 @@ from datetime import datetime
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 import pathlib
-import models.database as database
-from models.phone_network import create_network
-from models.helpers import timed, get_elapsed_time
+from uuid import uuid4
+from . import database
+from .phone_network import create_network
+from .helpers import timed
+import argparse
 
 load_dotenv()
 
@@ -81,6 +83,7 @@ def generate_market_shares():
 
 def simulate_call(src, dst):
     global same_network_call, cross_network_call
+    
     source, src_tn = src.split(':')
     target, dst_tn = dst.split(':')
     
@@ -95,6 +98,8 @@ def simulate_call(src, dst):
     # Map integer based indices to real carrier pointers 
     call_path = get_call_path(source, target)
     
+    cdrs = []
+    
     for (index, carrier) in enumerate(call_path):
         prev = next = None
         
@@ -107,7 +112,10 @@ def simulate_call(src, dst):
         ts = round(datetime.now().timestamp())
         
         # create CDR tupple
-        cdr = (src_tn, dst_tn, ts, prev, carrier, next)
+        cdr = [src_tn, dst_tn, str(ts), str(prev), str(carrier), str(next)]
+        cdrs.append(cdr)
+        
+    return cdrs
 
 
 def all_pairs_johnson():
@@ -130,8 +138,6 @@ def load_cache():
     if not os.path.exists(cache_file):
         return False
     
-    print('Loading phone network metadata from cache...')
-    
     with open(cache_file, 'rb') as file:
         pn, sp, ms = pickle.load(file)
         phone_network = pn
@@ -151,62 +157,7 @@ def init_user_network(num_subs):
         assign_subscribers_by_market_share(carrier, market_shares[carrier], num_subs)
     timed(create_user_network)()
     timed(shuffle_subscribers)()
-    
-def save_user_network():
-    total = len(user_network.edges)
-    shared_count = 1000
-    batch = []
-    database.clear_user_network()
-    
-    for i, edge in enumerate(user_network.edges):
-        src = subscribers[edge[0]]
-        dst = subscribers[edge[1]]
-        batch.append([i, src, dst])
-        if len(batch) == shared_count or i == total - 1:
-            database.save_user_network(batch)
-            batch = []
  
-def get_input(prompt, default=None):
-    response = input(prompt)
-    return response if response else default
-
-def fresh_start():
-    info("Generating new phone network...")
-    num_carriers = int(get_input('Enter number of carriers: '))
-    num_subs = int(get_input('Enter number of subscribers: '))
-    
+def fresh_start(num_carriers):
     init_phone_network(num_carriers)
-    init_user_network(num_subs=num_subs)
     set_cache()
-    save_user_network()
-    
-def resume():
-    if cache_file.exists():
-        info("Resuming from cache.pkl file")
-        info("Delete the cache.pkl pickle file to start fresh.")
-        
-        if not load_cache():
-            info("Cache file is invalid. Generating new phone network...")
-            fresh_start()
-    else:
-        fresh_start()
-        
-def create_cdrs():
-    pass
-
-def info(what):
-    print("-->", what)
-    
-
-if __name__ == '__main__':
-    cmd = sys.argv[1] if 1 < len(sys.argv) else None
-    if cmd == 'migrate':
-        database.migrate()
-        # delete cache file
-        if cache_file.exists():
-            cache_file.unlink()
-    elif cmd == 'run':
-        resume()
-    else:
-        print('Invalid command')
-        sys.exit(1)

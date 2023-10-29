@@ -4,33 +4,57 @@ import privytrace.trace_auth as trace_auth
 import privytrace.contribution as contribution
 import privytrace.traceback as traceback
 from blspy import G1Element
+import argparse
+from privytrace.datagen import generator
+from privytrace.helpers import Logger
+from privytrace.datagen import database
 
-tapk: G1Element = trace_auth.request_registration()
-carriers = [1, 2, 3, 4, 5]
 groups = {}
+tapk: G1Element = trace_auth.request_registration()
 
-for carrier in carriers:
-    groups[carrier] = groupsig.client_register(carrier)
+def get_carrier_groupsig(carrier):
+    if carrier not in groups:
+        groups[carrier] = groupsig.client_register(carrier)
+        
+    return groups[carrier]
 
-callpath = [4, 3, 5, 1, 2]
-src, dst = 1000, 1001
-ts = ['2023-10-23 15:28:51', '2023-10-23 15:28:53', '2023-10-23 15:28:53', '2023-10-23 15:28:54', '2023-10-23 15:28:55']
-cdrs = []
+def store_records(cdrs):
+    database.save_cdrs(cdrs)
 
-def contribute():
-    for index, curr in enumerate(callpath):
-        prev = None if index == 0 else callpath[index - 1]
-        next = None if index == len(callpath) - 1 else callpath[index + 1]
-        cdr = CDR(src=src, dst=dst, ts=ts[index], prev=prev, curr=curr , next=next)
-        contribution.contribute(group=groups[curr], tapk=tapk, cdrs=[cdr])
-        cdrs.append(cdr)
-
-
-def trace():
-    cdr = CDR(src=src, dst=dst, ts='2023-10-23 15:28:55', prev=1, curr=2 , next=None)
-    records = traceback.trace(group=groups[2], tapk=tapk, cdrs=[cdr])
-    # print(records)
+def run_contribution(args):
+    if args.network:
+        Logger.info('Generating phone network...')
+        generator.fresh_start(args.network)
+    else:
+        if generator.cache_file.exists():
+            Logger.info('Loading phone network metadata from cache...')
+            generator.load_cache()
+        else:
+            Logger.error('Cache file not found. Please run with -n option to generate phone network.')
+            return
+        
+    generator.init_user_network(args.subscribers)
+    generate()
     
-contribute()
-# trace()
-
+def generate():
+    temp = []
+    print(len(generator.phone_network.edges))
+    for index, (src_i, dst_i) in enumerate(generator.phone_network.edges):
+        src, dst = generator.subscribers[src_i], generator.subscribers[dst_i]
+        cdrs = generator.simulate_call(src, dst)
+        
+        if cdrs is None:
+            continue
+        
+        print('Storing {} CDRs from {} to {}'.format(len(cdrs), src, dst))
+        store_records(cdrs)
+    
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Run contribution and tracebacks')
+    parser.add_argument('-n', '--network', type=int, help='Number of phone networks', required=False)
+    parser.add_argument('-s', '--subscribers', type=int, help='Number of subscribers', required=True)
+    args = parser.parse_args()
+    
+    run_contribution(args)
+    
+            
