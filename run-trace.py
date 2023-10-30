@@ -3,22 +3,26 @@ import privytrace.groupsig as groupsig
 import privytrace.trace_auth as trace_auth
 import privytrace.traceback as traceback
 from blspy import G1Element
+import argparse
+import privytrace.analyzer as analyzer
 
 tapk: G1Element = trace_auth.request_registration()
-carriers = [1, 2, 3, 4, 5]
-groups = {}
 
-for carrier in carriers:
-    groups[carrier] = groupsig.client_register(carrier)
-
-callpath = [4, 3, 5, 1, 2]
-src, dst = 1000, 1001
-
-
-def trace():
-    cdr = CDR(src=src, dst=dst, ts='2023-10-23 15:28:55', prev=1, curr=2 , next=None)
-    records = traceback.trace(group=groups[2], tapk=tapk, cdrs=[cdr])
+def trace(args):
+    cdr = CDR(src=args.src, dst=args.dst, ts=args.ts)
+    cgroup = groupsig.client_register(args.carrier)
+    records = traceback.trace(group=cgroup, tapk=tapk, cdrs=[cdr])
     print(records)
+    analyzer.init(records)
+    analyzer.analyze()
     
-trace()
-
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Run a trace on a CDR')
+    parser.add_argument('-t', '--ts', type=str, help='Call time', required=True)
+    parser.add_argument('-s', '--src', type=str, help='Source telephone number', required=True)
+    parser.add_argument('-d', '--dst', type=str, help='Destination telephone number', required=True)
+    parser.add_argument('-c', '--carrier', type=str, help='Carrier making this trace', required=True)
+    
+    args = parser.parse_args()
+    
+    trace(args)

@@ -57,7 +57,7 @@ def toEpoch(date: str):
 class CDR:
     label = None
     
-    def __init__(self, src, dst, ts, prev, curr, next):
+    def __init__(self, src, dst, ts, prev = None, curr = None, next = None):
         self.src = src
         self.dst = dst
         self.ts = toEpoch(ts)

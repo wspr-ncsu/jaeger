@@ -14,11 +14,11 @@ def trace(group: dict, tapk: G1Element, cdrs: List[CDR]):
         cdr_set = get_range(cdr)
         labels = label_mgr.client_request_labels(group, cdr_set)
         
-        return labels
-        
         witneses = trace_auth.request_authorization(group=group, labels=labels)
         
         records = itg.request_a_trace(group=group, labels=labels)
+        
+        print("ITG returned: ", len(records))
         
         if not records:
             print(f'No records found for {cdr.src} and {cdr.dst} at {cdr.ts}')
@@ -26,12 +26,13 @@ def trace(group: dict, tapk: G1Element, cdrs: List[CDR]):
         
         dec_cdrs = decrypt_records(records=records, witneses=witneses)
     
-        faulty_set = get_faulty_set(records, dec_cdrs)
+        return dec_cdrs['msgs']
+        # faulty_set = get_faulty_set(records, dec_cdrs)
         
-        if faulty_set:
-            groupsig.client_open(group=group, faulty_set=faulty_set)
+        # if faulty_set:
+        #     groupsig.client_open(group=group, faulty_set=faulty_set)
             
-        return link_cdrs(dec_cdrs['msgs'])
+        # return link_cdrs(dec_cdrs['msgs'])
     
         
 def get_range(cdr: CDR) -> List[CDR]:

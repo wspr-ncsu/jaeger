@@ -11,6 +11,7 @@ out_degs = {}
 
 def init(routes: List[str]):
     global G, in_degs, out_degs
+    routes = list(set(routes))
     G = create_graph(routes)
     for node, in_deg in G.in_degree():
         in_degs[node] = in_deg
