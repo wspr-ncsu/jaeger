@@ -73,11 +73,11 @@ class CDR:
     
     
 class Logger:
-    def __init__(self, msg, sub=True):
-        Logger.default(msg, sub=sub)
+    def __init__(self, msg, sub=True, prefix = '->'):
+        Logger.default(msg, sub=sub, prefix=prefix)
         
     @staticmethod
-    def log(msg, sub=True, type=None):
+    def log(msg, sub=True, type=None, prefix = '->'):
         if type == 'error':
             msg = f'{Fore.RED}{msg}'
         elif type == 'warning':
@@ -88,28 +88,28 @@ class Logger:
             msg = f'{Fore.BLUE}{msg}'
             
         if sub:
-            print('->', msg)
+            print(prefix, msg)
         else:
             print(msg)
             
         print(Style.RESET_ALL, end='')
         
     @staticmethod
-    def success(msg, sub=True):
-        Logger.log(msg, sub=sub, type='success')
+    def success(msg, sub=True, prefix = '->'):
+        Logger.log(msg, sub=sub, type='success', prefix=prefix)
         
     @staticmethod
-    def error(msg, sub=True):
-        Logger.log(msg, sub=sub, type='error')
+    def error(msg, sub=True, prefix = '->'):
+        Logger.log(msg, sub=sub, type='error', prefix=prefix)
         
     @staticmethod
-    def warn(msg, sub=True):
-        Logger.log(msg, sub=sub, type='warning')
+    def warn(msg, sub=True, prefix = '->'):
+        Logger.log(msg, sub=sub, type='warning', prefix=prefix)
         
     @staticmethod
-    def info(msg, sub=True):
-        Logger.log(msg, sub=sub, type='info')
+    def info(msg, sub=True, prefix = '->'):
+        Logger.log(msg, sub=sub, type='info', prefix=prefix)
         
     @staticmethod
-    def default(msg, sub=True):
-        Logger.log(msg, sub=sub)
+    def default(msg, sub=True, prefix = '->'):
+        Logger.log(msg, sub=sub, prefix=prefix)

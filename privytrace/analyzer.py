@@ -6,12 +6,13 @@ from colorama import Fore
 
 
 G = None
+routes = []
 in_degs = {}
 out_degs = {}
 
-def init(routes: List[str]):
-    global G, in_degs, out_degs
-    routes = list(set(routes))
+def init(msgs: List[str]):
+    global G, in_degs, out_degs, routes
+    routes = list(set(msgs))
     G = create_graph(routes)
     for node, in_deg in G.in_degree():
         in_degs[node] = in_deg
@@ -51,6 +52,12 @@ def analyze():
         for origin in origins:
             for terminal in terminatings:
                 draw_paths(origin=origin, terminal=terminal)
+                
+    logger.default('\nDecrypted records', sub=False)
+    for msg in routes:
+        if msg not in [None, 'None']:
+            logger.default(msg.replace('None|', '').replace('|None', '').replace('|', ' -> '), prefix='*')
+    
         
 def draw_paths(origin, terminal):
     path = nx.shortest_path(G, origin, terminal)
@@ -79,13 +86,12 @@ def check_origin_invariant():
     if len(origins) == 1:
         logger.success(f'{display_nodes(origins)}')
     elif len(origins) > 1:
-        logger.warn('More than 1 origins found')
         # from these nodes, get the ones with out-degree 2
         yes, no = get_nodes_from(origins, having_in_deg=0, having_out_deg=2)
         
         if no:
             logger.warn('The following nodes claim to be originators but no transit carrier attested to their claim:')
-            logger.default(display_nodes(no))
+            logger.warn(display_nodes(no))
         
         if yes:
             logger.warn('The following nodes claim to be originators and at least 1 transit carrier attested to their claim:')
@@ -109,13 +115,12 @@ def check_terminal_invariant():
     if len(terminals) == 1:
         logger.success(f'{display_nodes(terminals)}')
     elif len(terminals) > 1:
-        logger.warn('More than 1 terminals found')
         # from these nodes, get the ones with in-degree 2
         yes, no = get_nodes_from(terminals, having_in_deg=2, having_out_deg=0)
         
         if no:
             logger.warn('The following carriers claim to be terminals but no transit carrier attested to their claim:')
-            logger.default(display_nodes(no))
+            logger.warn(display_nodes(no))
         
         if yes:
             logger.warn('The following carriers claim to be terminals and at least 1 transit carrier attested to their claim:')
@@ -167,3 +172,6 @@ def get_nodes_from(nodes, having_in_deg, having_out_deg):
 
 def display_nodes(nodes):
     return ", ".join(nodes)
+
+def get_subgraphs():
+    return list(nx.weakly_connected_components(G))
