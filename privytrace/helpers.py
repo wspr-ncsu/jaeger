@@ -1,4 +1,6 @@
+import time
 import json
+import secrets
 from os import getenv
 from .response import Panic
 from datetime import datetime
@@ -113,3 +115,20 @@ class Logger:
     @staticmethod
     def default(msg, sub=True, prefix = '->'):
         Logger.log(msg, sub=sub, prefix=prefix)
+        
+        
+def startStopwatch():
+    return time.perf_counter()
+
+def endStopwatch(test_name, start, numIters):
+    end_time = time.perf_counter()
+
+    duration = end_time - start
+
+    print("\n%s\nTotal: %d runs in %0.1f ms\nAvg: %fms"
+        % (test_name, numIters, duration * 1000, duration * 1000 / numIters))
+    
+    return [test_name, duration]
+    
+def random_bytes(n):
+    return secrets.token_bytes(n)
