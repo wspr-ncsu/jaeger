@@ -10,5 +10,5 @@ consecutive_misses =    ['None|1|2',    None,       None,       '3|4|5',    '4|5
 
 analyzer.init(consecutive_misses)
 analyzer.analyze()
-subgraphs = analyzer.get_subgraphs()
-print(subgraphs)
+# subgraphs = analyzer.get_subgraphs()
+# print(subgraphs)
