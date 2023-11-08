@@ -1,7 +1,12 @@
 import networkx as nx
 import numpy as np
 import random
+from datetime import datetime
 import matplotlib.pyplot as plt
+from .helpers import timed, get_elapsed_time
+from privytrace.datagen import database
+from uuid import uuid4
+
 
 subscribers = None
 robocallers = None
@@ -14,33 +19,40 @@ def create_subscribers_network(users, rbcallers):
     subscribers = np.arange(int(num_users), dtype=int)
     robocallers = np.arange(int(rbcallers), dtype=int)
 
-    robocalls = create_robocallers_network()
-    individual_calls = create_individuals_network()
+    legitimate = timed(create_individuals_network)()
+    robocalls = timed(create_robocallers_network)()
 
-    return individual_calls, robocalls
+    return legitimate, robocalls
 
 def create_individuals_network():
-    subnetworks, calls = split_num_into_ratios(len(subscribers), num_subnets), []
+    subnetworks = split_num_into_ratios(len(subscribers), num_subnets)
     last_index = 0
 
     for i, count in enumerate(subnetworks):
+        calls = []
         last_index += count
 
         if count < 2:
             continue
 
         m = random.choices([1, 2], weights=[0.7, 0.3], k=1)[0]
+        
+        if count == m:
+            count += 1
+            
+        start = datetime.now()
         network = nx.barabasi_albert_graph(count, m)
         indexes = np.arange(last_index - count, last_index)
 
         for src, dst in network.edges:
             src = indexes[src]
             dst = indexes[dst]
-            calls.append((src, dst))
+            calls.append([str(uuid4()), str(src), str(dst)])
 
-        # print(f'G_{i}(V={count}, E={network.number_of_edges()}, m={m})')
-        # print(indexes)
-        draw_graph(network.edges)
+        # insert calls db
+        database.save_edges(calls)
+        duration = get_elapsed_time(start)
+        print(f'-> Created G_{i}(V={count}, m={m}). Time taken: {duration}')
 
     return calls
 
@@ -50,7 +62,8 @@ def create_robocallers_network():
     # generate random float between 0.05 and 0.12 (Who's Calling paper, Usenix Security 2020)
     size = int(len(subscribers) * random.uniform(0.05, 0.12))
     calls_count = split_num_into_ratios(size, len(robocallers))
-
+    # print(calls_count)
+    print(f'-> Creating robocallers network with {size} calls')
     for i, count  in enumerate(calls_count):
         calls = make_robocalls(robocallers[i], count)
         robocalls.extend(calls) if calls is not None else None

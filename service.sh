@@ -1,7 +1,7 @@
 #!/bin/bash
 
 valid_apps=(gm lm ta itg db)
-valid_commands=(serve qw qs migrate)
+valid_commands=(serve qw qs migrate gen)
 
 app=$(echo $1 | cut -d ":" -f 1)
 cmd=$(echo $1 | cut -d ":" -f 2)
@@ -99,6 +99,9 @@ if [ $app == "db" ]
     if [ $cmd == "migrate" ]
         then
         migrate
+    elif [ $cmd == "gen" ]
+        then
+        nohup python3.8 datagen.py -n 7000 -s 400000000 -g 1000 &
     fi
     exit 0
 fi

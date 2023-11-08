@@ -15,6 +15,7 @@ from . import database
 from .phone_network import create_network
 from .helpers import timed
 import argparse
+from . import subscribers_network
 
 load_dotenv()
 
@@ -29,9 +30,10 @@ same_network_call = 0
 cross_network_call = 0
 cache_file = pathlib.Path.cwd().joinpath('cache.pkl')
 
-def create_user_network():
-    global user_network
-    user_network = nx.barabasi_albert_graph(len(subscribers), 2)
+def create_user_network(subnets):
+    num_subs = len(subscribers)
+    robocallers = 0
+    subscribers_network.create_subscribers_network((num_subs, subnets), robocallers)
 
 
 def assign_subscribers_by_market_share(carrier, market_share, num_subs):
@@ -45,11 +47,9 @@ def assign_subscribers_by_market_share(carrier, market_share, num_subs):
 def make_subscriber(carrier):
     npa = random.randint(200, 999)
     nxx = random.randint(100, 999)
-    num = random.randint(1000, 9999)
+    num = str(random.randint(0, 9999)).zfill(4)
     
-    carrier = str(carrier).zfill(4)
-    
-    return f"{carrier}:{npa}-{nxx}-{num}"
+    return carrier, f"{carrier}:{npa}-{nxx}-{num}"
 
 
 def shuffle_subscribers():
@@ -152,12 +152,29 @@ def init_phone_network(num_carriers):
     timed(generate_market_shares)()
     timed(all_pairs_johnson)()
     
-def init_user_network(num_subs):
+def init_user_network(num_subs, subnets):
     for carrier in phone_network.nodes:
         assign_subscribers_by_market_share(carrier, market_shares[carrier], num_subs)
-    timed(create_user_network)()
     timed(shuffle_subscribers)()
+    timed(save_subscribers)()
+    timed(create_user_network)(subnets)
  
 def fresh_start(num_carriers):
     init_phone_network(num_carriers)
     set_cache()
+    
+def save_subscribers():
+    data = []
+    batch = 0
+    
+    for id, (carrier, phone) in enumerate(subscribers):
+        data.append([str(id), str(phone), str(carrier)])
+        if id > 0 and id % 10000 == 0:
+            batch += 1
+            print(f'-> Saving Batch {batch} subscribers. Total saved: {id}')
+            database.save_subscribers(data)
+            data = []      
+            
+    if len(data) > 0:
+        print(f'-> Saving Batch {batch + 1} subscribers. Total saved: {id}')
+        database.save_subscribers(data)
