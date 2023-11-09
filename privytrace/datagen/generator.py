@@ -34,32 +34,8 @@ cache_file = pathlib.Path.cwd().joinpath('cache.pkl')
 processes = 500
 edges_per_page = 1000
 
-def create_user_network(num_subs):
-    subscribers_network.create_subscribers_network(num_subs, processes)
-
-
-def assign_subscribers_to_carrier(carrier, count):
-    pid, subs = os.getpid(), []
-    logger.default(pid, "Assigning", count, "subscribers to carrier", carrier)
-    for _ in range(count):
-        subs.append(make_subscriber(carrier))
-        
-    save_subscribers(subs)
-            
-def assign_subscribers_process(args):
-    index, shares, num_subs = args
-    for i, share in enumerate(shares):
-        carrier = index * len(shares) + i 
-        count = round(num_subs * share)
-        assign_subscribers_to_carrier(carrier, count) 
-        
-def make_subscriber(carrier):
-    npa = random.randint(200, 999)
-    nxx = random.randint(100, 999)
-    num = str(random.randint(0, 9999)).zfill(4)
-    
-    return carrier, f"{carrier}:{npa}-{nxx}-{num}"
-
+def create_user_network(num_subs, subnets):
+    subscribers_network.create_subscribers_network(users=num_subs, subnets=subnets, processes=processes)
             
 def create_phone_network(num_carriers, n_0, m_0):
     global phone_network
@@ -155,13 +131,39 @@ def init_phone_network(num_carriers):
 
 def assign_subscribers(num_subs):
     pool = Pool(processes=processes)
-    chunks = np.array_split(market_shares, processes)
-    chunks = [(index, chunk, num_subs) for index, chunk in enumerate(chunks)]
-    pool.map(assign_subscribers_process, chunks)
+    data = []
     
-def init_user_network(num_subs):
+    sub_index = 0
+    for index, share in enumerate(market_shares):
+        count = round(num_subs * share)
+        start_index, end_index = sub_index, sub_index + count
+        sub_index = end_index
+        data.append((index, start_index, end_index))
+        
+    pool.map(assign_subscribers_to_carrier, data)
+    
+def assign_subscribers_to_carrier(args):
+    carrier, start_index, end_index = args
+    count = end_index - start_index
+    pid, subs = os.getpid(), []
+    
+    logger.default(f"pid({pid})\t> Assigning {count} subscribers to carrier {carrier} > start_index: {start_index}")
+    
+    subs = [make_subscriber(id, carrier) for id in range(start_index, end_index)]
+    save_subscribers(subs)
+        
+             
+        
+def make_subscriber(id, carrier):
+    npa = random.randint(200, 999)
+    nxx = random.randint(100, 999)
+    num = str(random.randint(0, 9999)).zfill(4)
+    
+    return [ id, f"{npa}-{nxx}-{num}", carrier ]
+    
+def init_user_network(num_subs, subnets):
     timed(assign_subscribers)(num_subs)
-    timed(create_user_network)(num_subs)
+    timed(create_user_network)(num_subs, subnets)
  
 def fresh_start(num_carriers):
     init_phone_network(num_carriers)
@@ -172,18 +174,17 @@ def save_subscribers(items):
     batch = 0
     pid = os.getpid()
     
-    for index, (carrier, phone) in enumerate(items):
-        id = uuid4()
-        data.append([str(id), str(phone), str(carrier)])
+    for row in items:
+        data.append(row)
         
-        if index > 0 and index % 10000 == 0:
+        if len(data) == 1000:
             batch += 1
-            print(f'-> Saving Subscribers: pid({pid}) > Batch {batch} > Total saved: {id}')
+            logger.default(f'pid({pid})\t> Saving Subscribers > Batch {batch}')
             database.save_subscribers(data)
             data = []      
             
     if len(data) > 0:
-        logger.default(f'Saving Subscribers: pid({pid}) > Batch {batch} > Total saved: {id}')
+        logger.default(f'pid({pid})\t> Saving Subscribers > Batch {batch}')
         database.save_subscribers(data)
 
 def make_raw_cdrs():
@@ -203,4 +204,4 @@ def make_raw_cdrs_worker(page):
     for id, src, dst in edges:
         idmap[src], idmap[dst] = True, True
         
-    logger.default(f'pid({pid}) > Page {page} > Total edges: {len(edges)}')
+    logger.default(f'pid({pid})\t> Page {page} > Total edges: {len(edges)}')

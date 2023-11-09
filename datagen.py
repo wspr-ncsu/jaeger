@@ -28,7 +28,7 @@ def init(args):
     if args.subscribers:
         Logger.info('Generating subscribers...')
         database.truncate(['subscribers', 'edges'])
-        generator.init_user_network(args.subscribers)
+        generator.init_user_network(args.subscribers, args.subnets)
         
     if args.cdrs:
         Logger.info('Generating CDRs...')
@@ -41,6 +41,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--network', type=int, help='Generate network graph of n nodes', required=False)
     parser.add_argument('-s', '--subscribers', type=int, help='Generate subscribers graph of s nodes', required=False)
     parser.add_argument('-c', '--cdrs', action='store_true', help='Generate cdrs from edges and subscribers', required=False)
+    parser.add_argument('-g', '--subnets', type=int, help='Number of subnetworks for users graph', required=False, default=50)
     args = parser.parse_args()
     
     if not any(vars(args).values()):

@@ -6,8 +6,8 @@
     "create raw_cdrs table": "CREATE TABLE IF NOT EXISTS raw_cdrs (status TinyInt DEFAULT 0, src VARCHAR NOT NULL, dst VARCHAR NOT NULL, ts VARCHAR NOT NULL, prev VARCHAR NOT NULL, curr VARCHAR NOT NULL, next VARCHAR NOT NULL, PRIMARY KEY (src, dst, ts)) ENGINE = MergeTree()",
 
     "drop subscribers table": "DROP TABLE IF EXISTS subscribers",
-    "create subscribers table": "CREATE TABLE IF NOT EXISTS subscribers (id VARCHAR NOT NULL, phone VARCHAR NOT NULL, carrier VARCHAR NOT NULL, PRIMARY KEY id) ENGINE = MergeTree()",
+    "create subscribers table": "CREATE TABLE IF NOT EXISTS subscribers (id UInt32 NOT NULL, phone VARCHAR NOT NULL, carrier UInt32 NOT NULL, PRIMARY KEY id) ENGINE = MergeTree()",
 
     "drop edges table": "DROP TABLE IF EXISTS edges",
-    "create edges table": "CREATE TABLE IF NOT EXISTS edges (id VARCHAR NOT NULL, src VARCHAR NOT NULL, dst VARCHAR NOT NULL, PRIMARY KEY id) ENGINE = MergeTree()"
+    "create edges table": "CREATE TABLE IF NOT EXISTS edges (id VARCHAR NOT NULL, src UInt32 NOT NULL, dst UInt32 NOT NULL, PRIMARY KEY id) ENGINE = MergeTree()"
 }
