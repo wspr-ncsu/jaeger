@@ -28,11 +28,9 @@ user_network = None
 phone_network = None
 shortest_paths = None
 market_shares = None
-same_network_call = 0
-cross_network_call = 0
 cache_file = pathlib.Path.cwd().joinpath('cache.pkl')
 processes = 500
-edges_per_page = 1000
+edges_per_page = 100
 
 def create_user_network(num_subs, subnets):
     subscribers_network.create_subscribers_network(users=num_subs, subnets=subnets, processes=processes)
@@ -59,18 +57,9 @@ def generate_market_shares():
     market_shares = shares
 
 def simulate_call(src, dst):
-    global same_network_call, cross_network_call
-    
     source, src_tn = src.split(':')
     target, dst_tn = dst.split(':')
-    
     source, target = int(source), int(target)
-    
-    if source == target:
-        same_network_call += 1
-        return
-    else:
-        cross_network_call += 1
     
     # Map integer based indices to real carrier pointers 
     call_path = get_call_path(source, target)
@@ -102,7 +91,6 @@ def all_pairs_johnson():
     
 def get_call_path(source, target):
     return shortest_paths[source][target]
-
 
 def set_cache():
     data = (phone_network, shortest_paths, market_shares)
@@ -151,15 +139,13 @@ def assign_subscribers_to_carrier(args):
     
     subs = [make_subscriber(id, carrier) for id in range(start_index, end_index)]
     save_subscribers(subs)
-        
-             
-        
+       
 def make_subscriber(id, carrier):
     npa = random.randint(200, 999)
     nxx = random.randint(100, 999)
     num = str(random.randint(0, 9999)).zfill(4)
     
-    return [ id, f"{npa}-{nxx}-{num}", carrier ]
+    return [ id, f"{carrier}:{npa}-{nxx}-{num}", carrier ]
     
 def init_user_network(num_subs, subnets):
     timed(assign_subscribers)(num_subs)
@@ -194,14 +180,29 @@ def make_raw_cdrs():
     pool = Pool(processes=processes)
     pool.map(make_raw_cdrs_worker, pages)
 
-
-
 def make_raw_cdrs_worker(page):
     pid = os.getpid()
     edges = database.get_paginated_edges(page, edges_per_page)
     
-    idmap = {}
-    for id, src, dst in edges:
-        idmap[src], idmap[dst] = True, True
+    data = []
+    
+    for src, dst in edges:
+        fcall = simulate_call(src, dst)
+        rcall = simulate_call(dst, src)
+        
+        if fcall is not None:
+            data.extend(fcall)
+        
+        if rcall is not None:
+            data.extend(rcall)
+        
+        if len(data) >= 1000:
+            logger.default(f'pid({pid})\t> Page {page} > Saving {len(data)} CDRs')
+            database.save_cdrs(data)
+            data = []
+            
+    if len(data) > 0:
+        logger.default(f'pid({pid})\t> Page {page} > Saving {len(data)} CDRs')
+        database.save_cdrs(data)
         
     logger.default(f'pid({pid})\t> Page {page} > Total edges: {len(edges)}')

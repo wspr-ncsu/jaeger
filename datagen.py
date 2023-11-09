@@ -31,7 +31,6 @@ def init(args):
         generator.init_user_network(args.subscribers, args.subnets)
         
     if args.cdrs:
-        Logger.info('Generating CDRs...')
         database.truncate(['raw_cdrs'])
         generator.make_raw_cdrs()
     
