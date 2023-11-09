@@ -5,6 +5,13 @@ from .. import database as db
 
 table = "raw_cdrs"
 
+def get_subscriber_ids():
+    res = db.open_db().query("SELECT id FROM subscribers")
+    return res.result_rows
+
+def update_subscriber_id(old_id, new_id):
+    db.open_db().command(f"ALTER TABLE subscribers UPDATE edge_id='{new_id}' WHERE id='{old_id}'")
+
 def save_subscribers(rows):
     columns = ["id", "phone", "carrier"]
     db.open_db().insert("subscribers", data=rows, column_names=columns)
@@ -14,6 +21,8 @@ def save_cdrs(rows):
     db.open_db().insert(table, data=rows, column_names=columns)
     
 def save_edges(rows):
+    if len(rows) == 0:
+        return
     columns = ["id", "src", "dst"]
     db.open_db().insert("edges", data=rows, column_names=columns)
     

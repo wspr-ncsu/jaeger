@@ -28,14 +28,14 @@ def init(args):
     if args.subscribers:
         Logger.info('Generating subscribers...')
         database.truncate(['subscribers', 'edges'])
-        generator.init_user_network(args.subscribers, args.subnets)
+        generator.init_user_network(args.subscribers)
     
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run contribution and tracebacks')
     parser.add_argument('-n', '--network', type=int, help='Number of phone networks', required=False)
     parser.add_argument('-s', '--subscribers', type=int, help='Number of subscribers', required=False)
-    parser.add_argument('-g', '--subnets', type=int, help='Number of subnets for subs network', required=False, default=50)
+    # parser.add_argument('-g', '--subnets', type=int, help='Number of subnets for subs network', required=False, default=50)
     args = parser.parse_args()
     
     init(args)

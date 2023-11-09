@@ -16,6 +16,7 @@ from .phone_network import create_network
 from .helpers import timed
 import argparse
 from . import subscribers_network
+from multiprocessing import Pool, cpu_count
 
 load_dotenv()
 
@@ -29,20 +30,26 @@ market_shares = None
 same_network_call = 0
 cross_network_call = 0
 cache_file = pathlib.Path.cwd().joinpath('cache.pkl')
+processes = 500
 
-def create_user_network(subnets):
-    num_subs = len(subscribers)
-    robocallers = 0
-    subscribers_network.create_subscribers_network((num_subs, subnets), robocallers)
+def create_user_network(num_subs):
+    subscribers_network.create_subscribers_network(num_subs, processes)
 
 
-def assign_subscribers_by_market_share(carrier, market_share, num_subs):
-    global subscribers
-    subscribers_count = round(num_subs * market_share)
-    
-    for i in range(subscribers_count):
-        subscribers.append(make_subscriber(carrier))
+def assign_subscribers_to_carrier(carrier, count):
+    pid, subs = os.getpid(), []
+    print(pid, "Assigning", count, "subscribers to carrier", carrier)
+    for _ in range(count):
+        subs.append(make_subscriber(carrier))
         
+    save_subscribers(subs)
+            
+def assign_subscribers_process(args):
+    index, shares, num_subs = args
+    for i, share in enumerate(shares):
+        carrier = index * len(shares) + i 
+        count = round(num_subs * share)
+        assign_subscribers_to_carrier(carrier, count) 
         
 def make_subscriber(carrier):
     npa = random.randint(200, 999)
@@ -51,14 +58,6 @@ def make_subscriber(carrier):
     
     return carrier, f"{carrier}:{npa}-{nxx}-{num}"
 
-
-def shuffle_subscribers():
-    global subscribers
-    # Fisher-Yates shuffle algorithm
-    for i in reversed(range(1, len(subscribers))):
-        j = secrets.randbelow(i + 1)
-        subscribers[i], subscribers[j] = subscribers[j], subscribers[i]
-            
             
 def create_phone_network(num_carriers, n_0, m_0):
     global phone_network
@@ -151,30 +150,37 @@ def init_phone_network(num_carriers):
     timed(create_phone_network)(num_carriers, 5, 2)
     timed(generate_market_shares)()
     timed(all_pairs_johnson)()
+
+def assign_subscribers(num_subs):
+    pool = Pool(processes=processes)
+    chunks = np.array_split(market_shares, processes)
+    chunks = [(index, chunk, num_subs) for index, chunk in enumerate(chunks)]
+    pool.map(assign_subscribers_process, chunks)
     
-def init_user_network(num_subs, subnets):
-    for carrier in phone_network.nodes:
-        assign_subscribers_by_market_share(carrier, market_shares[carrier], num_subs)
-    timed(shuffle_subscribers)()
-    timed(save_subscribers)()
-    timed(create_user_network)(subnets)
+def init_user_network(num_subs):
+    timed(assign_subscribers)(num_subs)
+    timed(create_user_network)(num_subs)
  
 def fresh_start(num_carriers):
     init_phone_network(num_carriers)
     set_cache()
-    
-def save_subscribers():
+
+def save_subscribers(items):
     data = []
     batch = 0
+    pid = os.getpid()
     
-    for id, (carrier, phone) in enumerate(subscribers):
+    for index, (carrier, phone) in enumerate(items):
+        id = uuid4()
         data.append([str(id), str(phone), str(carrier)])
-        if id > 0 and id % 10000 == 0:
+        
+        if index > 0 and index % 10000 == 0:
             batch += 1
-            print(f'-> Saving Batch {batch} subscribers. Total saved: {id}')
+            print(f'-> Saving Subscribers: pid({pid}) > Batch {batch} > Total saved: {id}')
             database.save_subscribers(data)
             data = []      
             
     if len(data) > 0:
-        print(f'-> Saving Batch {batch + 1} subscribers. Total saved: {id}')
+        print(f'-> Saving Subscribers: pid({pid}) > Batch {batch} > Total saved: {id}')
         database.save_subscribers(data)
+
