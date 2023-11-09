@@ -75,7 +75,7 @@ def simulate_call(src, dst):
         if index < len(call_path) - 1:
             next = call_path[index + 1]
             
-        ts = round(datetime.now().timestamp())
+        ts = round(datetime.now().timestamp() + random.randint(0, 3))
         
         # create CDR tupple
         cdr = [src_tn, dst_tn, str(ts), str(prev), str(carrier), str(next)]
