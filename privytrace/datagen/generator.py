@@ -17,6 +17,7 @@ from .helpers import timed
 import argparse
 from . import subscribers_network
 from multiprocessing import Pool, cpu_count
+from ..helpers import Logger as logger
 
 load_dotenv()
 
@@ -31,6 +32,7 @@ same_network_call = 0
 cross_network_call = 0
 cache_file = pathlib.Path.cwd().joinpath('cache.pkl')
 processes = 500
+edges_per_page = 1000
 
 def create_user_network(num_subs):
     subscribers_network.create_subscribers_network(num_subs, processes)
@@ -38,7 +40,7 @@ def create_user_network(num_subs):
 
 def assign_subscribers_to_carrier(carrier, count):
     pid, subs = os.getpid(), []
-    print(pid, "Assigning", count, "subscribers to carrier", carrier)
+    logger.default(pid, "Assigning", count, "subscribers to carrier", carrier)
     for _ in range(count):
         subs.append(make_subscriber(carrier))
         
@@ -181,6 +183,24 @@ def save_subscribers(items):
             data = []      
             
     if len(data) > 0:
-        print(f'-> Saving Subscribers: pid({pid}) > Batch {batch} > Total saved: {id}')
+        logger.default(f'Saving Subscribers: pid({pid}) > Batch {batch} > Total saved: {id}')
         database.save_subscribers(data)
 
+def make_raw_cdrs():
+    num_pages = database.get_number_of_pages_in_edges(per_page=edges_per_page)
+    logger.info(f'Generating CDRs: Total pages: {num_pages}')
+    pages = np.arange(num_pages)
+    pool = Pool(processes=processes)
+    pool.map(make_raw_cdrs_worker, pages)
+
+
+
+def make_raw_cdrs_worker(page):
+    pid = os.getpid()
+    edges = database.get_paginated_edges(page, edges_per_page)
+    
+    idmap = {}
+    for id, src, dst in edges:
+        idmap[src], idmap[dst] = True, True
+        
+    logger.default(f'pid({pid}) > Page {page} > Total edges: {len(edges)}')

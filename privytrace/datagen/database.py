@@ -1,6 +1,7 @@
 from redis import Redis
 from .helpers import env
 import clickhouse_connect
+import math
 from .. import database as db
 
 table = "raw_cdrs"
@@ -43,3 +44,13 @@ def truncate(tables: list):
     
     for table in tables:
         db.open_db().command(f"TRUNCATE TABLE {table}")
+        
+def get_paginated_edges(page, per_page):
+    limit = str(per_page)
+    offset = str(page * per_page)
+    res = db.open_db().query(f"SELECT id, src, dst FROM edges ORDER BY id LIMIT {limit} OFFSET {offset}")
+    return res.result_rows
+
+def get_number_of_pages_in_edges(per_page):
+    total = db.open_db().command(f"SELECT COUNT(*) FROM edges")
+    return math.ceil(total / per_page)

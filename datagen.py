@@ -29,15 +29,24 @@ def init(args):
         Logger.info('Generating subscribers...')
         database.truncate(['subscribers', 'edges'])
         generator.init_user_network(args.subscribers)
+        
+    if args.cdrs:
+        Logger.info('Generating CDRs...')
+        database.truncate(['raw_cdrs'])
+        generator.make_raw_cdrs()
     
     
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Run contribution and tracebacks')
-    parser.add_argument('-n', '--network', type=int, help='Number of phone networks', required=False)
-    parser.add_argument('-s', '--subscribers', type=int, help='Number of subscribers', required=False)
-    # parser.add_argument('-g', '--subnets', type=int, help='Number of subnets for subs network', required=False, default=50)
+    parser = argparse.ArgumentParser(description='Data generation')
+    parser.add_argument('-n', '--network', type=int, help='Generate network graph of n nodes', required=False)
+    parser.add_argument('-s', '--subscribers', type=int, help='Generate subscribers graph of s nodes', required=False)
+    parser.add_argument('-c', '--cdrs', action='store_true', help='Generate cdrs from edges and subscribers', required=False)
     args = parser.parse_args()
     
-    init(args)
+    if not any(vars(args).values()):
+        parser.print_help()
+    else:
+        init(args)
+    
     
             
