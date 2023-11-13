@@ -45,11 +45,9 @@ def truncate(tables: list):
     for table in tables:
         db.open_db().command(f"TRUNCATE TABLE {table}")
         
-def get_paginated_edges(page, per_page):
-    limit = str(per_page)
-    offset = str(page * per_page)
+def get_all_edges():
     res = db.open_db().query(
-        f"SELECT S.phone AS src, D.phone AS dst FROM edges E JOIN subscribers S ON E.src = S.id JOIN subscribers D ON E.dst = D.id ORDER BY E.id LIMIT {limit} OFFSET {offset}"
+        f"SELECT S.phone AS src, D.phone AS dst FROM edges E JOIN subscribers S ON E.src = S.id JOIN subscribers D ON E.dst = D.id ORDER BY E.id DESC"
     )
     return res.result_rows
 
