@@ -1,5 +1,6 @@
 import sys
 import os
+import math
 import json
 import pickle
 import random
@@ -174,19 +175,22 @@ def save_subscribers(items):
         database.save_subscribers(data)
 
 def make_raw_cdrs():
-    num_pages = database.get_number_of_pages_in_edges(per_page=edges_per_page)
-    logger.info(f'Generating CDRs: Total pages: {num_pages}')
-    pages = np.arange(num_pages)
-    pool = Pool(processes=processes)
-    pool.map(make_raw_cdrs_worker, pages)
-
-def make_raw_cdrs_worker(page):
-    pid = os.getpid()
-    edges = database.get_paginated_edges(page, edges_per_page)
+    logger.info("loading edges...")
+    edges = database.get_all_edges()
+    edges = np.array(edges)
+    num_pages = math.ceil(len(edges) / edges_per_page)
+    edges = np.array_split(edges, num_pages)
     
-    data = []
+    logger.info(f'Generating CDRs: Total pages: {num_pages}')
+    
+    pool = Pool(processes=processes)
+    pool.map(make_raw_cdrs_worker, edges)
+
+def make_raw_cdrs_worker(edges):
+    pid, data = os.getpid(), []
     
     for src, dst in edges:
+        logger.default(f'pid({pid})\t> Simulating {src} -> {dst}')
         fcall = simulate_call(src, dst)
         rcall = simulate_call(dst, src)
         
@@ -197,12 +201,11 @@ def make_raw_cdrs_worker(page):
             data.extend(rcall)
         
         if len(data) >= 1000:
-            logger.default(f'pid({pid})\t> Page {page} > Saving {len(data)} CDRs')
+            logger.default(f'pid({pid})\t> Saving {len(data)} CDRs')
             database.save_cdrs(data)
             data = []
             
     if len(data) > 0:
-        logger.default(f'pid({pid})\t> Page {page} > Saving {len(data)} CDRs')
+        logger.default(f'pid({pid})\t> Saving {len(data)} CDRs')
         database.save_cdrs(data)
-        
-    logger.default(f'pid({pid})\t> Page {page} > Total edges: {len(edges)}')
+        data = []
