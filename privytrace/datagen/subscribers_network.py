@@ -10,7 +10,7 @@ from ..helpers import Logger as logger
 
 def create_subscribers_network(users, subnets, processes):
     subscribers = np.arange(int(users), dtype=int)
-    u_chunks = np.array_split(subscribers, users // subnets)
+    u_chunks = np.array_split(subscribers, subnets)
     
     pool = Pool(processes=processes)
     pool.map(create_individuals_network, u_chunks)
