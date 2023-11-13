@@ -56,3 +56,8 @@ def get_paginated_edges(page, per_page):
 def get_number_of_pages_in_edges(per_page):
     total = db.open_db().command(f"SELECT COUNT(*) FROM edges")
     return math.ceil(total / per_page)
+
+def records_exists():
+    edges = db.open_db().command(f"SELECT COUNT(*) FROM edges")
+    subs = db.open_db().command(f"SELECT COUNT(*) FROM subscribers")
+    return edges > 0 and subs > 0
