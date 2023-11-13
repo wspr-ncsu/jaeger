@@ -26,6 +26,13 @@ def init(args):
             return
     
     if args.subscribers:
+        if database.records_exists():
+            if not args.yes:
+                Logger.warn('Records already exist. Do you want to overwrite? (y/n)')
+                choice = input()
+                if choice.lower() != 'y':
+                    Logger.info('Aborting...')
+                    return
         Logger.info('Generating subscribers...')
         database.truncate(['subscribers', 'edges'])
         generator.init_user_network(args.subscribers, args.subnets)
@@ -41,6 +48,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--subscribers', type=int, help='Generate subscribers graph of s nodes', required=False)
     parser.add_argument('-c', '--cdrs', action='store_true', help='Generate cdrs from edges and subscribers', required=False)
     parser.add_argument('-g', '--subnets', type=int, help='Number of subnetworks for users graph', required=False, default=50)
+    parser.add_argument('-y', '--yes', action='store_true', help='Overwrite existing', default=False, required=False)
     args = parser.parse_args()
     
     if not any(vars(args).values()):
