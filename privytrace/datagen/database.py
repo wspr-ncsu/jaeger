@@ -47,7 +47,7 @@ def truncate(tables: list):
         
 def get_all_edges():
     res = db.open_db().query(
-        f"SELECT S.phone AS src, D.phone AS dst FROM edges E JOIN subscribers S ON E.src = S.id JOIN subscribers D ON E.dst = D.id ORDER BY E.id DESC"
+        f"SELECT S.phone AS src, D.phone AS dst FROM edges E JOIN subscribers S ON E.src = S.id JOIN subscribers D ON E.dst = D.id ORDER BY E.id ASC"
     )
     return res.result_rows
 
