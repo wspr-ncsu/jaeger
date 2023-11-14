@@ -141,6 +141,7 @@ def update_csv(file, line, header = None):
             
         f.write(line + '\n')
         
-def create_csv(file, header):
-    with open(f'results/{file}', 'w') as f:
-        f.write(header + '\n')
+def create_csv(file, header, mode = 'a'):
+    with open(f'results/{file}', mode) as f:
+        if f.tell() == 0:
+            f.write(header + '\n')
