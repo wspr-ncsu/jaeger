@@ -43,7 +43,7 @@ def client_encrypt(pk: G1Element, label: bytes, cdr: bytes) -> dict:
     
     return { 'ct1': ct1, 'ct2': ct2 }
 
-def client_decrypt(sig: G2Element, ct: dict) -> bytes:
+def client_decrypt(sig: G2Element, ct: dict, decode=True) -> bytes:
     # Decrypt the key using witness encryption
     ct1: CipherText = CipherText.from_bytes(ct['ct1'])
     key: bytes = bytes(Scheme.decrypt(sig, ct1))
@@ -51,7 +51,7 @@ def client_decrypt(sig: G2Element, ct: dict) -> bytes:
     # Decrypt the message with key using OTP
     msg = bytes(OTP.decrypt(key, ct['ct2']))
     
-    return msg.decode()
+    return msg.decode() if decode else msg
     
 def client_export_ct(ct: dict, dtype=str) -> str:
     ct: bytes = pickle.dumps(ct)

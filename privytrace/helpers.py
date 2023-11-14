@@ -130,8 +130,11 @@ def endStopwatch(test_name, start, numIters):
     
     return test_name, duration
     
-def random_bytes(n):
-    return secrets.token_bytes(n)
+def random_bytes(n, hex=False):
+    d = secrets.token_bytes(n)
+    if hex:
+        return d.hex()
+    return d
 
 def update_csv(file, line, header = None):
     with open(f'results/{file}', 'a') as f:
