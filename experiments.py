@@ -87,8 +87,27 @@ def bench_group_verification():
     test_name, duration = helpers.endStopwatch('gm.verify', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{duration}')
     
+def bench_bls_signing():
+    sk = BasicSchemeMPL.key_gen(helpers.random_bytes(32))
+    pk = sk.get_g1()
+    
+    labels = []
+    for i in range(num_runs):
+        label = helpers.random_bytes(32)
+        labels.append(label)
+    
+    # Sign
+    start = helpers.startStopwatch()
+    for i in range(num_runs):
+        sig = BasicSchemeMPL.sign(sk, labels[i])
+    test_name, duration = helpers.endStopwatch('bls.sign', start, num_runs)
+    helpers.update_csv('bench.csv', f'{test_name},{num_runs},{duration}')
+    
 
 def init(args):
+    if args.all:
+        helpers.create_csv('bench.csv', 'test_name,runs,duration_in_ms', mode='w')
+        
     if args.setup or args.all:
         exp_bench_setups()
     if args.lbl_gen or args.all:
@@ -97,6 +116,8 @@ def init(args):
         bench_signing()
     if args.grp_verify or args.all:
         bench_group_verification()
+    if args.bls or args.all:
+        bench_bls_signing()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run experiments')
@@ -105,6 +126,7 @@ if __name__ == '__main__':
     parser.add_argument('-gs', '--grp_sign',  action='store_true', help='Run group signature experiment', required=False)
     parser.add_argument('-gv', '--grp_verify', action='store_true', help='Run group verification experiment', required=False)
     parser.add_argument('-a', '--all', action='store_true', help='Run all', required=False)
+    parser.add_argument('-b', '--bls', action='store_true', help='Run BLS signature', required=False)
     args = parser.parse_args()
     
     if not any(vars(args).values()):
