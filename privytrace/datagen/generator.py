@@ -30,7 +30,7 @@ phone_network = None
 shortest_paths = None
 market_shares = None
 cache_file = pathlib.Path.cwd().joinpath('cache.pkl')
-processes = 500
+processes = 24
 edges_per_page = 100
 
 def create_user_network(num_subs, subnets):
@@ -190,7 +190,7 @@ def make_raw_cdrs_worker(edges):
     pid, data = os.getpid(), []
     
     for src, dst in edges:
-        logger.default(f'pid({pid})\t> Simulating {src} -> {dst}')
+        # logger.default(f'pid({pid})\t> Simulating {src} -> {dst}')
         fcall = simulate_call(src, dst)
         rcall = simulate_call(dst, src)
         
@@ -201,11 +201,11 @@ def make_raw_cdrs_worker(edges):
             data.extend(rcall)
         
         if len(data) >= 1000:
-            logger.default(f'pid({pid})\t> Saving {len(data)} CDRs')
+            # logger.default(f'pid({pid})\t> Saving {len(data)} CDRs')
             database.save_cdrs(data)
             data = []
             
     if len(data) > 0:
-        logger.default(f'pid({pid})\t> Saving {len(data)} CDRs')
+        # logger.default(f'pid({pid})\t> Saving {len(data)} CDRs')
         database.save_cdrs(data)
         data = []
