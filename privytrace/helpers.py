@@ -128,7 +128,19 @@ def endStopwatch(test_name, start, numIters):
     print("\n%s\nTotal: %d runs in %0.1f ms\nAvg: %fms"
         % (test_name, numIters, duration * 1000, duration * 1000 / numIters))
     
-    return [test_name, duration]
+    return test_name, duration
     
 def random_bytes(n):
     return secrets.token_bytes(n)
+
+def update_csv(file, line, header = None):
+    with open(f'results/{file}', 'a') as f:
+        # Write header if file is empty
+        if f.tell() == 0 and header:
+            f.write(header + '\n')
+            
+        f.write(line + '\n')
+        
+def create_csv(file, header):
+    with open(f'results/{file}', 'w') as f:
+        f.write(header + '\n')
