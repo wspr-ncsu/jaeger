@@ -10,7 +10,7 @@ def submit(labels, cts, sigs, group: dict):
     for index, label in enumerate(labels):
         calls.append({ 'l': label, 'c': cts[index], 's': sigs[index]})
     
-    res = http.post(url=f'{ITG_BASE_URL}/submit', data=calls, group=group)
+    http.post(url=f'{ITG_BASE_URL}/submit', data=calls, group=group)
         
     
 def request_a_trace(group: dict, labels: List[str]):

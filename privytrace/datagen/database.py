@@ -3,6 +3,7 @@ from .helpers import env
 import clickhouse_connect
 import math
 from .. import database as db
+from ..helpers import random_bytes
 
 def get_subscriber_ids():
     res = db.open_db().query("SELECT id FROM subscribers")
@@ -64,3 +65,28 @@ def records_exists():
     edges = db.open_db().command(f"SELECT COUNT(*) FROM edges")
     subs = db.open_db().command(f"SELECT COUNT(*) FROM subscribers")
     return edges > 0 and subs > 0
+
+def find_ct_records_by_random_label():
+    labels = "','".join([ random_bytes(32).hex() for _ in range(10) ])
+    res = db.open_db().query(f"SELECT * FROM ct_records WHERE label  in ('{labels}')")
+    return res.result_rows
+
+def get_table_sizes():
+    query = """
+        SELECT table, formatReadableSize(size) as size, rows, days, formatReadableSize(avgDaySize) as avgDaySize FROM (
+            SELECT
+                table,
+                sum(bytes) AS size,
+                sum(rows) AS rows,
+                min(min_date) AS min_date,
+                max(max_date) AS max_date,
+                (max_date - min_date) AS days,
+                size / (max_date - min_date) AS avgDaySize
+            FROM system.parts
+            WHERE active
+            GROUP BY table
+            ORDER BY rows DESC
+        )
+    """
+    result = db.open_db().query(query)
+    return result.result_rows
