@@ -1,6 +1,6 @@
 #!/bin/bash
 
-valid_apps=(gm lm ta itg db)
+valid_apps=(gm lm ta tp db)
 valid_commands=(serve qw qs migrate gen)
 
 app=$(echo $1 | cut -d ":" -f 1)
@@ -35,7 +35,7 @@ function run_app {
     elif [ $app == "ta" ]
         then
         port=9992
-    elif [ $app == "itg" ]
+    elif [ $app == "tp" ]
         then
         port=9993
     fi
@@ -49,7 +49,23 @@ function run_app {
     fi
 
     echo "Starting $app on port $port"
-    python3.8 -m flask --app app-$app.py run --debug --port $port
+
+    # if 3rd argument is set to dev, then run in debug mode
+    if [ ! -z "$3" ] && [ $3 == "dev" ]
+        then
+        python3.8 -m flask --app app-$app.py run --debug --port $port
+        exit 0
+    fi
+    
+    # run in wsgi production mode
+    workers=1
+    # check if app is tp or lm
+    if [ $app == "tp" ] || [ $app == "lm" ]
+        then
+        workers=2
+    fi
+    m="app-$app:create_app()"
+    gunicorn -w $workers -b 0.0.0.0:$port $m
 }
 
 function queue:stop {
@@ -106,7 +122,7 @@ if [ $app == "db" ]
     exit 0
 fi
 
-if [ $app == "itg" ]
+if [ $app == "tp" ]
     then
     if [ $cmd == "qw" ]
         then
