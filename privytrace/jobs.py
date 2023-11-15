@@ -22,7 +22,7 @@ def job(payload: str, gpk_str: str):
         
         records.append([call['l'], call['s'], call['c']])
         
-    database.insert_records(records)
+    database.insert_ct_records(records)
 
 def submit(request, gpk):
     payload = reject_request(request=request, gpk=gpk)

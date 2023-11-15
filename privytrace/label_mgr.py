@@ -29,11 +29,11 @@ def server_batch_evaluation(sk: oprf.scalar, xs: List):
 # Client side functions
 # Will be called by client functions
 
-def client_request_labels(group: dict, cdrs: List[CDR]) -> List[str]:
+def client_request_labels(group: dict, cdrs: List[CDR], lm_sk: oprf.scalar = None) -> List[str]:
     """Get the labels for the CDRs by querying the label manager through OPRF"""
     
     xs, masks = client_mask_labels(cdrs)
-    evaluations = client_evaluate(group, xs)
+    evaluations = client_evaluate(group=group, xs=xs, lm_sk=lm_sk)
     labels = client_unmask_evaluations(evaluations, masks)
     
     return labels
@@ -63,7 +63,10 @@ def client_unmask_evaluations(evaluations: List[str], masks: List[oprf.scalar]):
         
     return evaluations
 
-def client_evaluate(group: dict, labels: List[str]) -> List[oprf.scalar]:
-    url = LM_BASE_URL + '/evaluate'
-    res = http.post(url=url, group=group, data=labels)
-    return res
+def client_evaluate(group: dict, xs: List[str], lm_sk: oprf.scalar = None) -> List[oprf.scalar]:
+    if lm_sk:
+        return server_batch_evaluation(lm_sk, xs=xs)
+    else:
+        url = LM_BASE_URL + '/evaluate'
+        res = http.post(url=url, group=group, data=xs)
+        return res

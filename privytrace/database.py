@@ -30,7 +30,7 @@ def migrate():
         
     print('Migrations Completed.')
     
-def insert_records(records, cols=['label', 'sigma', 'ct']):    
+def insert_ct_records(records, cols=['label', 'sigma', 'ct']):    
     connection = open_db()
     connection.insert(table, data=records, column_names=cols)
     

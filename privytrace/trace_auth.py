@@ -7,7 +7,7 @@ from .config import TA_BASE_URL, TA_pk_key
 from typing import List
 from . import redis
 
-def request_registration() -> G1Element:
+def get_public_key() -> G1Element:
     pk: str = redis.find(TA_pk_key)
     
     if not pk:
