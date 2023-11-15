@@ -48,11 +48,11 @@ def validate_json(payload):
     return payload
 
 def toEpoch(date: str):
-    if type(date) is str and date.isnumeric():
-        return int(date)
-    
     if (type(date) is int):
         return date
+    
+    if date.isnumeric():
+        return int(date)
     
     return int(datetime.strptime(date, '%Y-%m-%d %H:%M:%S').timestamp())
 

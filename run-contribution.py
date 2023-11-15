@@ -1,87 +1,79 @@
-from privytrace.helpers import CDR
-import privytrace.groupsig as groupsig
-import privytrace.trace_auth as trace_auth
-import privytrace.contribution as contribution
-import privytrace.traceback as traceback
-from blspy import G1Element
+import os
 import argparse
-from privytrace.datagen import generator
+import numpy as np
+import traceback as extb
+from multiprocessing import Pool
+from privytrace.helpers import CDR
 from privytrace.helpers import Logger
+import privytrace.groupsig as groupsig
 from privytrace.datagen import database
+import privytrace.trace_auth as trace_auth
+from privytrace.datagen.helpers import timed
+import privytrace.contribution as contribution
 
-groups = {}
-tapk: G1Element = trace_auth.request_registration()
-
-def run_contribute():
-    Logger.info('Running contribution...')
-    for carrier in generator.phone_network.nodes:
-        try:
-            cgroup = get_carrier_groupsig(carrier)
-            records = database.get_cdrs(carrier)
-            reclen = len(records)
-            
-            if reclen == 0:
-                continue
-            
-            Logger.default(f'submitting cdrs {reclen} for carrier {carrier}')
-            records = [CDR(*record) for record in records]
-            contribution.contribute(group=cgroup, tapk=tapk, cdrs=records)
-            database.mark_cdrs_as_contributed(carrier)
-        except Exception as e:
-            Logger.error(e)
-            continue
-
-def get_carrier_groupsig(carrier):
-    if carrier not in groups:
-        groups[carrier] = groupsig.client_register(carrier)
+processes=2
+batch_size = 100
+group_sig = { 'gpk': groupsig.get_gpk(), 'mems': {}}
+tapk = trace_auth.request_registration()
+    
+def load_carrier_group_member_keys():
+    for carrier in range(7000):
+        keys = groupsig.client_register(carrier)
+        group_sig['mems'][str(carrier)] = keys['usk']
         
-    return groups[carrier]
-
-def store_records(cdrs):
-    database.save_cdrs(cdrs)
-
-def init(args):
-    if args.network:
-        if not args.subscribers:
-            Logger.error('Please specify number of subscribers with -s option.')
-            return
+def get_cdrs(num_records, pages=1000):
+    cdrs = database.get_cdrs(num_records)
+    return np.array_split(cdrs, pages)
+    
+def contribute(records):
+    pid = os.getpid()
+    Logger.info(f'[{pid}] Contributing {len(records)} records...')
+    
+    cdrs = {}
+    
+    # group cdrs by carrier
+    for record in records:
+        record = CDR(*record)
+        if record.curr not in cdrs:
+            cdrs[record.curr] = []
+        cdrs[record.curr].append(record)
         
-        Logger.info('Generating phone network...')
-        generator.fresh_start(args.network)
-    else:
-        if generator.cache_file.exists():
-            Logger.info('Loading phone network metadata from cache...')
-            generator.load_cache()
+    # chunk each carrier's cdrs into batches
+    for carrier in cdrs:
+        num_batches = len(cdrs[carrier])//batch_size
+        
+        if num_batches == 0:
+            cdrs[carrier] = [cdrs[carrier]]
         else:
-            Logger.error('Cache file not found. Please run with -n option to generate phone network.')
-            return
-    
-    if args.subscribers:
-        Logger.info('Generating subscribers...')
-        generator.init_user_network(args.subscribers)
-        generate()
-    
-    run_contribute()
-    
-def generate():
-    temp = []
-    print(len(generator.phone_network.edges))
-    for index, (src_i, dst_i) in enumerate(generator.phone_network.edges):
-        src, dst = generator.subscribers[src_i], generator.subscribers[dst_i]
-        cdrs = generator.simulate_call(src, dst)
+            cdrs[carrier] = np.array_split(cdrs[carrier], num_batches)
         
-        if cdrs is None:
-            continue
-        
-        print('Storing {} CDRs from {} to {}'.format(len(cdrs), src, dst))
-        store_records(cdrs)
+    # run contribution for each carrier
+    for carrier in cdrs:
+        for batch in cdrs[carrier]:
+            try:
+                contribution.contribute(group={
+                    'gpk': group_sig['gpk'],
+                    'usk': group_sig['mems'][carrier]
+                }, tapk=tapk, cdrs=batch)
+                
+                database.mark_cdrs_as_contributed(batch)
+            except Exception as e:
+                Logger.error(e)
+                extb.print_exc()
+    
+def init(args):
+    Logger.info('Loading carrier group member secret keys...')
+    timed(load_carrier_group_member_keys)()
+    num_pages = 100
+    Logger.info(f'Loading {args.records} records...')
+    chunks = get_cdrs(args.records, num_pages)
+    
+    pool = Pool(processes=processes)
+    pool.map(contribute, chunks)
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run contribution and tracebacks')
-    parser.add_argument('-n', '--network', type=int, help='Number of phone networks', required=False)
-    parser.add_argument('-s', '--subscribers', type=int, help='Number of subscribers', required=False)
+    parser.add_argument('-r', '--records', type=int, help='Number of cdrs to contribute', required=False)
     args = parser.parse_args()
     
     init(args)
-    
-            

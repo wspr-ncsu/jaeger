@@ -44,7 +44,7 @@ def mgr_setup(refresh = False):
     return { 'msk': msk, 'gpk': gpk, 'gml': gml }
 
 def mgr_register_all(gsign_keys, refresh = False):
-    for cid in range(1000):
+    for cid in range(7000):
         mgr_register_carrier(cid, gsign_keys, refresh)
         
     mgr_save_gml(gsign_keys['gml'])
@@ -133,7 +133,7 @@ def client_register(cid: str) -> dict:
     gpk = redis.find(config.GS_gpk_key)
     
     if not usk or not gpk:
-        raise Exception("Group Signature Keys not found")
+        raise Exception(f"Group Signature Keys not found for carrier: {cid}")
     
     # initialize the groupsig library otherwise segmentation fault occurs
     groupsig.init(SCHEME, 0)

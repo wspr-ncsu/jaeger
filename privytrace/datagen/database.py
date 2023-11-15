@@ -4,8 +4,6 @@ import clickhouse_connect
 import math
 from .. import database as db
 
-table = "raw_cdrs"
-
 def get_subscriber_ids():
     res = db.open_db().query("SELECT id FROM subscribers")
     return res.result_rows
@@ -19,7 +17,7 @@ def save_subscribers(rows):
 
 def save_cdrs(rows):
     columns = ["src", "dst", "ts", "prev", "curr", "next"]
-    db.open_db().insert(table, data=rows, column_names=columns)
+    db.open_db().insert("raw_cdrs", data=rows, column_names=columns)
     
 def save_edges(rows):
     if len(rows) == 0:
@@ -28,15 +26,22 @@ def save_edges(rows):
     db.open_db().insert("edges", data=rows, column_names=columns)
     
 def count_records():
-    res = db.open_db().command(f"SELECT COUNT(*) FROM {table}")
+    res = db.open_db().command(f"SELECT COUNT(*) FROM raw_cdrs")
     return res
 
-def get_cdrs(carrier):
-    res = db.open_db().query(f"SELECT src, dst, ts, prev, curr, next FROM {table} WHERE curr='{carrier}' and status=0")
+def get_cdrs(num_records, status=0):
+    query = f"SELECT src, dst, ts, prev, curr, next FROM raw_cdrs WHERE status={status} LIMIT {num_records}"
+    res = db.open_db().query(query)
     return res.result_rows
 
-def mark_cdrs_as_contributed(carrier):
-    db.open_db().command(f"ALTER TABLE {table} UPDATE status=1 WHERE curr='{carrier}'")
+def mark_cdrs_as_contributed(batch):
+    srcs, dsts, tss = [], [], []
+    for cdr in batch:
+        srcs.append(cdr.src)
+        dsts.append(cdr.dst)
+        tss.append(str(cdr.ts))
+    srcs, dsts, tss = "','".join(srcs), "','".join(dsts), "','".join(tss)
+    db.open_db().command(f"ALTER TABLE raw_cdrs UPDATE status=1 WHERE src in ('{srcs}') AND dst in ('{dsts}') AND ts in ('{tss}')")
     
 def truncate(tables: list):
     if type(tables) is not list:
