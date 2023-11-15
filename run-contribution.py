@@ -12,7 +12,7 @@ from privytrace.datagen.helpers import timed
 import privytrace.contribution as contribution
 import privytrace.helpers as helpers
 
-processes=2
+processes=24
 batch_size = 100
 group_sig = { 'gpk': groupsig.get_gpk(), 'mems': {}}
 tapk = trace_auth.request_registration()

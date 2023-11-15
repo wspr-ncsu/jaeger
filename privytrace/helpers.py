@@ -120,14 +120,18 @@ class Logger:
 def startStopwatch():
     return time.perf_counter()
 
-def endStopwatch(test_name, start, numIters):
+def endStopwatch(test_name, start, numIters, silent=False):
     end_time = time.perf_counter()
 
     duration = end_time - start
 
-    print("\n%s\nTotal: %d runs in %0.1f ms\nAvg: %fms"
-        % (test_name, numIters, duration * 1000, duration * 1000 / numIters))
+    if not silent:
+        print("\n%s\nTotal: %d runs in %0.1f ms\nAvg: %fms"
+            % (test_name, numIters, duration * 1000, duration * 1000 / numIters))
     
+    if numIters == 1:
+        duration = duration * 1000
+        
     return test_name, duration
     
 def random_bytes(n, hex=False):
