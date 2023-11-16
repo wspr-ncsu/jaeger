@@ -30,8 +30,17 @@ def count_records():
     res = db.open_db().command(f"SELECT COUNT(*) FROM raw_cdrs")
     return res
 
-def get_cdrs(num_records, status=0):
-    query = f"SELECT id, src, dst, ts, prev, curr, next FROM raw_cdrs WHERE status={status} LIMIT {num_records}"
+def get_cdrs(round, num_records, status=0):
+    offset = round * num_records
+    query = f"""
+        SELECT src, dst, ts, prev, curr, next FROM raw_cdrs 
+        WHERE status={status} AND (
+            (prev = 'None' AND curr <> 'None' AND next <> 'None') OR 
+            (prev <> 'None' AND curr <> 'None' AND next <> 'None') OR 
+            (prev <> 'None' AND curr <> 'None' AND next = 'None')
+        )
+        LIMIT {num_records} OFFSET {offset}
+    """
     res = db.open_db().query(query)
     return res.result_rows
 

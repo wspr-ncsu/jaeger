@@ -13,7 +13,7 @@ import privytrace.contribution as contribution
 import privytrace.helpers as helpers
 import privytrace.label_mgr as label_mgr
 
-processes=1
+processes=24
 batch_size = 1000
 group_sig = { 'gpk': groupsig.get_gpk(), 'mems': {}}
 tapk = trace_auth.get_public_key()
@@ -24,8 +24,8 @@ def load_carrier_group_member_keys():
         keys = groupsig.client_register(carrier)
         group_sig['mems'][str(carrier)] = keys['usk']
         
-def get_cdrs(num_records, pages):
-    cdrs = database.get_cdrs(num_records)
+def get_cdrs(round, num_records, pages):
+    cdrs = database.get_cdrs(round, num_records)
     return np.array_split(cdrs, pages)
     
 def contribute(records):
@@ -41,28 +41,18 @@ def contribute(records):
             cdrs[record.curr] = []
         cdrs[record.curr].append(record)
         
-    # chunk each carrier's cdrs into batches
-    for carrier in cdrs:
-        num_batches = len(cdrs[carrier])//batch_size
-        
-        if num_batches == 0:
-            cdrs[carrier] = [cdrs[carrier]]
-        else:
-            cdrs[carrier] = np.array_split(cdrs[carrier], num_batches)
-        
     # run contribution for each carrier
     for carrier in cdrs:
-        for batch in cdrs[carrier]:
-            try:
-                contribution.contribute(group={
-                    'gpk': group_sig['gpk'],
-                    'usk': group_sig['mems'][carrier]
-                }, tapk=tapk, lm_sk=lm_sk, over_http=False, cdrs=batch)
-                
-                database.mark_cdrs_as_contributed("','".join([str(c.id) for c in batch]))
-            except Exception as e:
-                Logger.error(e)
-                extb.print_exc()
+        try:
+            contribution.contribute(group={
+                'gpk': group_sig['gpk'],
+                'usk': group_sig['mems'][carrier]
+            }, tapk=tapk, lm_sk=lm_sk, over_http=False, cdrs=cdrs[carrier])
+            
+            # database.mark_cdrs_as_contributed("','".join([str(c.id) for c in batch]))
+        except Exception as e:
+            Logger.error(e)
+            extb.print_exc()
     
 def bench_query(size):
     num_runs, lines = 100, []
@@ -107,7 +97,7 @@ def init(args):
         for round in range(args.rounds):
             Logger.info(f'[R-{round}] Loading {args.records} records...')
             
-            chunks = get_cdrs(args.records, num_pages)
+            chunks = get_cdrs(round, args.records, num_pages)
             pool.map(contribute, chunks)
         
             save_stats() # save db stats

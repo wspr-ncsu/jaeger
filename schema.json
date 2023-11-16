@@ -4,7 +4,7 @@
     "add_index_on_label_column": "ALTER TABLE ct_records ADD INDEX label_index label TYPE minmax GRANULARITY 4",
 
     "drop raw_cdrs table": "DROP TABLE IF EXISTS raw_cdrs",
-    "create raw_cdrs table": "CREATE TABLE IF NOT EXISTS raw_cdrs (status TinyInt DEFAULT 0, src VARCHAR NOT NULL, dst VARCHAR NOT NULL, ts VARCHAR NOT NULL, prev VARCHAR NOT NULL, curr VARCHAR NOT NULL, next VARCHAR NOT NULL, PRIMARY KEY (src, dst, ts)) ENGINE = MergeTree()",
+    "create raw_cdrs table": "CREATE TABLE IF NOT EXISTS raw_cdrs (id VARCHAR NOT NULL, status TinyInt DEFAULT 0, src VARCHAR NOT NULL, dst VARCHAR NOT NULL, ts VARCHAR NOT NULL, prev VARCHAR NOT NULL, curr VARCHAR NOT NULL, next VARCHAR NOT NULL, PRIMARY KEY id) ENGINE = MergeTree()",
 
     "drop subscribers table": "DROP TABLE IF EXISTS subscribers",
     "create subscribers table": "CREATE TABLE IF NOT EXISTS subscribers (id UInt32 NOT NULL, phone VARCHAR NOT NULL, carrier UInt32 NOT NULL, PRIMARY KEY id) ENGINE = MergeTree()",
