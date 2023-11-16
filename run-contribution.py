@@ -13,7 +13,7 @@ import privytrace.contribution as contribution
 import privytrace.helpers as helpers
 import privytrace.label_mgr as label_mgr
 
-processes=24
+processes=1
 batch_size = 1000
 group_sig = { 'gpk': groupsig.get_gpk(), 'mems': {}}
 tapk = trace_auth.get_public_key()
@@ -59,7 +59,7 @@ def contribute(records):
                     'usk': group_sig['mems'][carrier]
                 }, tapk=tapk, lm_sk=lm_sk, over_http=False, cdrs=batch)
                 
-                database.mark_cdrs_as_contributed(batch)
+                database.mark_cdrs_as_contributed("','".join([str(c.id) for c in batch]))
             except Exception as e:
                 Logger.error(e)
                 extb.print_exc()

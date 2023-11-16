@@ -31,18 +31,12 @@ def count_records():
     return res
 
 def get_cdrs(num_records, status=0):
-    query = f"SELECT src, dst, ts, prev, curr, next FROM raw_cdrs WHERE status={status} LIMIT {num_records}"
+    query = f"SELECT id, src, dst, ts, prev, curr, next FROM raw_cdrs WHERE status={status} LIMIT {num_records}"
     res = db.open_db().query(query)
     return res.result_rows
 
-def mark_cdrs_as_contributed(batch):
-    srcs, dsts, tss = [], [], []
-    for cdr in batch:
-        srcs.append(cdr.src)
-        dsts.append(cdr.dst)
-        tss.append(str(cdr.ts))
-    srcs, dsts, tss = "','".join(srcs), "','".join(dsts), "','".join(tss)
-    db.open_db().command(f"ALTER TABLE raw_cdrs UPDATE status=1 WHERE src in ('{srcs}') AND dst in ('{dsts}') AND ts in ('{tss}')")
+def mark_cdrs_as_contributed(ids):
+    db.open_db().command(f"ALTER TABLE raw_cdrs UPDATE status=1 WHERE id in ('{ids}')")
     
 def truncate(tables: list):
     if type(tables) is not list:
