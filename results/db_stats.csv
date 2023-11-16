@@ -1,2 +1,7 @@
 table,size,rows
-ct_records,1.82 MiB, 1000
+ct_records,1.77 GiB, 1000000
+ct_records,3.55 GiB, 2000000
+ct_records,5.30 GiB, 3000000
+ct_records,7.08 GiB, 4000000
+ct_records,8.85 GiB, 5000000
+ct_records,10.62 GiB, 5998086
