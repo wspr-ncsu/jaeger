@@ -83,8 +83,8 @@ def save_stats():
     bench_query(ct_records_size)
             
 def create_csv_files(mode='a'):
-    helpers.create_csv('db_stats.csv', 'table,size,rows', 'w')
-    helpers.create_csv('queries.csv', 'test_name,index,duration_in_ms,size', 'w')
+    helpers.create_csv('db_stats.csv', 'table,size,rows', mode)
+    helpers.create_csv('queries.csv', 'test_name,index,duration_in_ms,size', mode)
     
 def init(args):
     Logger.info('Loading carrier group member secret keys...')
@@ -94,7 +94,7 @@ def init(args):
     create_csv_files('w' if args.clean else 'a')
     
     with Pool(processes=processes) as pool:
-        for round in range(args.rounds):
+        for round in range(10, args.rounds):
             Logger.info(f'[R-{round}] Loading {args.records} records...')
             
             chunks = get_cdrs(round, args.records, num_pages)
@@ -107,7 +107,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run contribution and tracebacks')
     parser.add_argument('-r', '--rounds', type=int, help='Number of rounds', required=False, default=1)
     parser.add_argument('-n', '--records', type=int, help='Number of cdrs to contribute', required=False)
-    parser.add_argument('-c', '--clean', action='store_true', help='Clean existing results', required=False)
+    parser.add_argument('-c', '--clean', action='store_true', help='Clean existing results', required=False, default=False)
     args = parser.parse_args()
     
     init(args)
