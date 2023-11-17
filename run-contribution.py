@@ -94,7 +94,7 @@ def init(args):
     create_csv_files('w' if args.clean else 'a')
     
     with Pool(processes=processes) as pool:
-        for round in range(10, args.rounds):
+        for round in range(15, args.rounds):
             Logger.info(f'[R-{round}] Loading {args.records} records...')
             
             chunks = get_cdrs(round, args.records, num_pages)
