@@ -23,7 +23,7 @@ gusk = m2['memkey']
 trace_auth_sk = BasicSchemeMPL.key_gen(helpers.random_bytes(32))
 trace_auth_pk = trace_auth_sk.get_g1()
 
-header = 'test_name,runs,total_duration_in_ms,avg_duration_in_ms'
+header = 'category,test_name,runs,total_duration_in_ms,avg_duration_in_ms'
 helpers.create_csv('bench.csv', header, mode='a')
 helpers.create_csv('index-timings.csv', header, mode='a')
 helpers.create_csv('keyval.csv', 'key,val', mode='a')
@@ -35,10 +35,10 @@ def exp_bench_setups():
     for i in range(num_runs):
         istart = helpers.startStopwatch()
         ks = groupsig.setup(constants.BBS04_CODE)
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'gm.setup', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'gm,setup', istart, 1, True)
         lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
         
-    test_name, t_dur, a_dur = helpers.endStopwatch('gm.setup', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('gm,setup', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     
     # Provider registration to GM
@@ -50,10 +50,10 @@ def exp_bench_setups():
         msg1 = groupsig.join_mgr(0, gkeys['mgrkey'], gkeys['grpkey'], gml = gkeys['gml'])
         msg2 = groupsig.join_mem(1, gkeys['grpkey'], msgin = msg1)
         
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'gm.register', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'gm,register', istart, 1, True)
         lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
         
-    test_name, t_dur, a_dur = helpers.endStopwatch('gm.register', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('gm,register', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     
     # Label setup
@@ -61,10 +61,10 @@ def exp_bench_setups():
     for i in range(num_runs):
         istart = helpers.startStopwatch()
         key = oprf.keygen()
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'lm.setup', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'lm,setup', istart, 1, True)
         lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
         
-    test_name, t_dur, a_dur = helpers.endStopwatch('lm.setup', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('lm,setup', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     
     # Trace Authority setup
@@ -74,9 +74,9 @@ def exp_bench_setups():
         seed: bytes = helpers.random_bytes(32)
         sk: PrivateKey = BasicSchemeMPL.key_gen(seed)
         pk = sk.get_g1()
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'ta.setup', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'ta,setup', istart, 1, True)
         lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
-    test_name, t_dur, a_dur = helpers.endStopwatch('ta.setup', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('ta,setup', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
 
@@ -93,10 +93,10 @@ def bench_label_generation():
         key = oprf.keygen()
         label = oprf.eval(key, x_prime)
         
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'lm.eval', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'lm,eval', istart, 1, True)
         lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
         
-    test_name, t_dur, a_dur = helpers.endStopwatch('lm.eval', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('lm,eval', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
     
@@ -111,10 +111,10 @@ def bench_signing():
         istart = helpers.startStopwatch()
         msg = groupsig.sign(random_ct + random_label, gusk, gkeys['grpkey'])
         
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'gm.sign', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'gm,sign', istart, 1, True)
         lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
         
-    test_name, t_dur, a_dur = helpers.endStopwatch('gm.sign', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('gm,sign', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
     
@@ -132,10 +132,10 @@ def bench_group_verification():
     for i in range(num_runs):
         istart = helpers.startStopwatch()
         groupsig.verify(sigmas[i], payloads[i], gkeys['grpkey'])
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'gm.verify', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'gm,verify', istart, 1, True)
         lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
     
-    test_name, t_dur, a_dur = helpers.endStopwatch('gm.verify', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('gm,verify', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
     
@@ -151,9 +151,9 @@ def bench_bls_signing():
     for i in range(num_runs):
         istart = helpers.startStopwatch()
         sig = BasicSchemeMPL.sign(trace_auth_sk, labels[i])
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'bls.sign', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'ta,sign', istart, 1, True)
         lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
-    test_name, t_dur, a_dur = helpers.endStopwatch('bls.sign', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('ta,sign', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
 
@@ -181,10 +181,10 @@ def bench_encryption():
         sigma = signature.signature_export(sigma)
         cts.append(ct)
         
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'main.contribution(label+enc+gsign)', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'main,contribution(label+enc+gsign)', istart, 1, True)
         lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
         
-    test_name, t_dur, a_dur = helpers.endStopwatch('main.contribution(label+enc+gsign)', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('main,contribution(label+enc+gsign)', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     
     start = helpers.startStopwatch()
@@ -194,10 +194,10 @@ def bench_encryption():
         ct_i = witenc.client_import_ct(cts[i])
         msg = witenc.client_decrypt(sig=sig, ct=ct_i, decode=False)
         
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'main.trace(tsign+dec)', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'main,trace(tsign+dec)', istart, 1, True)
         lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
         
-    test_name, t_dur, a_dur = helpers.endStopwatch('main.trace(tsign+dec)', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('main,trace(tsign+dec)', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
 
