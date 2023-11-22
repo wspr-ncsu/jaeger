@@ -84,13 +84,14 @@ def bench_label_generation():
     # Label generation
     lines = []
     call = "+19238192831|+19238192832|" + str(int(datetime.now().timestamp()))
+    x = oprf.export_point(point.hash(call.encode()))
     start = helpers.startStopwatch()
     
     for i in range(num_runs):
         istart = helpers.startStopwatch()
-        x = point.hash(call.encode())
+        x_prime = oprf.import_point(x)
         key = oprf.keygen()
-        label = oprf.eval(key, x)
+        label = oprf.eval(key, x_prime)
         
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'lm.eval', istart, 1, True)
         lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
