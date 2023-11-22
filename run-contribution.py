@@ -12,6 +12,7 @@ from privytrace.datagen.helpers import timed
 import privytrace.contribution as contribution
 import privytrace.helpers as helpers
 import privytrace.label_mgr as label_mgr
+import benchmarks
 
 processes=24
 batch_size = 1000
@@ -26,6 +27,7 @@ def load_carrier_group_member_keys():
         
 def get_cdrs(round, num_records, pages):
     cdrs = database.get_cdrs(round, num_records)
+    Logger.info(f'Loaded {len(cdrs)} records...')
     return np.array_split(cdrs, pages)
     
 def contribute(records):
@@ -60,11 +62,23 @@ def bench_query(size):
     for i in range(num_runs):
         start = helpers.startStopwatch()
         database.find_ct_records_by_random_label()
-        test_name, duration = helpers.endStopwatch('fetch', start, 1, silent=True)
+        test_name, duration = helpers.endStopwatch('db.fetch', start, 1, silent=True)
         lines.append(f'{test_name},{i},{duration},{size}')
         
     helpers.update_csv('queries.csv', "\n".join(lines))
+
+def bench_insertion(size):
+    num_runs, lines = 100, []
+    label, ct, sigma = benchmarks.random_contribution()
+    label = label.hex()
     
+    for i in range(num_runs):
+        start = helpers.startStopwatch()
+        database.insert_ct_records(label, ct, sigma)
+        test_name, duration = helpers.endStopwatch('db.insert', start, 1, silent=True)
+        lines.append(f'{test_name},{i},{duration},{size}')
+    database.delete_ct_records_by_label(label)
+    helpers.update_csv('queries.csv', "\n".join(lines))
 
 def save_stats():
     tables = ['ct_records']
@@ -81,6 +95,7 @@ def save_stats():
     helpers.update_csv('db_stats.csv', "\n".join(lines))
     
     bench_query(ct_records_size)
+    bench_insertion(ct_records_size)
             
 def create_csv_files(mode='a'):
     helpers.create_csv('db_stats.csv', 'table,size,rows', mode)
@@ -94,10 +109,11 @@ def init(args):
     create_csv_files('w' if args.clean else 'a')
     
     with Pool(processes=processes) as pool:
-        for round in range(15, args.rounds):
+        for round in range(0, args.rounds):
             Logger.info(f'[R-{round}] Loading {args.records} records...')
             
-            chunks = get_cdrs(round, args.records, num_pages)
+            page = args.page if args.page else round
+            chunks = get_cdrs(page, args.records, num_pages)
             pool.map(contribute, chunks)
         
             save_stats() # save db stats
@@ -106,7 +122,8 @@ def init(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run contribution and tracebacks')
     parser.add_argument('-r', '--rounds', type=int, help='Number of rounds', required=False, default=1)
-    parser.add_argument('-n', '--records', type=int, help='Number of cdrs to contribute', required=False)
+    parser.add_argument('-n', '--records', type=int, help='Number of cdrs to contribute', required=True)
+    parser.add_argument('-p', '--page', type=int, help='Current page to run query for', required=True)
     parser.add_argument('-c', '--clean', action='store_true', help='Clean existing results', required=False, default=False)
     args = parser.parse_args()
     

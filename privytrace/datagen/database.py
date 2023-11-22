@@ -93,3 +93,9 @@ def get_table_sizes():
     """
     result = db.open_db().query(query)
     return result.result_rows
+
+def insert_ct_records(label, ct, sigma):
+    db.open_db().insert("ct_records", data=[(label, ct, sigma)], column_names=["label", "ct", "sigma"])
+    
+def delete_ct_records_by_label(label:str):
+    db.open_db().command(f"ALTER TABLE ct_records DELETE WHERE label='{label}'")

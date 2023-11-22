@@ -6,6 +6,9 @@ import argparse
 from datetime import datetime
 from oblivious.ristretto import point
 from privytrace import witenc
+from privytrace.datagen import generator
+from privytrace.helpers import Logger
+from multiprocessing import Pool
 
 num_runs = 1000
 
@@ -22,6 +25,7 @@ trace_auth_pk = trace_auth_sk.get_g1()
     
 helpers.create_csv('bench.csv', 'test_name,runs,duration_in_ms', mode='a')
 helpers.create_csv('index-timings.csv', 'test_name,index,duration_in_ms', mode='a')
+helpers.create_csv('keyval.csv', 'key,val', mode='a')
 
 def exp_bench_setups():
     lines = []
@@ -151,6 +155,15 @@ def bench_bls_signing():
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{duration}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
 
+def random_contribution():
+    call, hops = generate_cdr()
+    label = generate_label(call).encode('utf-8')
+    ct = witenc.client_encrypt(pk=trace_auth_pk, label=label, cdr=hops)
+    ct = witenc.client_export_ct(ct)
+    sigma = groupsig.sign(f'{label}|{ct}', gusk, gkeys['grpkey'])
+    sigma = signature.signature_export(sigma)
+    return label, ct, sigma
+
 def bench_encryption():
     cts, lines = [], []
     call, hops = generate_cdr()
@@ -187,7 +200,7 @@ def bench_encryption():
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
 
 def generate_cdr():
-    call = "+19238192831|+19238192832|" + str(int(datetime.now().timestamp()))
+    call = "+00000000000|+11111111111|" + str(int(datetime.now().timestamp()))
     
     hops = '{}|{}|{}'.format(
         helpers.random_bytes(32, hex=True),
@@ -196,6 +209,39 @@ def generate_cdr():
     )
     
     return call, hops.encode()
+
+def get_hops(args):
+    i, num_carriers = args
+    hops = 0
+    
+    for j in range(num_carriers):
+        if i == j:
+            continue
+        hops += len(generator.get_call_path(i, j))
+        
+    return hops
+    
+def get_avg_num_of_hops():
+    if not generator.cache_file.exists():
+        Logger.error('Cache file not found. Please regenerate network')
+        
+    Logger.info('Loading phone network metadata from cache...')
+    generator.load_cache()
+    
+    total, count = 0, 0
+    
+    num_carriers = len(generator.phone_network.nodes)
+    carriers = list(range(num_carriers))
+    carriers = [(i, num_carriers) for i in carriers]
+    pool = Pool(processes=24)
+    
+    Logger.info('Calculating average number of hops...')
+    total = sum(pool.map(get_hops, carriers))
+    count = num_carriers * (num_carriers - 1)
+    avg = total // count
+    
+    helpers.update_csv('keyval.csv', f'average_hops,{avg}')
+    Logger.info(f'Average number of hops: {avg}')
 
 def generate_label(call):
     key = oprf.keygen()
@@ -207,6 +253,7 @@ def init(args):
     if args.all:
         helpers.create_csv('bench.csv', 'test_name,runs,duration_in_ms', mode='w')
         helpers.create_csv('index-timings.csv', 'test_name,index,duration_in_ms', mode='w')
+        helpers.create_csv('keyval.csv', 'key,val', mode='w')
         
     if args.setup or args.all:
         exp_bench_setups()
@@ -220,6 +267,8 @@ def init(args):
         bench_bls_signing()
     if args.enc or args.all:
         bench_encryption()
+    if args.hops or args.all:
+        get_avg_num_of_hops()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run experiments')
@@ -230,6 +279,7 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--all', action='store_true', help='Run all', required=False)
     parser.add_argument('-b', '--bls', action='store_true', help='Run BLS signature', required=False)
     parser.add_argument('-e', '--enc', action='store_true', help='Run encryption', required=False)
+    parser.add_argument('-ah', '--hops', action='store_true', help='Run average number of hops', required=False)
     args = parser.parse_args()
     
     if not any(vars(args).values()):
