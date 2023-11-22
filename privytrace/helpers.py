@@ -123,17 +123,14 @@ def startStopwatch():
 
 def endStopwatch(test_name, start, numIters, silent=False):
     end_time = time.perf_counter()
-
-    duration = end_time - start
+    total_dur_ms = (end_time - start) * 1000
+    avg_dur_ms = total_dur_ms / numIters
 
     if not silent:
         print("\n%s\nTotal: %d runs in %0.1f ms\nAvg: %fms"
-            % (test_name, numIters, duration * 1000, duration * 1000 / numIters))
-    
-    if numIters == 1:
-        duration = duration * 1000
+            % (test_name, numIters, total_dur_ms, avg_dur_ms))
         
-    return test_name, duration
+    return test_name, total_dur_ms, avg_dur_ms
     
 def random_bytes(n, hex=False):
     d = secrets.token_bytes(n)

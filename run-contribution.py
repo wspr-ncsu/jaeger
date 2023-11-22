@@ -62,8 +62,8 @@ def bench_query(size):
     for i in range(num_runs):
         start = helpers.startStopwatch()
         database.find_ct_records_by_random_label()
-        test_name, duration = helpers.endStopwatch('db.fetch', start, 1, silent=True)
-        lines.append(f'{test_name},{i},{duration},{size}')
+        test_name, tdur, adur = helpers.endStopwatch('db.fetch', start, 1, silent=True)
+        lines.append(f'{test_name},{i},{adur},{size}')
         
     helpers.update_csv('queries.csv', "\n".join(lines))
 
@@ -75,8 +75,9 @@ def bench_insertion(size):
     for i in range(num_runs):
         start = helpers.startStopwatch()
         database.insert_ct_records(label, ct, sigma)
-        test_name, duration = helpers.endStopwatch('db.insert', start, 1, silent=True)
-        lines.append(f'{test_name},{i},{duration},{size}')
+        test_name, tdur, adur = helpers.endStopwatch('db.insert', start, 1, silent=True)
+        lines.append(f'{test_name},{i},{adur},{size}')
+        
     database.delete_ct_records_by_label(label)
     helpers.update_csv('queries.csv', "\n".join(lines))
 
