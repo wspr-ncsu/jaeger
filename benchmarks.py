@@ -36,7 +36,7 @@ def exp_bench_setups():
         istart = helpers.startStopwatch()
         ks = groupsig.setup(constants.BBS04_CODE)
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Group Manager,setup & keygen', istart, 1, True)
-        lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
+        lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
         
     test_name, t_dur, a_dur = helpers.endStopwatch('Group Manager,setup & keygen', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
@@ -51,7 +51,7 @@ def exp_bench_setups():
         msg2 = groupsig.join_mem(1, gkeys['grpkey'], msgin = msg1)
         
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Group Manager,register provider', istart, 1, True)
-        lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
+        lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
         
     test_name, t_dur, a_dur = helpers.endStopwatch('Group Manager,register provider', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
@@ -62,7 +62,7 @@ def exp_bench_setups():
         istart = helpers.startStopwatch()
         key = oprf.keygen()
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Label Manager,setup & keygen', istart, 1, True)
-        lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
+        lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
         
     test_name, t_dur, a_dur = helpers.endStopwatch('Label Manager,setup & keygen', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
@@ -75,7 +75,7 @@ def exp_bench_setups():
         sk: PrivateKey = BasicSchemeMPL.key_gen(seed)
         pk = sk.get_g1()
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Trace Authority,setup & keygen', istart, 1, True)
-        lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
+        lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
     test_name, t_dur, a_dur = helpers.endStopwatch('Trace Authority,setup & keygen', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
@@ -94,7 +94,7 @@ def bench_label_generation():
         label = oprf.eval(key, x_prime)
         
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Label Manager,PRF evaluation', istart, 1, True)
-        lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
+        lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
         
     test_name, t_dur, a_dur = helpers.endStopwatch('Label Manager,PRF evaluation', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
@@ -112,7 +112,7 @@ def bench_signing():
         msg = groupsig.sign(random_ct + random_label, gusk, gkeys['grpkey'])
         
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Group Manager,sign', istart, 1, True)
-        lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
+        lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
         
     test_name, t_dur, a_dur = helpers.endStopwatch('Group Manager,sign', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
@@ -133,7 +133,7 @@ def bench_group_verification():
         istart = helpers.startStopwatch()
         groupsig.verify(sigmas[i], payloads[i], gkeys['grpkey'])
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Group Manager,verify', istart, 1, True)
-        lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
+        lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
     
     test_name, t_dur, a_dur = helpers.endStopwatch('Group Manager,verify', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
@@ -152,7 +152,7 @@ def bench_bls_signing():
         istart = helpers.startStopwatch()
         sig = BasicSchemeMPL.sign(trace_auth_sk, labels[i])
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Trace Authority,sign', istart, 1, True)
-        lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
+        lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
     test_name, t_dur, a_dur = helpers.endStopwatch('Trace Authority,sign', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
@@ -182,7 +182,7 @@ def bench_encryption():
         cts.append(ct)
         
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Carrier,contribution', istart, 1, True)
-        lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
+        lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
         
     test_name, t_dur, a_dur = helpers.endStopwatch('Carrier,contribution', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
@@ -195,7 +195,7 @@ def bench_encryption():
         msg = witenc.client_decrypt(sig=sig, ct=ct_i, decode=False)
         
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Carrier,trace', istart, 1, True)
-        lines.append(f'{itest_name},1,{i_tdur},{i_adur}')
+        lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
         
     test_name, t_dur, a_dur = helpers.endStopwatch('Carrier,trace', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
