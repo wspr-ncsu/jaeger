@@ -170,11 +170,11 @@ def bench_encryption():
     cts, lines = [], []
     call, hops = generate_cdr()
     
+    label = generate_label(call).encode('utf-8')
     start = helpers.startStopwatch()
     for i in range(num_runs):
-        istart = helpers.startStopwatch()
         
-        label = generate_label(call).encode('utf-8')
+        istart = helpers.startStopwatch()
         we_istart = helpers.startStopwatch()
         ct = witenc.client_encrypt(pk=trace_auth_pk, label=label, cdr=hops)
         ct = witenc.client_export_ct(ct)
