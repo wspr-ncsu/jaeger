@@ -175,14 +175,17 @@ def bench_encryption():
         istart = helpers.startStopwatch()
         
         label = generate_label(call).encode('utf-8')
+        we_istart = helpers.startStopwatch()
         ct = witenc.client_encrypt(pk=trace_auth_pk, label=label, cdr=hops)
         ct = witenc.client_export_ct(ct)
+        we_itest_name, we_i_tdur, we_i_adur = helpers.endStopwatch(f'Carrier,Witness Enc', we_istart, 1, True)
         sigma = groupsig.sign(f'{label}|{ct}', gusk, gkeys['grpkey'])
         sigma = signature.signature_export(sigma)
         cts.append(ct)
         
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Carrier,contribution', istart, 1, True)
         lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
+        lines.append(f'{we_itest_name},{i},{we_i_tdur},{we_i_adur}')
         
     test_name, t_dur, a_dur = helpers.endStopwatch('Carrier,contribution', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
@@ -191,11 +194,14 @@ def bench_encryption():
     for i in range(num_runs):
         istart = helpers.startStopwatch()
         sig = BasicSchemeMPL.sign(trace_auth_sk, label)
+        we_istart = helpers.startStopwatch()
         ct_i = witenc.client_import_ct(cts[i])
         msg = witenc.client_decrypt(sig=sig, ct=ct_i, decode=False)
+        we_itest_name, we_i_tdur, we_i_adur = helpers.endStopwatch(f'Carrier,Witness Dec', we_istart, 1, True)
         
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Carrier,trace', istart, 1, True)
         lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
+        lines.append(f'{we_itest_name},{i},{we_i_tdur},{we_i_adur}')
         
     test_name, t_dur, a_dur = helpers.endStopwatch('Carrier,trace', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
