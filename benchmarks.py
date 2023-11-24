@@ -178,7 +178,7 @@ def bench_encryption():
         we_istart = helpers.startStopwatch()
         ct = witenc.client_encrypt(pk=trace_auth_pk, label=label, cdr=hops)
         ct = witenc.client_export_ct(ct)
-        we_itest_name, we_i_tdur, we_i_adur = helpers.endStopwatch(f'Carrier,Witness Enc', we_istart, 1, True)
+        we_itest_name, we_i_tdur, we_i_adur = helpers.endStopwatch(f'Carrier,Enc', we_istart, 1, True)
         sigma = groupsig.sign(f'{label}|{ct}', gusk, gkeys['grpkey'])
         sigma = signature.signature_export(sigma)
         cts.append(ct)
@@ -197,7 +197,7 @@ def bench_encryption():
         we_istart = helpers.startStopwatch()
         ct_i = witenc.client_import_ct(cts[i])
         msg = witenc.client_decrypt(sig=sig, ct=ct_i, decode=False)
-        we_itest_name, we_i_tdur, we_i_adur = helpers.endStopwatch(f'Carrier,Witness Dec', we_istart, 1, True)
+        we_itest_name, we_i_tdur, we_i_adur = helpers.endStopwatch(f'Carrier,Dec', we_istart, 1, True)
         
         itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Carrier,trace', istart, 1, True)
         lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
