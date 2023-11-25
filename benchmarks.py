@@ -1,7 +1,7 @@
 from privytrace import helpers, oprf
 from pygroupsig import groupsig, constants, signature
 from blspy import (BasicSchemeMPL, PrivateKey)
-from privytrace import helpers
+from privytrace import helpers, analyzer
 import argparse
 from datetime import datetime
 from oblivious.ristretto import point
@@ -139,6 +139,22 @@ def bench_group_verification():
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
     
+def bench_group_sig_open():
+    lines = []
+    payload = helpers.random_bytes(2048)
+    sigma = groupsig.sign(payload, gusk, gkeys['grpkey'])
+    
+    start = helpers.startStopwatch()
+    for i in range(num_runs):
+        istart = helpers.startStopwatch()
+        groupsig.open(sigma, gkeys['mgrkey'], gkeys['grpkey'], gml = gkeys['gml'])
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Group Manager,open', istart, 1, True)
+        lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
+    
+    test_name, t_dur, a_dur = helpers.endStopwatch('Group Manager,open', start, num_runs)
+    helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
+    helpers.update_csv('index-timings.csv', '\n'.join(lines))
+    
 def bench_bls_signing():
     labels = []
     lines = []
@@ -207,6 +223,22 @@ def bench_encryption():
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
 
+def bench_analysis():
+    lines = []
+    ideal = ['None|1|2',    '1|2|3',    '2|3|4',    '3|4|5',    '4|5|None']
+    
+    start = helpers.startStopwatch()
+    for i in range(num_runs):
+        istart = helpers.startStopwatch()
+        analyzer.init(ideal, False)
+        analyzer.analyze()
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Group Manager,Faulty set', istart, 1, True)
+        lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
+        
+    test_name, t_dur, a_dur = helpers.endStopwatch('Group Manager,Faulty set', start, num_runs)
+    helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
+    helpers.update_csv('index-timings.csv', '\n'.join(lines))
+    
 def generate_cdr():
     call = "+00000000000|+11111111111|" + str(int(datetime.now().timestamp()))
     
@@ -275,19 +307,25 @@ def init(args):
         bench_bls_signing()
     if args.enc or args.all:
         bench_encryption()
+    if args.grp_open or args.all:
+        bench_group_sig_open()
     if args.hops:
         get_avg_num_of_hops()
+    if args.analysis or args.all:
+        bench_analysis()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run experiments')
     parser.add_argument('-s', '--setup',  action='store_true', help='Run setup experiment', required=False)
     parser.add_argument('-lg', '--lbl_gen',  action='store_true', help='Run label generation experiment', required=False)
     parser.add_argument('-gs', '--grp_sign',  action='store_true', help='Run group signature experiment', required=False)
+    parser.add_argument('-go', '--grp_open',  action='store_true', help='Run group signature open', required=False)
     parser.add_argument('-gv', '--grp_verify', action='store_true', help='Run group verification experiment', required=False)
     parser.add_argument('-a', '--all', action='store_true', help='Run all', required=False)
     parser.add_argument('-b', '--bls', action='store_true', help='Run BLS signature', required=False)
     parser.add_argument('-e', '--enc', action='store_true', help='Run encryption', required=False)
     parser.add_argument('-ah', '--hops', action='store_true', help='Run average number of hops', required=False)
+    parser.add_argument('-an', '--analysis', action='store_true', help='Run analysis', required=False)
     args = parser.parse_args()
     
     if not any(vars(args).values()):
