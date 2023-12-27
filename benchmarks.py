@@ -111,10 +111,10 @@ def bench_signing():
         istart = helpers.startStopwatch()
         msg = groupsig.sign(random_ct + random_label, gusk, gkeys['grpkey'])
         
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Group Manager,sign', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Group Manager,gsign', istart, 1, True)
         lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
         
-    test_name, t_dur, a_dur = helpers.endStopwatch('Group Manager,sign', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('Group Manager,gsign', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
     
@@ -132,10 +132,10 @@ def bench_group_verification():
     for i in range(num_runs):
         istart = helpers.startStopwatch()
         groupsig.verify(sigmas[i], payloads[i], gkeys['grpkey'])
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Group Manager,verify', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Group Manager,gverify', istart, 1, True)
         lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
     
-    test_name, t_dur, a_dur = helpers.endStopwatch('Group Manager,verify', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('Group Manager,gverify', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
     
@@ -186,10 +186,9 @@ def bench_encryption():
     cts, lines = [], []
     call, hops = generate_cdr()
     
-    label = generate_label(call).encode('utf-8')
     start = helpers.startStopwatch()
     for i in range(num_runs):
-        
+        label = generate_label(call).encode('utf-8')
         istart = helpers.startStopwatch()
         we_istart = helpers.startStopwatch()
         ct = witenc.client_encrypt(pk=trace_auth_pk, label=label, cdr=hops)
