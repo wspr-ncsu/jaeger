@@ -2,10 +2,10 @@ import os
 import traceback as ex
 from dotenv import load_dotenv
 from flask import Flask, request
-import privytrace.groupsig as groupsig
-import privytrace.jobs as jobs
-import privytrace.config as config
-import privytrace.response as response
+import jager.groupsig as groupsig
+import jager.jobs as jobs
+import jager.config as config
+import jager.response as response
 
 load_dotenv()
 

@@ -1,13 +1,13 @@
-from privytrace.helpers import CDR
-import privytrace.groupsig as groupsig
-import privytrace.trace_auth as trace_auth
-import privytrace.contribution as contribution
-import privytrace.traceback as traceback
+from jager.helpers import CDR
+import jager.groupsig as groupsig
+import jager.trace_auth as trace_auth
+import jager.contribution as contribution
+import jager.traceback as traceback
 from blspy import G1Element
 import argparse
-from privytrace.datagen import generator
-from privytrace.helpers import Logger
-from privytrace.datagen import database
+from jager.datagen import generator
+from jager.helpers import Logger
+from jager.datagen import database
 
 def init(args):
     if args.network:

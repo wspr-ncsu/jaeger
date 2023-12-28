@@ -6,16 +6,9 @@ from .helpers import CDR
 from . import http
 from .config import LM_sk_key
 
-# Server side
-def server_setup(refresh = False):
-    sk = None if refresh else redis.find(LM_sk_key)
-    
-    if not sk:
-        sk = oprf.keygen()
-        redis.save(LM_sk_key, oprf.export_scalar(sk))
-        return sk
-    
-    return oprf.import_scalar(sk)
+
+def setup():
+    return oprf.export_scalar(oprf.keygen())
 
 def server_evaluate(sk: oprf.scalar, x: oprf.point):
     x = oprf.import_point(x)

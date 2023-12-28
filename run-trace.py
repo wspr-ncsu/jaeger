@@ -1,10 +1,10 @@
-from privytrace.helpers import CDR
-import privytrace.groupsig as groupsig
-import privytrace.trace_auth as trace_auth
-import privytrace.traceback as traceback
+from jager.helpers import CDR
+import jager.groupsig as groupsig
+import jager.trace_auth as trace_auth
+import jager.traceback as traceback
 from blspy import G1Element
 import argparse
-import privytrace.analyzer as analyzer
+import jager.analyzer as analyzer
 
 tapk: G1Element = trace_auth.request_registration()
 

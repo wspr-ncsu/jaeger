@@ -5,7 +5,7 @@ import networkx as nx
 from uuid import uuid4
 from .helpers import timed
 from multiprocessing import Pool
-from privytrace.datagen import database
+from jager.datagen import database
 from ..helpers import Logger as logger
 
 def create_subscribers_network(users, subnets, processes):

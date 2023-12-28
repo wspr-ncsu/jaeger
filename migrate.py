@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-import privytrace.database as database
+import jager.database as database
 
 load_dotenv()
 

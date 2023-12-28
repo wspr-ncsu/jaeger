@@ -3,15 +3,15 @@ import argparse
 import numpy as np
 import traceback as extb
 from multiprocessing import Pool
-from privytrace.helpers import CDR
-from privytrace.helpers import Logger
-import privytrace.groupsig as groupsig
-from privytrace.datagen import database
-import privytrace.trace_auth as trace_auth
-from privytrace.datagen.helpers import timed
-import privytrace.contribution as contribution
-import privytrace.helpers as helpers
-import privytrace.label_mgr as label_mgr
+from jager.helpers import CDR
+from jager.helpers import Logger
+import jager.groupsig as groupsig
+from jager.datagen import database
+import jager.trace_auth as trace_auth
+from jager.datagen.helpers import timed
+import jager.contribution as contribution
+import jager.helpers as helpers
+import jager.label_mgr as label_mgr
 import benchmarks
 
 processes=24

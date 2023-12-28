@@ -4,44 +4,17 @@ from . import config
 from .response import Panic
 from . import http
 from . import redis
-from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, constants, gml as GML
+from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, gml as GML
 
 SCHEME = config.GS_Scheme
-msk_key = config.GS_msk_key
-gpk_key = config.GS_gpk_key
-gml_key = config.GS_gml_key
 
-def mgr_setup(refresh = False):
-    # retrieve setup keys
-    msk_str = None if refresh else redis.find(msk_key)
-    gpk_str = None if refresh else redis.find(gpk_key)
-    gml_str = None if refresh else redis.find(gml_key)
+def setup():
+    bbs04 = groupsig.setup(SCHEME)
+    msk = mgrkey.mgrkey_export(bbs04['mgrkey'])
+    gpk = grpkey.grpkey_export(bbs04['grpkey'])
+    gml = GML.gml_export(bbs04['gml'])
     
-    if not msk_str or not gpk_str or not gml_str:
-        bbs04 = groupsig.setup(SCHEME)
-        
-        gpk = bbs04['grpkey']
-        msk = bbs04['mgrkey']
-        gml = bbs04['gml']
-        
-        # Export keys into base64 encoded strings
-        msk_str = mgrkey.mgrkey_export(msk)
-        gpk_str = grpkey.grpkey_export(gpk)
-        
-        redis.save(msk_key, msk_str)
-        redis.save(gpk_key, gpk_str)
-    else:
-        # Convert base64 encoded key strings into objects
-        groupsig.init(SCHEME, 0)
-        msk = mgrkey.mgrkey_import(SCHEME, msk_str)
-        gpk = grpkey.grpkey_import(SCHEME, gpk_str)
-        
-        try:
-            gml = GML.gml_import(SCHEME, gml_str)
-        except:
-            gml = GML.gml_init(SCHEME)
-    
-    return { 'msk': msk, 'gpk': gpk, 'gml': gml }
+    return msk, gpk, gml
 
 def mgr_register_all(gsign_keys, refresh = False):
     for cid in range(7000):
@@ -81,7 +54,7 @@ def mgr_save_gml(gml):
         redis.save(gml_key, export_d)
         
 def mgr_validate_request(request, gpk):
-    sig: str = request.headers.get('X-Privytrace').split(' ')[1]
+    sig: str = request.headers.get('X-jager').split(' ')[1]
     msg: str = request.form.get('payload')
     
     sig = signature.signature_import(SCHEME, sig)
@@ -112,7 +85,7 @@ def get_gpk():
     return gpk
 
 def validate_signature_from_request(request, gpk):
-    sig: str = request.headers.get('X-Privytrace').split(' ')[1]
+    sig: str = request.headers.get('X-jager').split(' ')[1]
     msg: str = request.form.get('payload')
     
     sig = signature.signature_import(SCHEME, sig)

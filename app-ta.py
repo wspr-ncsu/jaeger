@@ -1,11 +1,11 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask, request
-import privytrace.witenc as witenc
-import privytrace.helpers as helpers
-import privytrace.config as config
-import privytrace.response as response
-import privytrace.groupsig as groupsig
+import jager.witenc as witenc
+import jager.helpers as helpers
+import jager.config as config
+import jager.response as response
+import jager.groupsig as groupsig
 
 load_dotenv()
 

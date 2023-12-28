@@ -1,7 +1,7 @@
 import networkx as nx
 from typing import List
 import matplotlib.pyplot as plt
-from privytrace.helpers import Logger as logger
+from jager.helpers import Logger as logger
 from colorama import Fore
 
 

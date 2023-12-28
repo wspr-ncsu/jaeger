@@ -1,10 +1,10 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask, request
-import privytrace.config as config
-import privytrace.helpers as helpers
-import privytrace.label_mgr as label_mgr
-import privytrace.response as response
+import jager.config as config
+import jager.helpers as helpers
+import jager.label_mgr as label_mgr
+import jager.response as response
 
 load_dotenv()
 

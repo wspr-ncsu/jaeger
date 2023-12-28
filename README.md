@@ -1,5 +1,5 @@
-# PrivyTrace
-PrivyTrace is accountable, privacy-preserving, fast phone call traceback project. It requires cooperation between mutliple authorities and phone companies to trace phone calls.
+# jager
+jager is accountable, privacy-preserving, fast phone call traceback project. It requires cooperation between mutliple authorities and phone companies to trace phone calls.
 
 ## Useful Commands
 - Check table sizes in clickhouse

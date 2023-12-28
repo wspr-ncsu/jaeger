@@ -1,13 +1,13 @@
-from privytrace import helpers, oprf
+from jager import helpers, oprf
 from pygroupsig import groupsig, constants, signature
 from blspy import (BasicSchemeMPL, PrivateKey)
-from privytrace import helpers, analyzer
+from jager import helpers, analyzer
 import argparse
 from datetime import datetime
 from oblivious.ristretto import point
-from privytrace import witenc
-from privytrace.datagen import generator
-from privytrace.helpers import Logger
+from jager import witenc
+from jager.datagen import generator
+from jager.helpers import Logger
 from multiprocessing import Pool
 
 num_runs = 1000

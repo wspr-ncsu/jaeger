@@ -5,23 +5,10 @@ from witencpy import (Scheme, OTP, CipherText)
 from blspy import (BasicSchemeMPL, PrivateKey, G1Element, G2Element)
 import pickle
 
-def server_setup(refresh = False):
-    # retrieve setup keys
-    sk: str = None if refresh else redis.find(TA_sk_key)
-    pk: str = None if refresh else redis.find(TA_pk_key)
-    
-    if sk and pk:
-        sk: PrivateKey = PrivateKey.from_bytes(bytes.fromhex(sk))
-        return WEKeys(sk=sk, pk=pk)
-    
+def setup():
     seed: bytes = bytes(secrets.token_bytes(32))
     sk: PrivateKey = BasicSchemeMPL.key_gen(seed)
-    pk: str = bytes(sk.get_g1()).hex()
-    
-    redis.save(TA_sk_key, bytes(sk).hex())
-    redis.save(TA_pk_key, pk)
-    
-    return WEKeys(sk=sk, pk=pk)
+    return bytes(sk).hex(), bytes(sk.get_g1()).hex()
     
 def server_authorize(sk: PrivateKey, labels: list):
     sigs = {}

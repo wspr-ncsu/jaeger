@@ -19,7 +19,7 @@ def make_headers(group: dict, payload: str = None, override: dict = None):
     headers = {}
     
     if (payload):
-        headers['X-Privytrace'] = 'Sig ' + groupsig.sign(group=group, msg=payload)
+        headers['X-jager'] = 'Sig ' + groupsig.sign(group=group, msg=payload)
     
     return headers if not override else { **headers, **override }
 

@@ -2,10 +2,10 @@ import os
 import traceback as ex
 from json import loads
 from flask import Flask, request
-import privytrace.config as config
-import privytrace.helpers as helpers
-import privytrace.groupsig as groupsig
-import privytrace.response as response
+import jager.config as config
+import jager.helpers as helpers
+import jager.groupsig as groupsig
+import jager.response as response
 
 class GroupManager:
     def create_instance_path(self, app):
@@ -21,8 +21,9 @@ class GroupManager:
         self.create_instance_path(app)
         refresh = False
 
-        gsign_keys = groupsig.mgr_setup(refresh=refresh)
-        groupsig.mgr_register_all(gsign_keys, refresh=refresh)
+        gsign_keys = groupsig.import_keys()
+        
+        # groupsig.mgr_register_all(gsign_keys, refresh=refresh)
 
         @app.post('/register')
         def register():
