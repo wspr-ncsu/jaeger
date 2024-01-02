@@ -30,7 +30,8 @@ services:
     depends_on:
       - db
     command: 
-      - gunicorn -w 1 -b 0.0.0.0:9990 app-gm:create_app()
+      - ./service.sh 
+      - gm:serve
 
   # lm:
   #   container_name: label_manager
