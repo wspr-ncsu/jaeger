@@ -24,19 +24,33 @@ REDIS_DB = env("REDIS_DB")
 WEKeys = namedtuple('Keys', ['sk', 'pk'])
 GSKeys = namedtuple('Keys', ['msk', 'gpk', 'gml'])
 
+lh = 'http://127.0.0.1'
+
 GS_Scheme = constants.BBS04_CODE
-GS_gpk_key = 'GM.gpk'
-GS_msk_key = 'GM.msk'
-GS_gml_key = 'GM.gml'
+GM_HOST=env('GM_HOST', lh)
+GM_PORT=9990
+GM_MSK=env('GM_MSK')
+GM_GPK=env('GM_GPK')
+GM_GML=env('GM_GML')
 
-TA_sk_key = 'TA.sk'
-TA_pk_key = 'TA.pk'
+LM_HOST=env('LM_HOST', lh)
+LM_PORT=9991
+LM_SK=env('LM_SK')
 
-LM_sk_key = 'LM.sk'
+TA_HOST=env('TA_HOST', lh)
+TA_PORT=9992
+TA_PRIVK=env('TA_PRIVK')
+TA_PUBK=env('TA_PUBK')
 
-GM_BASE_URL = env('GM_BASE_URL', 'http://localhost:9990')
-LM_BASE_URL = env('LM_BASE_URL', 'http://localhost:9991')
-TA_BASE_URL = env('TA_BASE_URL', 'http://localhost:9992')
-ITG_BASE_URL = env('ITG_BASE_URL', 'http://localhost:9993')
+RS_HOST=env('RS_HOST', lh)
+RS_PORT=9993
 
 MAX_EPOCHS = 5 # Seconds
+
+Carrier = namedtuple('Carrier', ['id', 'name', 'gsk'])
+SIG_HEADER='X-Jager-Signature'
+
+GM_BASE_URL = f'{GM_HOST}:{GM_PORT}'
+LM_BASE_URL = f'{LM_HOST}:{LM_PORT}'
+TA_BASE_URL = f'{TA_HOST}:{TA_PORT}'
+ITG_BASE_URL = f'{RS_HOST}:{RS_PORT}'

@@ -1,6 +1,6 @@
 {
     "drop_carriers_table": "DROP TABLE IF EXISTS carriers",
-    "create_carriers_table": "CREATE TABLE IF NOT EXISTS carriers (id UInt32 NOT NULL, name VARCHAR NOT NULL, group_priv_key VARCHAR NOT NULL, PRIMARY KEY id) ENGINE = MergeTree()",
+    "create_carriers_table": "CREATE TABLE IF NOT EXISTS carriers (id UInt32 NOT NULL, name VARCHAR NOT NULL, gsk VARCHAR NOT NULL, PRIMARY KEY id) ENGINE = MergeTree()",
     
     "drop ct_records table": "DROP TABLE IF EXISTS ct_records",
     "create ct_records table": "CREATE TABLE IF NOT EXISTS ct_records (label VARCHAR NOT NULL, sigma VARCHAR NOT NULL, ct VARCHAR NOT NULL, PRIMARY KEY (label, sigma)) ENGINE = MergeTree()",

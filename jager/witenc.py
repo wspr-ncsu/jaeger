@@ -1,6 +1,4 @@
 import secrets
-from . import redis
-from .config import WEKeys, TA_pk_key, TA_sk_key
 from witencpy import (Scheme, OTP, CipherText)
 from blspy import (BasicSchemeMPL, PrivateKey, G1Element, G2Element)
 import pickle

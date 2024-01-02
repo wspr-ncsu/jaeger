@@ -1,6 +1,6 @@
 import json
 from rq import Queue
-from . import database
+from . import database, config
 from redis import Redis
 from pygroupsig import groupsig, signature, constants, grpkey
 
@@ -44,7 +44,7 @@ def traceback(request, gpk):
     return database.get_ciphertexts(labels)
 
 def reject_request(request, gpk):
-    sig: str = request.headers.get('X-jager').split(' ')[1]
+    sig: str = request.headers.get(config.SIG_HEADER).split(' ')[1]
     payload: str = request.form.get('payload')
     
     if groupsig_verify(sig=sig, msg=payload, gpk=gpk):

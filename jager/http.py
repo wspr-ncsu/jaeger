@@ -1,6 +1,6 @@
 import json
 import requests
-from . import groupsig
+from . import groupsig, config
 
 def post(url: str, data: dict, group: dict, headers: dict = None):
     """Post data to a given URL"""
@@ -19,7 +19,7 @@ def make_headers(group: dict, payload: str = None, override: dict = None):
     headers = {}
     
     if (payload):
-        headers['X-jager'] = 'Sig ' + groupsig.sign(group=group, msg=payload)
+        headers[config.SIG_HEADER] = 'Sig ' + groupsig.sign(group=group, msg=payload)
     
     return headers if not override else { **headers, **override }
 

@@ -47,4 +47,22 @@ def get_ciphertexts(labels):
         cts.append({ 'label': label, 'sigma': sigma, 'ct': ct })
 
     return cts
+
+def get_registered_carriers():
+    connection = open_db()
+    query = f"SELECT id, name FROM carriers"
+    return connection.query(query).result_rows
+
+def get_carrier(cid):
+    connection = open_db()
+    query = f"SELECT id, name, gsk FROM carriers WHERE id={cid}"
+    rows = connection.query(query).result_rows
+    if len(rows) == 0:
+        return None
+    return config.Carrier(*rows[0])
+
+def register_carrier(cid, name, gsk):
+    insert_carriers([[cid, name, gsk]])
     
+def insert_carriers(data):
+    open_db().insert('carriers', data=data, column_names=['id', 'name', 'gsk'])

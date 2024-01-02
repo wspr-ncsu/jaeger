@@ -19,16 +19,14 @@ class GroupManager:
         app = Flask(__name__, instance_relative_config=True)
         app.config.from_mapping(SECRET_KEY=config.APP_SECRET_KEY)
         self.create_instance_path(app)
-        refresh = False
 
-        gsign_keys = groupsig.import_keys()
-        
-        # groupsig.mgr_register_all(gsign_keys, refresh=refresh)
+        gsign_keys = groupsig.mgr_import_keys()
+        groupsig.mgr_register_all(gsign_keys)
 
         @app.post('/register')
         def register():
             cid = helpers.validate_cid(request.form.get('cid'))
-            payload = groupsig.mgr_register_carrier(cid=cid, gsign_keys=gsign_keys, refresh=refresh)
+            payload = groupsig.mgr_register_carrier(cid=cid, gsign_keys=gsign_keys)
             return response.created(payload=payload)
 
 

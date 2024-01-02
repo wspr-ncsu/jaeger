@@ -4,57 +4,61 @@ from . import config
 from .response import Panic
 from . import http
 from . import redis
+from . import database
 from pygroupsig import groupsig, signature, memkey, grpkey, mgrkey, gml as GML
 
 SCHEME = config.GS_Scheme
 
 def setup():
     bbs04 = groupsig.setup(SCHEME)
+    mkeys = mgr_generate_member_keys(bbs04['mgrkey'], bbs04['grpkey'], bbs04['gml'])
     msk = mgrkey.mgrkey_export(bbs04['mgrkey'])
     gpk = grpkey.grpkey_export(bbs04['grpkey'])
     gml = GML.gml_export(bbs04['gml'])
     
     return msk, gpk, gml
 
-def mgr_register_all(gsign_keys, refresh = False):
+def mgr_import_keys():
+    groupsig.init(SCHEME, 0)
+    return {
+        'msk': mgrkey.mgrkey_import(SCHEME, config.GM_MSK),
+        'gpk': grpkey.grpkey_import(SCHEME, config.GM_GPK),
+        'gml': GML.gml_import(SCHEME, config.GM_GML)
+    }
+
+def mgr_register_all(gsign_keys):
+    carriers_map = {}
+    carriers = database.get_registered_carriers()
+    
+    for cid, name in carriers:
+        carriers_map[cid] = name
+        
+    data = []
+    
     for cid in range(7000):
-        mgr_register_carrier(cid, gsign_keys, refresh)
+        if cid in carriers_map:
+            continue
+        print(f'Registering carrier {cid}')
+        usk = mgr_generate_member_keys(gsign_keys['msk'], gsign_keys['gpk'], gsign_keys['gml'])
+        data.append([cid, f'carrier-{cid}', usk])
+    
+    if len(data) > 0:
+        database.insert_carriers(data)
         
-    mgr_save_gml(gsign_keys['gml'])
-    
-def mgr_register_carrier(cid, gsign_keys, refresh = False):
-    redis.connect()
-    dbkey = f'GM.members.{cid}'
-    
-    msk = gsign_keys['msk']
-    gpk = gsign_keys['gpk']
-    gml = gsign_keys['gml']
-    
-    usk = None if refresh else redis.find(dbkey)
-    
-    if not usk:
-        groupsig.init(SCHEME, 0)
-        msg1 = groupsig.join_mgr(0, msk, gpk, gml = gml)
-        msg2 = groupsig.join_mem(1, gpk, msgin = msg1)
-        usk = msg2['memkey']
-        usk = memkey.memkey_export(usk)
+def mgr_register_carrier(cid, gsign_keys):
+    usk = mgr_generate_member_keys(gsign_keys['msk'], gsign_keys['gpk'], gsign_keys['gml'])
+    database.register_carrier(cid, f'carrier-{cid}', usk)
+    return usk
 
-        redis.save(dbkey, usk)
+def mgr_generate_member_keys(msk, gpk, gml):
+    groupsig.init(SCHEME, 0)
+    msg1 = groupsig.join_mgr(0, msk, gpk, gml=gml)
+    msg2 = groupsig.join_mem(1, gpk, msgin = msg1)
+    usk = msg2['memkey']
+    return memkey.memkey_export(usk)
     
-    gpk = grpkey.grpkey_export(gpk)
-    
-    return { 'usk': usk, 'gpk': gpk }
-
-def mgr_save_gml(gml):
-    redis.connect()
-    saved = redis.find(gml_key)
-    export_d = GML.gml_export(gml)
-    
-    if saved != export_d:
-        redis.save(gml_key, export_d)
-        
 def mgr_validate_request(request, gpk):
-    sig: str = request.headers.get('X-jager').split(' ')[1]
+    sig: str = request.headers.get(config.SIG_HEADER).split(' ')[1]
     msg: str = request.form.get('payload')
     
     sig = signature.signature_import(SCHEME, sig)
@@ -75,17 +79,14 @@ def mgr_open_sigs(records, gsign_keys):
         
 def get_gpk():
     groupsig.init(config.GS_Scheme, 0)
-    gpk = redis.find(config.GS_gpk_key)
     
-    if not gpk:
-        raise Exception('GPK not found in Redis')
+    if not config.GM_GPK:
+        raise Exception('GPK not set')
     
-    gpk = grpkey.grpkey_import(config.GS_Scheme, gpk)
-    
-    return gpk
+    return grpkey.grpkey_import(config.GS_Scheme, config.GM_GPK)
 
 def validate_signature_from_request(request, gpk):
-    sig: str = request.headers.get('X-jager').split(' ')[1]
+    sig: str = request.headers.get(config.SIG_HEADER).split(' ')[1]
     msg: str = request.form.get('payload')
     
     sig = signature.signature_import(SCHEME, sig)
@@ -99,18 +100,16 @@ def sign(group: dict, msg: str) -> str:
 
 def client_open(group: dict, faulty_set: list):
     """Open a faulty set"""
-    http.post(f'{config.GM_BASE_URL}/open', data=faulty_set, group=group)
+    url = f'{config.GM_HOST}:{config.GM_PORT}/open'
+    http.post(url=url, data=faulty_set, group=group)
     
 def client_register(cid: str) -> dict:
-    usk = redis.find(f'GM.members.{cid}')
-    gpk = redis.find(config.GS_gpk_key)
+    carrier = database.get_carrier(cid)
+    if not carrier:
+        raise Panic("Carrier not found")
     
-    if not usk or not gpk:
-        raise Exception(f"Group Signature Keys not found for carrier: {cid}")
-    
-    # initialize the groupsig library otherwise segmentation fault occurs
     groupsig.init(SCHEME, 0)
-    usk = memkey.memkey_import(SCHEME, usk)
-    gpk = grpkey.grpkey_import(SCHEME, gpk)
+    usk = memkey.memkey_import(SCHEME, carrier.gsk)
+    gpk = grpkey.grpkey_import(SCHEME, config.GM_GPK)
     
     return { 'usk': usk, 'gpk': gpk }

@@ -4,7 +4,6 @@ from typing import List
 from .config import LM_BASE_URL
 from .helpers import CDR
 from . import http
-from .config import LM_sk_key
 
 
 def setup():
