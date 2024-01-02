@@ -1,0 +1,68 @@
+services:
+  redis:
+    container_name: redis
+    image: redis
+
+  db:
+    container_name: db
+    image: clickhouse/clickhouse-server
+    volumes:
+      - /var/lib/clickhouse/
+      - /var/log/clickhouse-server/
+
+  rq:
+    container_name: rq_worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: rq worker -u redis://redis:6379
+
+  gm:
+    container_name: group_manager
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - '.:/app'
+      - '/app/instance'
+    ports:
+      - '9990:9990'
+    depends_on:
+      - db
+    command: 
+      - gunicorn -w 1 -b 0.0.0.0:9990 app-gm:create_app()
+
+  # lm:
+  #   container_name: label_manager
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - '.:/app'
+  #     - '/app/instance'
+  #   ports:
+  #     - '9991:9991'
+
+  # ta:
+  #   container_name: traceback_authorizer
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - '.:/app'
+  #     - '/app/instance'
+  #   ports:
+  #     - '9992:9992'
+
+  # rs:
+  #   container_name: record_store
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - '.:/app'
+  #     - '/app/instance'
+  #   ports:
+  #     - '9993:9993'
+
+  
