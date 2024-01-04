@@ -4,7 +4,6 @@ import secrets
 from os import getenv
 from .response import Panic
 from datetime import datetime
-from colorama import Fore, Style
 
 def write_to_file(filename, content):
     with open(filename, "w") as f:
@@ -75,49 +74,6 @@ class CDR:
         return f'{self.prev}|{self.curr}|{self.next}'
     
     
-class Logger:
-    def __init__(self, msg, sub=True, prefix = '->'):
-        Logger.default(msg, sub=sub, prefix=prefix)
-        
-    @staticmethod
-    def log(msg, sub=True, type=None, prefix = '->'):
-        if type == 'error':
-            msg = f'{Fore.RED}{msg}'
-        elif type == 'warning':
-            msg = f'{Fore.YELLOW}{msg}'
-        elif type == 'success':
-            msg = f'{Fore.GREEN}{msg}'
-        elif type == 'info':
-            msg = f'{Fore.BLUE}{msg}'
-            
-        if sub:
-            print(prefix, msg)
-        else:
-            print(msg)
-            
-        print(Style.RESET_ALL, end='')
-        
-    @staticmethod
-    def success(msg, sub=True, prefix = '->'):
-        Logger.log(msg, sub=sub, type='success', prefix=prefix)
-        
-    @staticmethod
-    def error(msg, sub=True, prefix = '->'):
-        Logger.log(msg, sub=sub, type='error', prefix=prefix)
-        
-    @staticmethod
-    def warn(msg, sub=True, prefix = '->'):
-        Logger.log(msg, sub=sub, type='warning', prefix=prefix)
-        
-    @staticmethod
-    def info(msg, sub=True, prefix = '->'):
-        Logger.log(msg, sub=sub, type='info', prefix=prefix)
-        
-    @staticmethod
-    def default(msg, sub=True, prefix = '->'):
-        Logger.log(msg, sub=sub, prefix=prefix)
-        
-        
 def startStopwatch():
     return time.perf_counter()
 

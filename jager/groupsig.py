@@ -25,25 +25,6 @@ def mgr_import_keys():
         'gpk': grpkey.grpkey_import(SCHEME, config.GM_GPK),
         'gml': GML.gml_import(SCHEME, config.GM_GML)
     }
-
-def mgr_register_all(gsign_keys):
-    carriers_map = {}
-    carriers = database.get_registered_carriers()
-    
-    for cid, name in carriers:
-        carriers_map[cid] = name
-        
-    data = []
-    
-    for cid in range(7000):
-        if cid in carriers_map:
-            continue
-        print(f'Registering carrier {cid}')
-        usk = mgr_generate_member_keys(gsign_keys['msk'], gsign_keys['gpk'], gsign_keys['gml'])
-        data.append([cid, f'carrier-{cid}', usk])
-    
-    if len(data) > 0:
-        database.insert_carriers(data)
         
 def mgr_register_carrier(cid, gsign_keys):
     usk = mgr_generate_member_keys(gsign_keys['msk'], gsign_keys['gpk'], gsign_keys['gml'])

@@ -6,9 +6,13 @@ services:
   db:
     container_name: db
     image: clickhouse/clickhouse-server
+    ports:
+      - '8123:8123'
+      - '9000:9000'
+      - '9009:9009'
     volumes:
-      - /var/lib/clickhouse/
-      - /var/log/clickhouse-server/
+      - clickhouse_data:/var/lib/clickhouse
+      - clickhouse_log:/var/log/clickhouse-server
 
   rq:
     container_name: rq_worker
@@ -24,7 +28,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - '.:/app'
-      - '/app/instance'
     ports:
       - '9990:9990'
     depends_on:
@@ -66,4 +69,10 @@ services:
   #   ports:
   #     - '9993:9993'
 
-  
+networks:
+  default:
+    name: jager_network
+
+volumes:
+  clickhouse_data:
+  clickhouse_log:

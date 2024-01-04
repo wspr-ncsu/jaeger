@@ -14,4 +14,4 @@ RUN git clone https://github.com/kofi-dalvik/bls-witness-encryption.git
 RUN cd bls-witness-encryption && python setup.py install
 
 # Install dependencies
-RUN pip install blspy clickhouse-connect colorama Flask gunicorn networkx numpy oblivious pybind11 pygroupsig python-dotenv redis requests rq
+RUN pip install blspy clickhouse-connect Flask gunicorn networkx numpy oblivious pybind11 pygroupsig python-dotenv redis requests rq

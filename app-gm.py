@@ -21,14 +21,13 @@ class GroupManager:
         self.create_instance_path(app)
 
         gsign_keys = groupsig.mgr_import_keys()
-        groupsig.mgr_register_all(gsign_keys)
+        # groupsig.mgr_register_all(gsign_keys)
 
         @app.post('/register')
         def register():
             cid = helpers.validate_cid(request.form.get('cid'))
             payload = groupsig.mgr_register_carrier(cid=cid, gsign_keys=gsign_keys)
             return response.created(payload=payload)
-
 
         @app.post('/open')
         def open_sigs():

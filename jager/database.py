@@ -8,18 +8,18 @@ load_dotenv()
 
 table = "ct_records"
 
-def open_db():
+def open_db(DB_HOST=config.DB_HOST):
     return clickhouse_connect.get_client(
-        host=config.DB_HOST, 
+        host=DB_HOST, 
         username=config.DB_USER, 
         password=config.DB_PASS,
         database=config.DB_NAME
     )
 
 
-def migrate():
+def migrate(DB_HOST=config.DB_HOST):
     print('Starting Database Migrations')
-    connection = open_db()
+    connection = open_db(DB_HOST=DB_HOST)
     
     text = pathlib.Path.cwd().joinpath('schema.json').read_text()
     DDLs = json.loads(text)
@@ -48,8 +48,8 @@ def get_ciphertexts(labels):
 
     return cts
 
-def get_registered_carriers():
-    connection = open_db()
+def get_registered_carriers(DB_HOST=config.DB_HOST):
+    connection = open_db(DB_HOST=DB_HOST)
     query = f"SELECT id, name FROM carriers"
     return connection.query(query).result_rows
 
@@ -64,5 +64,5 @@ def get_carrier(cid):
 def register_carrier(cid, name, gsk):
     insert_carriers([[cid, name, gsk]])
     
-def insert_carriers(data):
-    open_db().insert('carriers', data=data, column_names=['id', 'name', 'gsk'])
+def insert_carriers(data, DB_HOST=config.DB_HOST):
+    open_db(DB_HOST).insert('carriers', data=data, column_names=['id', 'name', 'gsk'])
