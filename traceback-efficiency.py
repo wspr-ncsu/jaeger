@@ -5,9 +5,10 @@ G = None
 carriers = []
 shortest_paths = None
 adopters = {}
+robocallers = {}
 call_space = []
 
-cache_file = pathlib.Path.cwd().joinpath('cache.pkl')
+cache_file = pathlib.Path.cwd().joinpath('phone-net-0.pkl')
 
 def set_cache():
     data = (G, carriers, shortest_paths, call_space)
@@ -44,6 +45,11 @@ def get_call_path(source, target):
 def set_adopters(num_adopters = 5):
     global adopters
     adopters = {carrier[0]: True for carrier in carriers[:num_adopters]}
+
+def set_robocallers(num_robocallers = 5):
+    global robocallers
+    # robocallers, unlike adopters should be last num_robocallers in carriers
+    robocallers = {carrier[0]: True for carrier in carriers[-num_robocallers:]}
 
 def is_adopter(node):
     return adopters.get(node, False)
@@ -108,24 +114,41 @@ def analyze_records(retrieved, call_path):
 
     return (originator_found, call_path_constructed)
 
+def set_market_shares(total_subscribers):
+    counts = {}
+    total_degree = sum([degree for (_, degree) in carriers])
+    for (carrier, degree) in carriers:
+        counts[carrier] = int(degree / total_degree * total_subscribers)
+    return counts
+
 def main():
     N, m = 7000, 2
-    load_cache()
-    generate_phone_network(N, m)
-    all_pairs_johnson()
-    gen_call_space()
-    set_cache()
+    total_subscribers = 10 * pow(10, 6)
+
+    if not load_cache():
+        generate_phone_network(N, m)
+        all_pairs_johnson()
+        gen_call_space()
+        set_cache()
 
     runs = 3
     calls = call_space
-    total_calls_count = len(calls)
+
+    num_robocallers = int(0.1 * N)
+    set_robocallers(num_robocallers=num_robocallers)
+
+    population = set_market_shares(total_subscribers)
 
     for run in range(runs):
         num_adopters = int(0.1 * N * (run + 1))
         set_adopters(num_adopters=num_adopters)
-        successful_tracebacks, full_path_found = 0, 0
+        total_calls, successful_tracebacks, full_path_found = 0, 0, 0
 
         for (src, dst) in calls:
+            # only process calls originating from bottom 1% of carriers
+            if not robocallers.get(src, False):
+                continue
+
             call_path = get_call_path(src, dst)
             retrieved = do_contribution(call_path)
 
@@ -134,16 +157,17 @@ def main():
                 call_path=call_path
             )
 
-            successful_tracebacks += 1 if has_origin else 0
-            full_path_found += 1 if has_fullpath else 0
+            total_calls += population[dst]
+            successful_tracebacks += population[dst] if has_origin else 0
+            full_path_found += population[dst] if has_fullpath else 0
 
-        trace_percentage = round((successful_tracebacks / total_calls_count) * 100, 2)
-        path_percentage = round((full_path_found / total_calls_count) * 100, 2)
+        trace_percentage = round((successful_tracebacks / total_calls) * 100, 2)
+        path_percentage = round((full_path_found / total_calls) * 100, 2)
 
         print(f'\n================= {round(num_adopters/N * 100, 2)}% Participation =================')
         print(f'Number of adopters: {num_adopters}/{N}')
-        print(f'Successful Tracebacks: {successful_tracebacks}/{total_calls_count} ({trace_percentage}%)')
-        print(f'Full Path Recovery: {full_path_found}/{total_calls_count} ({path_percentage}%)')
+        print(f'Successful Tracebacks: {successful_tracebacks}/{total_calls} ({trace_percentage}%)')
+        print(f'Full Path Recovery: {full_path_found}/{total_calls} ({path_percentage}%)')
 
     
 if __name__ == '__main__':
