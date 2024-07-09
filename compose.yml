@@ -1,10 +1,12 @@
 services:
   redis:
-    container_name: redis
+    platform: linux/x86_64
+    container_name: jager-redis
     image: redis
 
   db:
-    container_name: db
+    platform: linux/x86_64
+    container_name: jager-db
     image: clickhouse/clickhouse-server
     ports:
       - '8123:8123'
@@ -15,14 +17,14 @@ services:
       - clickhouse_log:/var/log/clickhouse-server
 
   rq:
-    container_name: rq_worker
+    container_name: jager-rq
     build:
       context: .
       dockerfile: Dockerfile
     command: rq worker -u redis://redis:6379
 
-  gm:
-    container_name: group_manager
+  group-manager:
+    container_name: group-manager
     build:
       context: .
       dockerfile: Dockerfile
@@ -36,42 +38,9 @@ services:
       - ./service.sh 
       - gm:serve
 
-  # lm:
-  #   container_name: label_manager
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - '.:/app'
-  #     - '/app/instance'
-  #   ports:
-  #     - '9991:9991'
-
-  # ta:
-  #   container_name: traceback_authorizer
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - '.:/app'
-  #     - '/app/instance'
-  #   ports:
-  #     - '9992:9992'
-
-  # rs:
-  #   container_name: record_store
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - '.:/app'
-  #     - '/app/instance'
-  #   ports:
-  #     - '9993:9993'
-
 networks:
-  default:
-    name: jager_network
+  jager:
+    driver: bridge
 
 volumes:
   clickhouse_data:
