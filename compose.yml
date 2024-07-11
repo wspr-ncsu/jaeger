@@ -48,7 +48,7 @@ services:
     volumes:
       - '.:/app'
     ports:
-      - '9990:9990'
+      - '9991:9991'
     depends_on:
       - db
     command: 
@@ -64,7 +64,7 @@ services:
     volumes:
       - '.:/app'
     ports:
-      - '9990:9990'
+      - '9992:9992'
     depends_on:
       - db
     command: 
@@ -80,7 +80,7 @@ services:
     volumes:
       - '.:/app'
     ports:
-      - '9990:9990'
+      - '9993:9993'
     depends_on:
       - db
       - rq
