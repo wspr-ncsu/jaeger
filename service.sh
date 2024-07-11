@@ -1,6 +1,6 @@
 #!/bin/bash
 
-valid_apps=(gm lm ta tp db)
+valid_apps=(gm lm ta rs db)
 valid_commands=(serve qw qs migrate gen)
 
 app=$(echo $1 | cut -d ":" -f 1)
@@ -35,17 +35,9 @@ function run_app {
     elif [ $app == "ta" ]
         then
         port=9992
-    elif [ $app == "tp" ]
+    elif [ $app == "rs" ]
         then
         port=9993
-    fi
-
-    portInUse=$(sudo lsof -t -i:$port)
-
-    if [ ! -z "$portInUse" ]
-        then
-        echo "Port $port is already in use. Killing process $portInUse..."
-        sudo kill -9 $portInUse
     fi
 
     echo "Starting $app on port $port"
@@ -59,8 +51,8 @@ function run_app {
     
     # run in wsgi production mode
     workers=1
-    # check if app is tp or lm
-    if [ $app == "tp" ] || [ $app == "lm" ]
+    # check if app is rs or lm
+    if [ $app == "rs" ] || [ $app == "lm" ]
         then
         workers=2
     fi
@@ -122,7 +114,7 @@ if [ $app == "db" ]
     exit 0
 fi
 
-if [ $app == "tp" ]
+if [ $app == "rs" ]
     then
     if [ $cmd == "qw" ]
         then

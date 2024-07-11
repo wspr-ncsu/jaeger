@@ -27,3 +27,5 @@ package-lock.json
 .keys
 *.out
 bls-witness-encryption/
+
+docker/volumes/

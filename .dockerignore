@@ -27,3 +27,4 @@ package-lock.json
 .keys
 *.out
 bls-witness-encryption/
+results/

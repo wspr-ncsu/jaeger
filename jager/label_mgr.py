@@ -1,13 +1,16 @@
 from . import oprf
 from . import redis
 from typing import List
-from .config import LM_BASE_URL
+from .config import LM_BASE_URL, LM_SK
 from .helpers import CDR
 from . import http
 
 
 def setup():
     return oprf.export_scalar(oprf.keygen())
+
+def load_sk():
+    return oprf.import_scalar(LM_SK)
 
 def server_evaluate(sk: oprf.scalar, x: oprf.point):
     x = oprf.import_point(x)
