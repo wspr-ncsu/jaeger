@@ -27,12 +27,12 @@ def load_carrier_group_member_keys():
         
 def get_cdrs(round, num_records, pages):
     cdrs = database.get_cdrs(round, num_records)
-    Logger.info(f'Loaded {len(cdrs)} records...')
+    print(f'Loaded {len(cdrs)} records...')
     return np.array_split(cdrs, pages)
     
 def contribute(records):
     pid = os.getpid()
-    Logger.info(f'[{pid}] Contributing {len(records)} records...')
+    print(f'[{pid}] Contributing {len(records)} records...')
     
     cdrs = {}
     
@@ -53,7 +53,7 @@ def contribute(records):
             
             # database.mark_cdrs_as_contributed("','".join([str(c.id) for c in batch]))
         except Exception as e:
-            Logger.error(e)
+            print(e)
             extb.print_exc()
     
 def bench_query(size):
@@ -103,7 +103,7 @@ def create_csv_files(mode='a'):
     helpers.create_csv('queries.csv', 'test_name,index,duration_in_ms,size', mode)
     
 def init(args):
-    Logger.info('Loading carrier group member secret keys...')
+    print('Loading carrier group member secret keys...')
     timed(load_carrier_group_member_keys)()
     num_pages = args.records // 1000
     
@@ -111,7 +111,7 @@ def init(args):
     
     with Pool(processes=processes) as pool:
         for round in range(0, args.rounds):
-            Logger.info(f'[R-{round}] Loading {args.records} records...')
+            print(f'[R-{round}] Loading {args.records} records...')
             
             page = args.page if args.page else round
             chunks = get_cdrs(page, args.records, num_pages)

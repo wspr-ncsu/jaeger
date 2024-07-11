@@ -6,7 +6,7 @@ from uuid import uuid4
 from .helpers import timed
 from multiprocessing import Pool
 from jager.datagen import database
-from ..helpers import Logger as logger
+from ..helpers import logger
 
 def create_subscribers_network(users, subnets, processes):
     subscribers = np.arange(int(users), dtype=int)
@@ -17,7 +17,7 @@ def create_subscribers_network(users, subnets, processes):
 
 def create_individuals_network(subscribers):
     n, pid = len(subscribers), os.getpid()
-    logger.default(f"pid({pid})\t> creating network for {n} subscribers")
+    print(f"pid({pid})\t> creating network for {n} subscribers")
     
     m = random.choices([1, 2, 3], weights=[0.5, 0.5, 0.5], k=1)[0]
     
@@ -25,7 +25,7 @@ def create_individuals_network(subscribers):
         return
 
     network = nx.barabasi_albert_graph(n, m)
-    logger.default(f'pid({pid})\t> G(V={len(network.nodes)}, E={len(network.edges)}).')
+    print(f'pid({pid})\t> G(V={len(network.nodes)}, E={len(network.edges)}).')
 
     data, chunk = [], 1000
     for src, dst in network.edges:

@@ -3,12 +3,12 @@ from . import helpers
 from blspy import G1Element
 from . import database as db
 from . import http
-from .config import TA_BASE_URL, TA_pk_key
+from .config import TA_BASE_URL, TA_PUBK
 from typing import List
 from . import redis
 
 def get_public_key() -> G1Element:
-    pk: str = redis.find(TA_pk_key)
+    pk: str = redis.find(TA_PUBK)
     
     if not pk:
         raise Exception("Trace Auth Public Key not found")
