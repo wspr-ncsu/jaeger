@@ -14,11 +14,11 @@ import jager.helpers as helpers
 import jager.label_mgr as label_mgr
 import benchmarks
 
-processes=24
+processes=8
 batch_size = 1000
 group_sig = { 'gpk': groupsig.get_gpk(), 'mems': {}}
 tapk = trace_auth.get_public_key()
-lm_sk = label_mgr.server_setup()
+lm_sk = label_mgr.load_sk()
     
 def load_carrier_group_member_keys():
     for carrier in range(7000):
@@ -106,6 +106,7 @@ def init(args):
     print('Loading carrier group member secret keys...')
     timed(load_carrier_group_member_keys)()
     num_pages = args.records // 1000
+    num_pages = num_pages if num_pages > 0 else 1
     
     create_csv_files('w' if args.clean else 'a')
     
