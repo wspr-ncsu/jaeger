@@ -18,7 +18,7 @@ from .helpers import timed
 import argparse
 from . import subscribers_network
 from multiprocessing import Pool, cpu_count
-from ..helpers import Logger as logger
+from ..helpers import logger
 
 load_dotenv()
 
@@ -136,7 +136,7 @@ def assign_subscribers_to_carrier(args):
     count = end_index - start_index
     pid, subs = os.getpid(), []
     
-    logger.default(f"pid({pid})\t> Assigning {count} subscribers to carrier {carrier} > start_index: {start_index}")
+    print(f"pid({pid})\t> Assigning {count} subscribers to carrier {carrier} > start_index: {start_index}")
     
     subs = [make_subscriber(id, carrier) for id in range(start_index, end_index)]
     save_subscribers(subs)
@@ -166,22 +166,22 @@ def save_subscribers(items):
         
         if len(data) == 1000:
             batch += 1
-            logger.default(f'pid({pid})\t> Saving Subscribers > Batch {batch}')
+            print(f'pid({pid})\t> Saving Subscribers > Batch {batch}')
             database.save_subscribers(data)
             data = []      
             
     if len(data) > 0:
-        logger.default(f'pid({pid})\t> Saving Subscribers > Batch {batch}')
+        print(f'pid({pid})\t> Saving Subscribers > Batch {batch}')
         database.save_subscribers(data)
 
 def make_raw_cdrs():
-    logger.info("loading edges...")
+    print("loading edges...")
     edges = database.get_all_edges()
     edges = np.array(edges)
     num_pages = math.ceil(len(edges) / edges_per_page)
     edges = np.array_split(edges, num_pages)
     
-    logger.info(f'Generating CDRs: Total pages: {num_pages}')
+    print(f'Generating CDRs: Total pages: {num_pages}')
     
     pool = Pool(processes=processes)
     pool.map(make_raw_cdrs_worker, edges)
@@ -190,7 +190,7 @@ def make_raw_cdrs_worker(edges):
     pid, data = os.getpid(), []
     
     for src, dst in edges:
-        # logger.default(f'pid({pid})\t> Simulating {src} -> {dst}')
+        # print(f'pid({pid})\t> Simulating {src} -> {dst}')
         fcall = simulate_call(src, dst)
         rcall = simulate_call(dst, src)
         
@@ -201,11 +201,11 @@ def make_raw_cdrs_worker(edges):
             data.extend(rcall)
         
         if len(data) >= 1000:
-            # logger.default(f'pid({pid})\t> Saving {len(data)} CDRs')
+            # print(f'pid({pid})\t> Saving {len(data)} CDRs')
             database.save_cdrs(data)
             data = []
             
     if len(data) > 0:
-        # logger.default(f'pid({pid})\t> Saving {len(data)} CDRs')
+        # print(f'pid({pid})\t> Saving {len(data)} CDRs')
         database.save_cdrs(data)
         data = []

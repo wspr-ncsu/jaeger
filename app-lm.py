@@ -20,9 +20,8 @@ class LabelManager:
         app = Flask(__name__, instance_relative_config=True)
         app.config.from_mapping(SECRET_KEY=config.APP_SECRET_KEY)
         self.create_instance_path(app)
-        refresh = False
 
-        sk = label_mgr.server_setup(refresh=refresh)
+        sk = label_mgr.load_sk()
 
         @app.post('/evaluate')
         def evaluate():

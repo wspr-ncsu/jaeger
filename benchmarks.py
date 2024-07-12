@@ -262,9 +262,9 @@ def get_hops(args):
     
 def get_avg_num_of_hops():
     if not generator.cache_file.exists():
-        Logger.error('Cache file not found. Please regenerate network')
+        print('Cache file not found. Please regenerate network')
         
-    Logger.info('Loading phone network metadata from cache...')
+    print('Loading phone network metadata from cache...')
     generator.load_cache()
     
     total, count = 0, 0
@@ -274,13 +274,13 @@ def get_avg_num_of_hops():
     carriers = [(i, num_carriers) for i in carriers]
     pool = Pool(processes=24)
     
-    Logger.info('Calculating average number of hops...')
+    print('Calculating average number of hops...')
     total = sum(pool.map(get_hops, carriers))
     count = num_carriers * (num_carriers - 1)
     avg = total // count
     
     helpers.update_csv('keyval.csv', f'average_hops,{avg}')
-    Logger.info(f'Average number of hops: {avg}')
+    print(f'Average number of hops: {avg}')
 
 def generate_label(call):
     key = oprf.keygen()

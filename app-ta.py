@@ -22,7 +22,7 @@ class TraceAuth:
         app.config.from_mapping(SECRET_KEY=config.APP_SECRET_KEY)
         self.create_instance_path(app)
         refresh = False
-        keys: config.WEKeys = witenc.server_setup(refresh=refresh)
+        keys: config.WEKeys = witenc.load_ta_keys()
         gpk = groupsig.get_gpk()
         
         @app.post('/authorize')

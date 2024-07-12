@@ -5,6 +5,15 @@ env = {}
 
 def load_env():
     print('Loading keys from .env...')
+    # if .env file does not exists, duplicate the .env.example file to .env
+    try:
+        with open('.env', 'r') as f:
+            pass
+    except FileNotFoundError:
+        with open('.env.example', 'r') as f:
+            with open('.env', 'w') as f2:
+                f2.write(f.read())
+                
     with open('.env', 'r') as f:
         for line in f:
             if line.startswith('#') or not line.strip():

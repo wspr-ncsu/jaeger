@@ -2,12 +2,18 @@ import secrets
 from witencpy import (Scheme, OTP, CipherText)
 from blspy import (BasicSchemeMPL, PrivateKey, G1Element, G2Element)
 import pickle
+import jager.config as config
 
 def setup():
     seed: bytes = bytes(secrets.token_bytes(32))
     sk: PrivateKey = BasicSchemeMPL.key_gen(seed)
     return bytes(sk).hex(), bytes(sk.get_g1()).hex()
-    
+
+def load_ta_keys():
+    sk = PrivateKey.from_bytes(bytes.fromhex(config.TA_PRIVK))
+    pk = G1Element.from_bytes(bytes.fromhex(config.TA_PUBK))
+    return config.WEKeys(sk=sk, pk=pk)
+
 def server_authorize(sk: PrivateKey, labels: list):
     sigs = {}
     

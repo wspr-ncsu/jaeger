@@ -55,29 +55,29 @@ def analyze():
             for terminal in terminatings:
                 draw_paths(origin=origin, terminal=terminal)
                 
-    DEV and logger.default('\nDecrypted records', sub=False)
+    DEV and print('\nDecrypted records', sub=False)
     for msg in routes:
         if msg not in [None, 'None']:
-            DEV and logger.default(msg.replace('None|', '').replace('|None', '').replace('|', ' -> '), prefix='*')
+            DEV and print(msg.replace('None|', '').replace('|None', '').replace('|', ' -> '), prefix='*')
     
         
 def draw_paths(origin, terminal):
     path = nx.shortest_path(G, origin, terminal)
-    DEV and logger.default("Possible paths from {} to {}: {}{}".format(origin, terminal, Fore.YELLOW, " -> ".join(path)))
+    DEV and print("Possible paths from {} to {}: {}{}".format(origin, terminal, Fore.YELLOW, " -> ".join(path)))
 
 def check_connectivity():
-    DEV and logger.default('Checking connectivity (Can all records be linked)', sub=False)
+    DEV and print('Checking connectivity (Can all records be linked)', sub=False)
     is_connected = nx.is_weakly_connected(G)
     
     if is_connected:
         DEV and logger.success('YES')
     else:
-        DEV and logger.error('NO')
+        DEV and print('NO')
         
     return is_connected
     
 def check_origin_invariant():
-    DEV and logger.default('Checking origin invariant', sub=False)
+    DEV and print('Checking origin invariant', sub=False)
     
     # get all nodes with in-degree 0 and out-degree > 0
     origins = []
@@ -92,21 +92,21 @@ def check_origin_invariant():
         yes, no = get_nodes_from(origins, having_in_deg=0, having_out_deg=2)
         
         if no:
-            DEV and logger.warn('The following nodes claim to be originators but no transit carrier attested to their claim:')
-            DEV and logger.warn(display_nodes(no))
+            DEV and print('The following nodes claim to be originators but no transit carrier attested to their claim:')
+            DEV and print(display_nodes(no))
         
         if yes:
-            DEV and logger.warn('The following nodes claim to be originators and at least 1 transit carrier attested to their claim:')
+            DEV and print('The following nodes claim to be originators and at least 1 transit carrier attested to their claim:')
             DEV and logger.success(display_nodes(yes))
         
         origins = yes
     else:
-        DEV and logger.error('NO: None found')
+        DEV and print('NO: None found')
         
     return origins
         
 def check_terminal_invariant():
-    DEV and logger.default('Checking Terminal invariant', sub=False)
+    DEV and print('Checking Terminal invariant', sub=False)
     
     # get all nodes with in-degree > 0 and out-degree = 0
     terminals = []
@@ -121,21 +121,21 @@ def check_terminal_invariant():
         yes, no = get_nodes_from(terminals, having_in_deg=2, having_out_deg=0)
         
         if no:
-            DEV and logger.warn('The following carriers claim to be terminals but no transit carrier attested to their claim:')
-            DEV and logger.warn(display_nodes(no))
+            DEV and print('The following carriers claim to be terminals but no transit carrier attested to their claim:')
+            DEV and print(display_nodes(no))
         
         if yes:
-            DEV and logger.warn('The following carriers claim to be terminals and at least 1 transit carrier attested to their claim:')
+            DEV and print('The following carriers claim to be terminals and at least 1 transit carrier attested to their claim:')
             DEV and logger.success(display_nodes(yes))
             
         terminals = yes
     else:
-        DEV and logger.error('NO: None found')
+        DEV and print('NO: None found')
         
     return terminals
 
 def check_transit_invariant():
-    DEV and logger.default('Checking transit invariant (All other nodes must have in-degree, out-degree either 1 or 2)', sub=False)
+    DEV and print('Checking transit invariant (All other nodes must have in-degree, out-degree either 1 or 2)', sub=False)
     transits = []
     
     for node in G.nodes():
@@ -145,7 +145,7 @@ def check_transit_invariant():
     if len(transits):
         DEV and logger.success(display_nodes(transits))
     else:
-        DEV and logger.error('NO: No transit carriers found')
+        DEV and print('NO: No transit carriers found')
         
     return transits
 
