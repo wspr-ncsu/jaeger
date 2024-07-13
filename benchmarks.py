@@ -7,7 +7,6 @@ from datetime import datetime
 from oblivious.ristretto import point
 from jager import witenc
 from jager.datagen import generator
-from jager.helpers import Logger
 from multiprocessing import Pool
 
 num_runs = 1000
@@ -22,11 +21,6 @@ gusk = m2['memkey']
 # Trace Authority setup
 trace_auth_sk = BasicSchemeMPL.key_gen(helpers.random_bytes(32))
 trace_auth_pk = trace_auth_sk.get_g1()
-
-header = 'category,test_name,runs,total_duration_in_ms,avg_duration_in_ms'
-helpers.create_csv('bench.csv', header, mode='a')
-helpers.create_csv('index-timings.csv', header, mode='a')
-helpers.create_csv('keyval.csv', 'key,val', mode='a')
 
 def exp_bench_setups():
     lines = []
@@ -289,6 +283,12 @@ def generate_label(call):
     return oprf.export_point(oprf.unmask(s, fx))
 
 def init(args):
+    header = 'category,test_name,runs,total_duration_in_ms,avg_duration_in_ms'
+    helpers.create_folder_if_not_exists('results')
+    helpers.create_csv('bench.csv', header, mode='a')
+    helpers.create_csv('index-timings.csv', header, mode='a')
+    helpers.create_csv('keyval.csv', 'key,val', mode='a')
+
     if args.all:
         helpers.create_csv('bench.csv', header, mode='w')
         helpers.create_csv('index-timings.csv', header, mode='w')

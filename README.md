@@ -40,9 +40,27 @@ In this section, we will be running the prototype. We first begin with data gene
 Our compose.yml file defines a ```jager-exp``` with all installed dependencies. We will be using this container to execute the experiments. 
 
 ### Data Generation
-1. Login to the ```jager-exp``` container
+In this section, we will see how to generate the telephone network, users network and viewing generated data. 
+
+1. **Login to the ```jager-exp``` container**
 	* Run ```docker exec -it jager-exp bash```
-1. Generate telephone network. 
+2. **Generate telephone and users' social network** 
+	* First run help ```python datagen.py -h``` to display usage information.
+	* Command: ```python datagen.py [-h] [-n NETWORK] [-s SUBSCRIBERS] [-g SUBNETS] [-c] [-y]```. 
+		* The options ```-n``` and ```-s``` take integers as values and defines the number of providers in the telephone network and number of subscribers in the social network respectively.  
+		* The users network is a network of network thus the option ```-g``` specifies the minimum number of subsnetworks that should be present in the users network.  
+		* Option ```-c``` determines if CDRs should be generated and ```-y``` determines if yes will be selected for any question. 
+    * Let's generate CDRs with 100 providers and 10,000 subscribers:
+        * Run ```python datagen.py -n 100 -s 10000 -c -y```. This generates and stores cdrs in the clickhouse database ```jager```.  
+	        * The edges of the user network is stored in ```jager.edges``` table and generated CDRs are stored in ```jager.raw_cdrs``` table.
+	   * The telephone network and it's metadata such as all pairs shortest paths and marketshares are stored as a python pickle in a ```cache.pkl``` file located at the project root. The essense of this is to allow us reuse a generated network since generating network is randomized. 
+3. **View Generated dataset**
+	* We added a UI service that allows you to connect to the database. Visit ```http://localhost:5521```. 
+		* Enter ```http://localhost:8123``` as Clickhouse URL, ```default``` as Username and ```secret``` as Password and click the ```Submit``` button. Once successful, click on ```Go back to the home page.``` link. 
+		* On the home page, select ```Jager``` in the databases field and this will load the tables. Now you can click on any table to view table Details, Scheme or Preview rows. 
+		* If you prefer to run your own SQL querries, then click on the new file icon/button with the orange background. Type in ```select * from jager.raw_cdrs limit 10;``` in the query field and click the "Run Query" button. 
 
 ### Running Benchmarks
+The results from Table 3, were obtained by running the benchmarks. These benchmarks determine runtime for label generation, signing and verification, key generation, encryption and decryptions.  
+
 ### Running Examples

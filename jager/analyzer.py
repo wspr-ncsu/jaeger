@@ -1,9 +1,5 @@
 import networkx as nx
 from typing import List
-import matplotlib.pyplot as plt
-from jager.helpers import Logger as logger
-from colorama import Fore
-
 
 G = None
 DEV = True
@@ -63,14 +59,14 @@ def analyze():
         
 def draw_paths(origin, terminal):
     path = nx.shortest_path(G, origin, terminal)
-    DEV and print("Possible paths from {} to {}: {}{}".format(origin, terminal, Fore.YELLOW, " -> ".join(path)))
+    DEV and print("Possible paths from {} to {}: {}{}".format(origin, terminal, " -> ".join(path)))
 
 def check_connectivity():
     DEV and print('Checking connectivity (Can all records be linked)', sub=False)
     is_connected = nx.is_weakly_connected(G)
     
     if is_connected:
-        DEV and logger.success('YES')
+        DEV and print('YES')
     else:
         DEV and print('NO')
         
@@ -86,7 +82,7 @@ def check_origin_invariant():
             origins.append(node)
     
     if len(origins) == 1:
-        DEV and logger.success(f'{display_nodes(origins)}')
+        DEV and print(f'{display_nodes(origins)}')
     elif len(origins) > 1:
         # from these nodes, get the ones with out-degree 2
         yes, no = get_nodes_from(origins, having_in_deg=0, having_out_deg=2)
@@ -97,7 +93,7 @@ def check_origin_invariant():
         
         if yes:
             DEV and print('The following nodes claim to be originators and at least 1 transit carrier attested to their claim:')
-            DEV and logger.success(display_nodes(yes))
+            DEV and print(display_nodes(yes))
         
         origins = yes
     else:
@@ -115,7 +111,7 @@ def check_terminal_invariant():
             terminals.append(node)
     
     if len(terminals) == 1:
-        DEV and logger.success(f'{display_nodes(terminals)}')
+        DEV and print(f'{display_nodes(terminals)}')
     elif len(terminals) > 1:
         # from these nodes, get the ones with in-degree 2
         yes, no = get_nodes_from(terminals, having_in_deg=2, having_out_deg=0)
@@ -126,7 +122,7 @@ def check_terminal_invariant():
         
         if yes:
             DEV and print('The following carriers claim to be terminals and at least 1 transit carrier attested to their claim:')
-            DEV and logger.success(display_nodes(yes))
+            DEV and print(display_nodes(yes))
             
         terminals = yes
     else:
@@ -143,7 +139,7 @@ def check_transit_invariant():
             transits.append(node)
     
     if len(transits):
-        DEV and logger.success(display_nodes(transits))
+        DEV and print(display_nodes(transits))
     else:
         DEV and print('NO: No transit carriers found')
         

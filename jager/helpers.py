@@ -1,7 +1,7 @@
 import time
 import json
 import secrets
-from os import getenv
+import os
 from .response import Panic
 from datetime import datetime
 import logging
@@ -121,3 +121,7 @@ def create_csv(file, header, mode = 'a'):
     with open(f'results/{file}', mode) as f:
         if f.tell() == 0:
             f.write(header + '\n')
+
+def create_folder_if_not_exists(folder_name):
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
