@@ -17,7 +17,7 @@ For ease of setup, we will be setting up the project using docker. If you will b
 
 The python dependencies are listed within the ```requirements.txt``` file. Install dependencies by running ```pip install -r requirements.txt```.  
 
-This project also requires the witness-encryption library which you need to build from the repository https://github.com/kofi-dalvik/bls-witness-encryption. This library is already built and install for you if you're using docker. 
+This project also requires the witness-encryption library which you need to build from the repository https://github.com/kofi-dalvik/bls-witness-encryption. We created ```install-witenc.sh``` file to install this library for you. This library is already built and install for you if you're using docker. 
   
 ## Setup with Docker (RECOMMENDED)
 You must make sure docker and docker compose are installed on your machine. 
@@ -46,7 +46,7 @@ In this section, we will see how to generate the telephone network, users networ
 	* Run ```docker exec -it jager-exp bash```
 2. **Generate telephone and users' social network** 
 	* First run help ```python datagen.py -h``` to display usage information.
-	* Command: ```python datagen.py [-h] [-n NETWORK] [-s SUBSCRIBERS] [-g SUBNETS] [-c] [-y]```. 
+	* Command Usage: ```python datagen.py [-h] [-n NETWORK] [-s SUBSCRIBERS] [-g SUBNETS] [-c] [-y]```. 
 		* The options ```-n``` and ```-s``` take integers as values and defines the number of providers in the telephone network and number of subscribers in the social network respectively.  
 		* The users network is a network of network thus the option ```-g``` specifies the minimum number of subsnetworks that should be present in the users network.  
 		* Option ```-c``` determines if CDRs should be generated and ```-y``` determines if yes will be selected for any question. 
@@ -61,6 +61,25 @@ In this section, we will see how to generate the telephone network, users networ
 		* If you prefer to run your own SQL querries, then click on the new file icon/button with the orange background. Type in ```select * from jager.raw_cdrs limit 10;``` in the query field and click the "Run Query" button. 
 
 ### Running Benchmarks
-The results from Table 3, were obtained by running the benchmarks. These benchmarks determine runtime for label generation, signing and verification, key generation, encryption and decryptions.  
+The results from Table 3, were obtained by running the benchmarks. These benchmarks determine runtime for label generation, signing and verification, key generation, encryption and decryptions.
+  
+1. **Login to the ```jager-exp``` container**
+	* Run ```docker exec -it jager-exp bash``` if you're not already inside ```jager-exp``` container.
+2. Command Usage: ```python benchmarks.py [-h] [-s] [-lg] [-gs] [-go] [-gv] [-a] [-b] [-e] [-ah] [-an]```. Here are the options
+	* ```-s```, or ```--setup```:  Run setup/key generation benchmark
+    * ```-lg```, or ```--lbl_gen```: Run label generation benchmark
+    * ```-gs```, or ```--grp_sign```:  Run group signature benchmark
+    * ```-go```, or ```--grp_open```: Run group signature open benchmark
+    * ```-gv```, or ```--grp_verify```: Run group verification benchmark
+    * ```-a```, or ```--all```: Run all benchmarks
+    * ```-b```, or. ```--bls```:  Run BLS signature benchmark
+    * ```-e```, or ```--enc```: Run encryption benchmark
+    * ```-ah```, or ```--hops```: Run average number of hops
+    * ```-an```, or ```--analysis```: Run analysis
+3. Example run for key generation benchmark
+	* Run ```python benchmarks.py --setup```.  This will display the results to console and will create a ```results``` folder inside the project root. 
+		* ```results/bench.csv``` contains the aggregated benchmarks while ```results/index-timings.csv``` contains the individual runs. We used ```results/index-timings.csv``` to determine the mean, min, max and standard deviations. 
+
+Note that the results here will greatly differ from what was recorded in the paper. This is because the experimental setup described in the paper were executed directly on our machine instead of docker. 
 
 ### Running Examples
