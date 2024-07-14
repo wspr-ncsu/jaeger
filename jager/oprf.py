@@ -1,4 +1,7 @@
-from oblivious.ristretto import point, scalar
+from oblivious.ristretto import sodium
+
+scalar = sodium.scalar
+point = sodium.point
 
 def keygen():
     return scalar.random()

@@ -1,15 +1,15 @@
-FROM python:3.8.18-bookworm
+FROM python:3.8-slim
 
 WORKDIR /app
 
 # Install cmake
-RUN apt-get update && apt-get install -y cmake
+RUN apt-get update && apt-get install -y cmake git libsodium23 libsodium-dev build-essential 
 
-# Install witness encryption package
-RUN git clone https://github.com/kofi-dalvik/bls-witness-encryption.git
-RUN cd bls-witness-encryption && python setup.py install
+COPY requirements.txt .
+COPY install-witenc.sh .
+
+RUN pip install -r requirements.txt
+RUN ./install-witenc.sh
 
 COPY . .
 
-# Install dependencies
-RUN pip install -r requirements.txt
