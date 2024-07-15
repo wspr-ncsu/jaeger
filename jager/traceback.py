@@ -23,7 +23,7 @@ def trace(group: dict, tapk: G1Element, cdrs: List[CDR]):
         if not records:
             print(f'No records found for {cdr.src} and {cdr.dst} at {cdr.ts}')
             continue
-        
+        # print(records)
         dec_cdrs = decrypt_records(records=records, witneses=witneses)
     
         return dec_cdrs['msgs']
@@ -36,13 +36,13 @@ def trace(group: dict, tapk: G1Element, cdrs: List[CDR]):
     
         
 def get_range(cdr: CDR) -> List[CDR]:
-    start_epoch: int = cdr.ts - MAX_EPOCHS
-    end_epoch: int = cdr.ts + MAX_EPOCHS
+    start_epoch: int = int(cdr.ts) - MAX_EPOCHS
+    end_epoch: int = int(cdr.ts) + MAX_EPOCHS
     cdrs = []
     
     for epoch in range(start_epoch, end_epoch):
         cdrs.append(
-            CDR(src=cdr.src, dst=cdr.dst, ts=epoch, prev=cdr.prev, curr=cdr.curr, next=cdr.next)
+            CDR(id=cdr.id, src=cdr.src, dst=cdr.dst, ts=epoch, prev=cdr.prev, curr=cdr.curr, next=cdr.next)
         )
         
     return cdrs
@@ -68,6 +68,7 @@ def decrypt_records(records: List[dict], witneses: List[str]):
             continue
         
         sig: G2Element = witenc.client_import_sig(witneses[label])
+        print(record['ct'])
         ct: dict = witenc.client_import_ct(record['ct'])
             
         msgs.append(witenc.client_decrypt(sig=sig, ct=ct))

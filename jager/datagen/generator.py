@@ -79,7 +79,7 @@ def simulate_call(src, dst):
         ts = round(datetime.now().timestamp() + random.randint(0, 3))
         
         # create CDR tupple
-        cdr = [src_tn, dst_tn, str(ts), str(prev), str(carrier), str(next)]
+        cdr = [str(uuid4()), src_tn, dst_tn, str(ts), str(prev), str(carrier), str(next)]
         cdrs.append(cdr)
         
     return cdrs

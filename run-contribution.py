@@ -30,6 +30,12 @@ def get_cdrs(round, num_records, pages):
     cdrs = database.get_cdrs(round, num_records)
     print(f'Loaded {len(cdrs)} records...')
     return np.array_split(cdrs, pages)
+
+def mark_cdrs_as_contributed(cdrs):
+    ids = []
+    for chunk in cdrs:
+        ids.extend([str(c[0]) for c in chunk])
+    database.mark_cdrs_as_contributed(ids=ids)
     
 def contribute(records):
     pid = os.getpid()
@@ -117,8 +123,9 @@ def init(args):
             print(f'[R-{batch}] Loading {args.records} records...')
             chunks = get_cdrs(batch, args.records, num_chunks_in_batch)
             pool.map(contribute, chunks)
-        
+    
             save_stats() # save db stats
+            mark_cdrs_as_contributed(chunks)
         
     
 if __name__ == '__main__':

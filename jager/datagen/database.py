@@ -17,7 +17,7 @@ def save_subscribers(rows):
     db.open_db().insert("subscribers", data=rows, column_names=columns)
 
 def save_cdrs(rows):
-    columns = ["src", "dst", "ts", "prev", "curr", "next"]
+    columns = ["id", "src", "dst", "ts", "prev", "curr", "next"]
     db.open_db().insert("raw_cdrs", data=rows, column_names=columns)
     
 def save_edges(rows):
@@ -33,7 +33,7 @@ def count_records():
 def get_cdrs(round, num_records, status=0):
     offset = round * num_records
     query = f"""
-        SELECT src, dst, ts, prev, curr, next FROM raw_cdrs 
+        SELECT id, src, dst, ts, prev, curr, next FROM raw_cdrs 
         WHERE status={status} AND (
             (prev = 'None' AND curr <> 'None' AND next <> 'None') OR 
             (prev <> 'None' AND curr <> 'None' AND next <> 'None') OR 
@@ -45,6 +45,9 @@ def get_cdrs(round, num_records, status=0):
     return res.result_rows
 
 def mark_cdrs_as_contributed(ids):
+    if (len(ids) == 0):
+        return
+    ids = "','".join(ids)
     db.open_db().command(f"ALTER TABLE raw_cdrs UPDATE status=1 WHERE id in ('{ids}')")
     
 def truncate(tables: list):

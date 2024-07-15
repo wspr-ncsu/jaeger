@@ -50,7 +50,7 @@ MAX_EPOCHS = 5 # Seconds
 Carrier = namedtuple('Carrier', ['id', 'name', 'gsk'])
 SIG_HEADER='X-Jager-Signature'
 
-GM_BASE_URL = f'{GM_HOST}:{GM_PORT}'
-LM_BASE_URL = f'{LM_HOST}:{LM_PORT}'
-TA_BASE_URL = f'{TA_HOST}:{TA_PORT}'
-ITG_BASE_URL = f'{RS_HOST}:{RS_PORT}'
+GM_BASE_URL = f'http://{GM_HOST}:{GM_PORT}'
+LM_BASE_URL = f'http://{LM_HOST}:{LM_PORT}'
+TA_BASE_URL = f'http://{TA_HOST}:{TA_PORT}'
+ITG_BASE_URL = f'http://{RS_HOST}:{RS_PORT}'
