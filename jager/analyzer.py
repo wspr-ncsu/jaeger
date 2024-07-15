@@ -51,18 +51,18 @@ def analyze():
             for terminal in terminatings:
                 draw_paths(origin=origin, terminal=terminal)
                 
-    DEV and print('\nDecrypted records', sub=False)
+    DEV and print('\nDecrypted records')
     for msg in routes:
         if msg not in [None, 'None']:
-            DEV and print(msg.replace('None|', '').replace('|None', '').replace('|', ' -> '), prefix='*')
+            DEV and print(msg.replace('None|', '').replace('|None', '').replace('|', ' -> '))
     
         
 def draw_paths(origin, terminal):
     path = nx.shortest_path(G, origin, terminal)
-    DEV and print("Possible paths from {} to {}: {}{}".format(origin, terminal, " -> ".join(path)))
+    DEV and print("Possible paths from {} to {}: {}".format(origin, terminal, " -> ".join(path)))
 
 def check_connectivity():
-    DEV and print('Checking connectivity (Can all records be linked)', sub=False)
+    DEV and print('Checking connectivity (Can all records be linked)')
     is_connected = nx.is_weakly_connected(G)
     
     if is_connected:
@@ -73,7 +73,7 @@ def check_connectivity():
     return is_connected
     
 def check_origin_invariant():
-    DEV and print('Checking origin invariant', sub=False)
+    DEV and print('Checking origin invariant')
     
     # get all nodes with in-degree 0 and out-degree > 0
     origins = []
@@ -102,7 +102,7 @@ def check_origin_invariant():
     return origins
         
 def check_terminal_invariant():
-    DEV and print('Checking Terminal invariant', sub=False)
+    DEV and print('Checking Terminal invariant')
     
     # get all nodes with in-degree > 0 and out-degree = 0
     terminals = []
@@ -131,7 +131,7 @@ def check_terminal_invariant():
     return terminals
 
 def check_transit_invariant():
-    DEV and print('Checking transit invariant (All other nodes must have in-degree, out-degree either 1 or 2)', sub=False)
+    DEV and print('Checking transit invariant (All other nodes must have in-degree, out-degree either 1 or 2)')
     transits = []
     
     for node in G.nodes():

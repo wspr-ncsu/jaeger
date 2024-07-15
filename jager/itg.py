@@ -11,7 +11,7 @@ def submit(labels, cts, sigs, group: dict, over_http:bool = False):
         if over_http:
             calls.append({ 'l': label, 'c': cts[index], 's': sigs[index]})
         else:
-            calls.append([label, cts[index], sigs[index]])
+            calls.append([label, sigs[index], cts[index]])
     
     if over_http:
         http.post(url=f'{ITG_BASE_URL}/submit', data=calls, group=group)

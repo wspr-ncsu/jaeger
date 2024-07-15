@@ -19,11 +19,10 @@ def load_carrier_group_member_keys():
 def trace(src, dst, ts, carrier):
     cdr = CDR(id=str(uuid4()), src=src, dst=dst, ts=ts)
     cgroup = {
-        'usk': carrier_usks[carrier],
+        'usk': carrier_usks[str(carrier)],
         'gpk': groupsig.get_gpk()
     }
     records = traceback.trace(group=cgroup, tapk=tapk, cdrs=[cdr])
-    print(records)
     analyzer.init(records)
     analyzer.analyze()
 
