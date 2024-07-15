@@ -39,28 +39,8 @@ In this section, we will be running the prototype. We first begin with data gene
 
 Our compose.yml file defines a ```jager-exp``` with all installed dependencies. We will be using this container to execute the experiments. 
 
-### Data Generation
-In this section, we will see how to generate the telephone network, users network and viewing generated data. 
 
-1. **Login to the ```jager-exp``` container**
-	* Run ```docker exec -it jager-exp bash```
-2. **Generate telephone and users' social network** 
-	* First run help ```python datagen.py -h``` to display usage information.
-	* Command Usage: ```python datagen.py [-h] [-n NETWORK] [-s SUBSCRIBERS] [-g SUBNETS] [-c] [-y]```. 
-		* The options ```-n``` and ```-s``` take integers as values and defines the number of providers in the telephone network and number of subscribers in the social network respectively.  
-		* The users network is a network of network thus the option ```-g``` specifies the minimum number of subsnetworks that should be present in the users network.  
-		* Option ```-c``` determines if CDRs should be generated and ```-y``` determines if yes will be selected for any question. 
-    * Let's generate CDRs with 100 providers and 10,000 subscribers:
-        * Run ```python datagen.py -n 100 -s 10000 -c -y```. This generates and stores cdrs in the clickhouse database ```jager```.  
-	        * The edges of the user network is stored in ```jager.edges``` table and generated CDRs are stored in ```jager.raw_cdrs``` table.
-	   * The telephone network and it's metadata such as all pairs shortest paths and marketshares are stored as a python pickle in a ```cache.pkl``` file located at the project root. The essense of this is to allow us reuse a generated network since generating network is randomized. 
-3. **View Generated dataset**
-	* We added a UI service that allows you to connect to the database. Visit ```http://localhost:5521```. 
-		* Enter ```http://localhost:8123``` as Clickhouse URL, ```default``` as Username and ```secret``` as Password and click the ```Submit``` button. Once successful, click on ```Go back to the home page.``` link. 
-		* On the home page, select ```Jager``` in the databases field and this will load the tables. Now you can click on any table to view table Details, Scheme or Preview rows. 
-		* If you prefer to run your own SQL querries, then click on the new file icon/button with the orange background. Type in ```select * from jager.raw_cdrs limit 10;``` in the query field and click the "Run Query" button. 
-
-### Running Benchmarks
+### Running Experiment 1 - Benchmarks
 The results from Table 3, were obtained by running the benchmarks. These benchmarks determine runtime for label generation, signing and verification, key generation, encryption and decryptions.
   
 1. **Login to the ```jager-exp``` container**
@@ -80,6 +60,37 @@ The results from Table 3, were obtained by running the benchmarks. These benchma
 	* Run ```python benchmarks.py --setup```.  This will display the results to console and will create a ```results``` folder inside the project root. 
 		* ```results/bench.csv``` contains the aggregated benchmarks while ```results/index-timings.csv``` contains the individual runs. We used ```results/index-timings.csv``` to determine the mean, min, max and standard deviations. 
 
-Note that the results here may differ from what was recorded in the paper. This is because the experimental setup described in the paper were executed directly on the machine instead of docker. 
+Note that the results here will greatly differ from what was recorded in the paper. This is because the experimental setup described in the paper were executed directly on our machine instead of docker. 
 
-### Running Examples
+### Running Experiment 2
+In experiment 2, we generate a telephone network and users social network. We simulated calls between users and created CDRs for running experiments. In this experiment, we aim to determine bandwidth,  storage growth and how storage size affects queries as show in Figure 6.
+
+#### Data Generation
+1. **Login to the ```jager-exp``` container**
+	* Run ```docker exec -it jager-exp bash```
+2. **Generate telephone and users' social network** 
+	* First run help ```python datagen.py -h``` to display usage information.
+	* Command Usage: ```python datagen.py [-h] [-n NETWORK] [-s SUBSCRIBERS] [-g SUBNETS] [-c] [-y]```. 
+		* The options ```-n``` and ```-s``` take integers as values and defines the number of providers in the telephone network and number of subscribers in the social network respectively.  
+		* The users network is a network of network thus the option ```-g``` specifies the minimum number of subsnetworks that should be present in the users network.  
+		* Option ```-c``` determines if CDRs should be generated and ```-y``` determines if yes will be selected for any question. 
+    * Let's generate CDRs with 100 providers and 10,000 subscribers:
+        * Run ```python datagen.py -n 100 -s 10000 -c -y```. This generates and stores cdrs in the clickhouse database ```jager```.  
+	        * The edges of the user network is stored in ```jager.edges``` table and generated CDRs are stored in ```jager.raw_cdrs``` table.
+	   * The telephone network and it's metadata such as all pairs shortest paths and marketshares are stored as a python pickle in a ```cache.pkl``` file located at the project root. The essense of this is to allow us reuse a generated network since generating network is randomized. 
+3. **View Generated dataset**
+	* We added a UI service that allows you to connect to the database. Visit ```http://localhost:5521```. 
+		* Enter ```http://localhost:8123``` as Clickhouse URL, ```default``` as Username and ```secret``` as Password and click the ```Submit``` button. Once successful, click on ```Go back to the home page.``` link. 
+		* On the home page, select ```Jager``` in the databases field and this will load the tables. Now you can click on any table to view table Details, Scheme or Preview rows. 
+		* If you prefer to run your own SQL querries, then click on the new file icon/button with the orange background. Type in ```select * from jager.raw_cdrs limit 10;``` in the query field and click the "Run Query" button. 
+
+#### Running Contributions
+1. **Login to the ```jager-exp``` container**
+	* if not already logged in, run ```docker exec -it jager-exp bash```
+2. **Run contributions** 
+	* Command Usage: ```python run-contribution.py [-h] [-b BATCHES] -r RECORDS [-c]```
+		* Arg ```-b``` takes the number of batches. This is the number of times you wish to run the contribution experiment. It default to ```1```. After each batch, database stats are measured and stored in ```results``` folder. 
+		* Arg ```-r``` takes the number of records in a batch. This is the number of records to submit. This arg is required. 
+	* Let's run contributions for 3 batches with 100 records in a batch:
+		* Run ```python run-contribution.py -b 3 -r 100```. This saves the results in ```results/db_stats.csv``` and ```results/queries.csv```.
+
