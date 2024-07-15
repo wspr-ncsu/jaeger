@@ -80,6 +80,6 @@ The results from Table 3, were obtained by running the benchmarks. These benchma
 	* Run ```python benchmarks.py --setup```.  This will display the results to console and will create a ```results``` folder inside the project root. 
 		* ```results/bench.csv``` contains the aggregated benchmarks while ```results/index-timings.csv``` contains the individual runs. We used ```results/index-timings.csv``` to determine the mean, min, max and standard deviations. 
 
-Note that the results here will greatly differ from what was recorded in the paper. This is because the experimental setup described in the paper were executed directly on our machine instead of docker. 
+Note that the results here may differ from what was recorded in the paper. This is because the experimental setup described in the paper were executed directly on the machine instead of docker. 
 
 ### Running Examples

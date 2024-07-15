@@ -27,6 +27,8 @@ package-lock.json
 .keys
 *.out
 bls-witness-encryption/
+.vscode/
 
 docker/volumes/
 results/
+membership-keys.json

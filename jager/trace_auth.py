@@ -8,12 +8,7 @@ from typing import List
 from . import redis
 
 def get_public_key() -> G1Element:
-    pk: str = redis.find(TA_PUBK)
-    
-    if not pk:
-        raise Exception("Trace Auth Public Key not found")
-    
-    return G1Element.from_bytes(bytes.fromhex(pk))
+    return G1Element.from_bytes(bytes.fromhex(TA_PUBK))
 
 def request_authorization(group: dict, labels: List[str]):
     """Request signature from Trace Auth"""

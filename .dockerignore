@@ -28,3 +28,6 @@ package-lock.json
 *.out
 bls-witness-encryption/
 results/
+.vscode/
+resources/
+logs/

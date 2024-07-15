@@ -33,6 +33,13 @@ def mgr_register_carrier(cid, gsign_keys):
 
 def mgr_generate_member_keys(msk, gpk, gml):
     groupsig.init(SCHEME, 0)
+    if (type(msk) == str):
+        msk = mgrkey.mgrkey_import(SCHEME, msk)
+    if (type(gpk) == str):
+        gpk = grpkey.grpkey_import(SCHEME, gpk)
+    if (type(gml) == str):
+        gml = GML.gml_import(SCHEME, gml)
+        
     msg1 = groupsig.join_mgr(0, msk, gpk, gml=gml)
     msg2 = groupsig.join_mem(1, gpk, msgin = msg1)
     usk = msg2['memkey']
@@ -94,3 +101,7 @@ def client_register(cid: str) -> dict:
     gpk = grpkey.grpkey_import(SCHEME, config.GM_GPK)
     
     return { 'usk': usk, 'gpk': gpk }
+
+def client_import_usk(usk: str) -> dict:
+    groupsig.init(SCHEME, 0)
+    return memkey.memkey_import(SCHEME, usk)

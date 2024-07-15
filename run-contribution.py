@@ -1,10 +1,9 @@
-import os
+import os, json
 import argparse
 import numpy as np
 import traceback as extb
 from multiprocessing import Pool
 from jager.helpers import CDR
-from jager.helpers import Logger
 import jager.groupsig as groupsig
 from jager.datagen import database
 import jager.trace_auth as trace_auth
@@ -21,9 +20,11 @@ tapk = trace_auth.get_public_key()
 lm_sk = label_mgr.load_sk()
     
 def load_carrier_group_member_keys():
-    for carrier in range(7000):
-        keys = groupsig.client_register(carrier)
-        group_sig['mems'][str(carrier)] = keys['usk']
+    global group_sig
+    with open('membership-keys.json', 'r') as f:
+        keys = json.load(f)
+        for carrier in keys:
+            group_sig['mems'][carrier] = groupsig.client_import_usk(keys[carrier])
         
 def get_cdrs(round, num_records, pages):
     cdrs = database.get_cdrs(round, num_records)
@@ -48,7 +49,7 @@ def contribute(records):
         try:
             contribution.contribute(group={
                 'gpk': group_sig['gpk'],
-                'usk': group_sig['mems'][carrier]
+                'usk': group_sig['mems'][str(carrier)]
             }, tapk=tapk, lm_sk=lm_sk, over_http=False, cdrs=cdrs[carrier])
             
             # database.mark_cdrs_as_contributed("','".join([str(c.id) for c in batch]))
@@ -99,23 +100,22 @@ def save_stats():
     bench_insertion(ct_records_size)
             
 def create_csv_files(mode='a'):
+    helpers.create_folder_if_not_exists('results')
     helpers.create_csv('db_stats.csv', 'table,size,rows', mode)
     helpers.create_csv('queries.csv', 'test_name,index,duration_in_ms,size', mode)
     
 def init(args):
     print('Loading carrier group member secret keys...')
     timed(load_carrier_group_member_keys)()
-    num_pages = args.records // 1000
-    num_pages = num_pages if num_pages > 0 else 1
+    num_chunks_in_batch = args.records // 1000
+    num_chunks_in_batch = num_chunks_in_batch if num_chunks_in_batch > 0 else 1
     
     create_csv_files('w' if args.clean else 'a')
     
     with Pool(processes=processes) as pool:
-        for round in range(0, args.rounds):
-            print(f'[R-{round}] Loading {args.records} records...')
-            
-            page = args.page if args.page else round
-            chunks = get_cdrs(page, args.records, num_pages)
+        for batch in range(0, args.batches):
+            print(f'[R-{batch}] Loading {args.records} records...')
+            chunks = get_cdrs(batch, args.records, num_chunks_in_batch)
             pool.map(contribute, chunks)
         
             save_stats() # save db stats
@@ -123,9 +123,8 @@ def init(args):
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run contribution and tracebacks')
-    parser.add_argument('-r', '--rounds', type=int, help='Number of rounds', required=False, default=1)
-    parser.add_argument('-n', '--records', type=int, help='Number of cdrs to contribute', required=True)
-    parser.add_argument('-p', '--page', type=int, help='Current page to run query for', required=True)
+    parser.add_argument('-b', '--batches', type=int, help='Number of batches', required=False, default=1)
+    parser.add_argument('-r', '--records', type=int, help='Number of cdrs per batch to contribute', required=True)
     parser.add_argument('-c', '--clean', action='store_true', help='Clean existing results', required=False, default=False)
     args = parser.parse_args()
     

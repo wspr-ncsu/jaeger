@@ -1,4 +1,4 @@
-import argparse
+import argparse, json
 from jager import groupsig, witenc, label_mgr
 
 env = {}
@@ -28,10 +28,22 @@ def save_env():
         for key, value in env.items():
             f.write(f'{key}={value}\n')
 
+def generate_carrier_keys(msk, gpk, gml):
+    keys = {}
+    
+    for carrier in range(7000):
+        print(f'Generating keys for carrier-{carrier}...', end='\r')
+        keys[str(carrier)] = groupsig.mgr_generate_member_keys(msk=msk, gpk=gpk, gml=gml)
+    
+    # write to membership-keys.json
+    with open('membership-keys.json', 'w') as f:
+        f.write(json.dumps(keys, indent=4))
+
 def gm_keygen():
     print('Generating keys for Group Manager...')
     msk, gpk, gml = groupsig.setup()
     env['GM_MSK'], env['GM_GPK'], env['GM_GML'] = msk, gpk, gml
+    generate_carrier_keys(msk, gpk, gml)
     
 def lm_setup():
     print('Generating keys for Label Manager...')
@@ -41,6 +53,7 @@ def ta_keygen():
     print('Generating keys for Traceback Authorizer...')
     privk, pubk = witenc.setup()
     env['TA_PRIVK'], env['TA_PUBK'] = privk, pubk
+
     
 def main(args):
     load_env()
