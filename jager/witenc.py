@@ -28,6 +28,12 @@ def server_authorize(sk: PrivateKey, labels: list):
 # Client side functions
 
 def client_encrypt(pk: G1Element, label: bytes, cdr: bytes) -> dict:
+    if (isinstance(pk, G1Element)):
+        pk = bytes(pk)
+    
+    if (not isinstance(pk, bytes)):
+        raise ValueError('pk must be of type bytes or G1Element')
+    
     key: bytes = bytes(BasicSchemeMPL.key_gen(secrets.token_bytes(32)))
     ct1: bytes = bytes(Scheme.encrypt(pk, label, key))
     ct2: bytes = bytes(OTP.encrypt(key, cdr))
@@ -35,6 +41,12 @@ def client_encrypt(pk: G1Element, label: bytes, cdr: bytes) -> dict:
     return { 'ct1': ct1, 'ct2': ct2 }
 
 def client_decrypt(sig: G2Element, ct: dict, decode=True) -> bytes:
+    if (isinstance(sig, G2Element)):
+        sig = bytes(sig)
+
+    if (not isinstance(sig, bytes)):
+        raise ValueError('sig must be of type bytes or G2Element')
+    
     # Decrypt the key using witness encryption
     ct1: CipherText = CipherText.from_bytes(ct['ct1'])
     key: bytes = bytes(Scheme.decrypt(sig, ct1))
