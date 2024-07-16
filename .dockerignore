@@ -1,10 +1,15 @@
 venv/
 .venv/
+.vscode/
+docker/
+instance/
+bls-witness-encryption/
+logs/
+resources/
+results/
 
 *.pyc
 __pycache__/
-
-instance/
 
 .pytest_cache/
 .coverage
@@ -26,8 +31,4 @@ package-lock.json
 *.pickle
 .keys
 *.out
-bls-witness-encryption/
-results/
-.vscode/
-resources/
-logs/
+

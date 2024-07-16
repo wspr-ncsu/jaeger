@@ -35,7 +35,7 @@ services:
       - db
 
   gm:
-    image: jager
+    image: kofidahmed/jager
     platform: linux/x86_64
     container_name: jager-gm
     volumes:
@@ -51,7 +51,7 @@ services:
       - jager-net
 
   lm:
-    image: jager
+    image: kofidahmed/jager
     platform: linux/x86_64
     container_name: jager-lm
     volumes:
@@ -67,7 +67,7 @@ services:
       - jager-net
 
   ta:
-    image: jager
+    image: kofidahmed/jager
     platform: linux/x86_64
     container_name: jager-ta
     volumes:
@@ -83,7 +83,7 @@ services:
       - jager-net
 
   rs:
-    image: jager
+    image: kofidahmed/jager
     platform: linux/x86_64
     container_name: jager-rs
     volumes:
@@ -100,7 +100,7 @@ services:
       - jager-net
 
   rq:
-    image: jager
+    image: kofidahmed/jager
     platform: linux/x86_64
     container_name: jager-rq
     volumes:
@@ -112,7 +112,7 @@ services:
       - jager-net
 
   experiment:
-    image: jager
+    image: kofidahmed/jager
     platform: linux/x86_64
     container_name: jager-exp
     volumes:
