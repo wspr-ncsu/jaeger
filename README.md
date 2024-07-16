@@ -36,7 +36,7 @@ You must install docker and docker compose on your machine.
 	* Run ```docker run -v $(pwd):/app --rm kofidahmed/jager python keygen.py -a```. 
 	* The option ```-a``` tells the script to generate all keys. 
 	* If you wish to generate keys for label generation only, use the ```-lm``` option. ```-gm``` option for group management, ```-ta``` for trace authorization/witness encryption. 
-	* Verify that ```.env``` file is created and the variables are populated with appropriate keys. 
+	* Verify that ```.env``` and ```membership-keys.json``` files are created and the variables are populated with appropriate keys. 
 3. Start all Jager services: group manager, label manager, record store, trace authorizer, clickhouse database and redis server.
 	* Run ```docker compose up -d```. 
 		* The Group management server runs on ```http://localhost:9990```. Implementation defined in ```app-gm.py```
