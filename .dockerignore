@@ -8,6 +8,12 @@ logs/
 resources/
 results/
 
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+
 *.pyc
 __pycache__/
 
@@ -31,4 +37,5 @@ package-lock.json
 *.pickle
 .keys
 *.out
+membership-keys.json
 
