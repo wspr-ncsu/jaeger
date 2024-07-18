@@ -63,7 +63,7 @@ The results from Table 3, were obtained by running the benchmarks. These benchma
     * ```-a```, or ```--all```: Run all benchmarks
     * ```-b```, or. ```--bls```:  Run BLS signature benchmark
     * ```-e```, or ```--enc```: Run encryption benchmark
-    * ```-ah```, or ```--hops```: Run average number of hops
+    * ```-ah```, or ```--hops```: Run average number of hops. This requires that you generate the telephone network. You will learn how to generate a phone network in data generation section which follows.
     * ```-an```, or ```--analysis```: Run analysis
 3. Example run for key generation benchmark
 	* Run ```python benchmarks.py --setup```.  This will display the results to console and will create a ```results``` folder inside the project root. 
@@ -73,7 +73,7 @@ The results from Table 3, were obtained by running the benchmarks. These benchma
 In experiment 2, we generate a telephone network and users social network. We simulated calls between users and created CDRs for running experiments. In this experiment, we aim to determine bandwidth,  storage growth and how storage size affects queries as show in Figure 6.
 
 #### Data Generation
-1. Run ```docker exec -it jager-exp bash``` if not already in ```jager-exp``
+1. Run ```docker exec -it jager-exp bash``` if not already in ```jager-exp```
 2. Generate telephone and users' social network 
 	* Command Usage: ```python datagen.py [-h] [-n NETWORK] [-s SUBSCRIBERS] [-g SUBNETS] [-c] [-y]```. 
 		* The options ```-n``` and ```-s``` take integers as values and defines the number of providers in the telephone network and number of subscribers in the social network respectively.  
@@ -84,6 +84,7 @@ In experiment 2, we generate a telephone network and users social network. We si
 	        * The edges of the user network is stored in ```jager.edges``` table and generated CDRs are stored in ```jager.raw_cdrs``` table.
 	   * The telephone network and it's metadata such as all pairs shortest paths and marketshares are stored as a python pickle in a ```cache.pkl``` file located at the project root. The essense of this is to allow reusage of generated network data since the operation is randomized. 
 3. **View Generated dataset**
+	* We will connect to the clickhouse database using your browser. You need network connection from the browser to both ports 5521 and 8123.
 	* We added a UI service that allows you to connect to the database. Visit ```http://localhost:5521```. 
 		* Enter ```http://localhost:8123``` as Clickhouse URL, ```default``` as Username and ```secret``` as Password and click the ```Submit``` button. Once successful, click on ```Go back to the home page.``` link. 
 		* On the home page, select ```Jager``` in the databases field and this will load the tables. Now you can click on any table to view table Details, Scheme or Preview rows. 
@@ -104,7 +105,7 @@ Now let's perform a traceback by querying for a call that has been submitted to 
 2. If not already logged in, run ```docker exec -it jager-exp bash```.
 3. Trace a call given ```(src, dst, ts)```
 	* Run ```python run-trace.py -s src -d dst -t ts```. Replace ```src, dst, ts``` with actual values from the results in step 1. 
-	* Example: ```python run-trace.py -s 304-343-0688 -d 844-637-3806 -t 1721076561```. This command will:
+	* Example: ```python run-trace.py -s 304-343-0688 -d 844-637-3806 -t 1721076561```. Replace the 304-343-0688, 844-637-3806 and 1721076561 with values from the DB as shown in step 1. This command will:
 		1. Will generate call labels within [ts - tmax, ts + tmax] range
 		2. Request authorization signatures from TA
 		3. Retrieve ciphertexts from the RS
