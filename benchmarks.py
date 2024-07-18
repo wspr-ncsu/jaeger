@@ -257,6 +257,7 @@ def get_hops(args):
 def get_avg_num_of_hops():
     if not generator.cache_file.exists():
         print('Cache file not found. Please regenerate network')
+        return
         
     print('Loading phone network metadata from cache...')
     generator.load_cache()
