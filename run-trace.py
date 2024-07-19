@@ -23,8 +23,9 @@ def trace(src, dst, ts, carrier):
         'gpk': groupsig.get_gpk()
     }
     records = traceback.trace(group=cgroup, tapk=tapk, cdrs=[cdr])
-    analyzer.init(records)
-    analyzer.analyze()
+    if records:
+        analyzer.init(records)
+        analyzer.analyze()
 
 def init(args):
     load_carrier_group_member_keys()
