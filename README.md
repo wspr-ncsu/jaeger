@@ -55,19 +55,23 @@ The results from Table 3, were obtained by running the benchmarks. These benchma
   
 1. If using docker, run ```docker exec -it jager-exp bash``` if you're not already inside ```jager-exp``` container.
 2. Command Usage: ```python benchmarks.py [-h] [-s] [-lg] [-gs] [-go] [-gv] [-a] [-b] [-e] [-ah] [-an]```. Here are the options
+    * ```-a```, or ```--all```: Run all benchmarks
 	* ```-s```, or ```--setup```:  Run setup/key generation benchmark
     * ```-lg```, or ```--lbl_gen```: Run label generation benchmark
     * ```-gs```, or ```--grp_sign```:  Run group signature benchmark
     * ```-go```, or ```--grp_open```: Run group signature open benchmark
     * ```-gv```, or ```--grp_verify```: Run group verification benchmark
-    * ```-a```, or ```--all```: Run all benchmarks
     * ```-b```, or. ```--bls```:  Run BLS signature benchmark
     * ```-e```, or ```--enc```: Run encryption benchmark
     * ```-ah```, or ```--hops```: Run average number of hops. This requires that you generate the telephone network. You will learn how to generate a phone network in data generation section which follows.
     * ```-an```, or ```--analysis```: Run analysis
-3. Example run for key generation benchmark
-	* Run ```python benchmarks.py --setup```.  This will display the results to console and will create a ```results``` folder inside the project root. 
-		* ```results/bench.csv``` contains the aggregated benchmarks while ```results/index-timings.csv``` contains the individual runs. We used ```results/index-timings.csv``` to determine the mean, min, max and standard deviations. 
+3. Run all benchmarks
+	* Run ```python benchmarks.py -a```.  This will display the results to console and will create a ```results``` folder inside the project root. 
+		* ```results/bench.csv``` contains the summary of benchmarks while ```results/index-timings.csv``` contains the individual runs. We used ```results/index-timings.csv``` to determine the mean, min, max and standard deviations. 
+	* To aggregate the benchmark results in ```results/index-timings.csv``` as shown in Table 3 (in paper), run ```python aggregate-benchmark.py```. This creates a csv file ```results/bench-summary.csv``` with the results. 
+
+**Important Note**
+The accepted paper contains a typographical error in the Trace benchmark results. The results for the "Authorization" operation were mistakenly duplicated for the "Trace" operation. This error has been corrected in the camera-ready version of the paper. The correct results for the Trace operation are: mean 1.187 ms, minimum 1.172 ms, maximum 1.297 ms, and standard deviation 0.013 ms. Additionally, we have corrected the maximum value for the "Contribution" operation to 5.980 ms, as opposed to it previously being erroneously reported as the same as the minimum.
 
 ### Running Experiment 2
 In experiment 2, we generate a telephone network and users social network. We simulated calls between users and created CDRs for running experiments. In this experiment, we aim to determine bandwidth,  storage growth and how storage size affects queries as show in Figure 6.

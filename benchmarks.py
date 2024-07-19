@@ -29,10 +29,10 @@ def exp_bench_setups():
     for i in range(num_runs):
         istart = helpers.startStopwatch()
         ks = groupsig.setup(constants.BBS04_CODE)
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Group Manager,setup & keygen', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Group Manager,GM - setup & keygen', istart, 1, True)
         lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
         
-    test_name, t_dur, a_dur = helpers.endStopwatch('Group Manager,setup & keygen', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('Group Manager,GM - setup & keygen', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     
     # Provider registration to GM
@@ -55,10 +55,10 @@ def exp_bench_setups():
     for i in range(num_runs):
         istart = helpers.startStopwatch()
         key = oprf.keygen()
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Label Manager,setup & keygen', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Label Manager,LM - setup & keygen', istart, 1, True)
         lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
         
-    test_name, t_dur, a_dur = helpers.endStopwatch('Label Manager,setup & keygen', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('Label Manager,LM - setup & keygen', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     
     # Trace Authority setup
@@ -68,9 +68,9 @@ def exp_bench_setups():
         seed: bytes = helpers.random_bytes(32)
         sk: PrivateKey = BasicSchemeMPL.key_gen(seed)
         pk = sk.get_g1()
-        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Trace Authority,setup & keygen', istart, 1, True)
+        itest_name, i_tdur, i_adur = helpers.endStopwatch(f'Trace Authority,TA - setup & keygen', istart, 1, True)
         lines.append(f'{itest_name},{i},{i_tdur},{i_adur}')
-    test_name, t_dur, a_dur = helpers.endStopwatch('Trace Authority,setup & keygen', start, num_runs)
+    test_name, t_dur, a_dur = helpers.endStopwatch('Trace Authority,TA - setup & keygen', start, num_runs)
     helpers.update_csv('bench.csv', f'{test_name},{num_runs},{t_dur},{a_dur}')
     helpers.update_csv('index-timings.csv', '\n'.join(lines))
 
