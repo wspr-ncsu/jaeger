@@ -30,7 +30,7 @@ Once you setup Clickhouse DB, create the jager table and initialize the database
 Generate keys with ```python keygen.py -a```. This creates .env file with populated data.
   
 ### Setup with Docker (RECOMMENDED)
-You must install docker and docker compose on your machine. 
+You must install docker and docker compose on your machine. We have published a docker image ```kofidahmed/jager``` to dockerhub for a quick start so no need to build the image from the ```Dockerfile```.
 
 1. Generate secret key for label generation, group master and public keys for group management, private and public keys for BLS signatures and witness encryption.
 	* Run ```docker run -v $(pwd):/app --rm kofidahmed/jager python keygen.py -a```. 
