@@ -97,6 +97,7 @@ In experiment 2, we generate a telephone network and users social network. We si
 		* Arg ```-r``` takes the number of records in a batch. This is the number of records to submit. This arg is required. 
 	* Let's run contributions for 3 batches with 100 records in a batch:
 		* Run ```python run-contribution.py -b 3 -r 100```. This saves the results in ```results/db_stats.csv``` and ```results/queries.csv```.
+3. Run ```python plot-db-stats.py``` to generate the fetch and insert query performance as show in Figure 6 (in the paper) from the results in ```results/queries.csv```. This creates a PNG file at ```results/query_performance.png```.
 
 
 #### Run a Traceback (Optional)
