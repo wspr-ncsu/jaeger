@@ -28,6 +28,7 @@ networkx==3.1
 numpy==1.24.4
 oblivious==7.0.0
 packaging==24.1
+pandas==2.0.3
 parts==1.7.0
 path==16.14.0
 path.py==12.5.0
@@ -44,6 +45,7 @@ requests==2.32.3
 rq==1.16.2
 scipy==1.10.1
 six==1.16.0
+tzdata==2024.1
 urllib3==2.2.2
 Werkzeug==3.0.3
 zipp==3.19.2
