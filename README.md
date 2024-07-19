@@ -70,7 +70,7 @@ The results from Table 3, were obtained by running the benchmarks. These benchma
 		* ```results/bench.csv``` contains the summary of benchmarks while ```results/index-timings.csv``` contains the individual runs. We used ```results/index-timings.csv``` to determine the mean, min, max and standard deviations. 
 	* To aggregate the benchmark results in ```results/index-timings.csv``` as shown in Table 3 (in paper), run ```python aggregate-benchmark.py```. This creates a csv file ```results/bench-summary.csv``` with the results. 
 
-**Important Note**
+#### Important Information
 The accepted paper contains a typographical error in the Trace benchmark results. The results for the "Authorization" operation were mistakenly duplicated for the "Trace" operation. This error has been corrected in the camera-ready version of the paper. The correct results for the Trace operation are: mean 1.187 ms, minimum 1.172 ms, maximum 1.297 ms, and standard deviation 0.013 ms. Additionally, we have corrected the maximum value for the "Contribution" operation to 5.980 ms, as opposed to it previously being erroneously reported as the same as the minimum.
 
 ### Running Experiment 2
