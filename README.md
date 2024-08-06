@@ -21,7 +21,7 @@ Be sure your environment meets the following requirements:
 **Dependencies**
 The python dependencies are listed within the ```requirements.txt``` file. Install dependencies by running ```pip install -r requirements.txt``` in a python virtual environment.  
 
-This project requires the witness-encryption library which you need to build from the repository [https://github.com/kofi-dalvik/bls-witness-encryption](https://github.com/wspr-ncsu/BLS-Witness-Encryption). We created ```install-witenc.sh``` file to install this library for you if you will not be using docker. 
+This project requires the witness-encryption library which you need to build from the repository [wspr-ncsu/BLS-Witness-Encryption](https://github.com/wspr-ncsu/BLS-Witness-Encryption). We created ```install-witenc.sh``` file to install this library for you if you will not be using docker. 
 
 **Database Initialization**
 Once you setup Clickhouse DB, create the jager table and initialize the database with init script in ```docker/clickhouse/initdb.sql```.
